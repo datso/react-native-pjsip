@@ -18,14 +18,14 @@
     "ios",
     "android",
     "pjsip",
-    "webrtc"
+    "sip"
   ],
   "dependencies": {
-    "base64-js": "^1.1.2",
-    "event-target-shim": "^1.0.5"
+    "events": "^1.1.0",
+    "immutable": "^3.7.6"
   },
   "peerDependencies": {
-    "react-native": ">=0.19.0"
+    "react-native": ">=0.30.0"
   },
   "bugs": {
     "url": "https://github.com/datso/react-native-pjsip/issues"
