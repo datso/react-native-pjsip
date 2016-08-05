@@ -3,7 +3,7 @@
 A [PJSIP](http://www.pjsip.org/) module for React Native.
 
 ## Support
-- Currently support for iOS and Android.  
+- Currently support for ~~iOS~~ and Android.  
 - Support ~~video~~ and audio communication.
 - You can use it to build an iOS/Android app that can communicate with SIP server.
 - Android version is based on [pjsip-android-builder](https://github.com/VoiSmart/pjsip-android-builder) (minimal Android API verion is 21)
