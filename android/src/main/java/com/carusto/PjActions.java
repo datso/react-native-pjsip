@@ -37,10 +37,10 @@ public class PjActions {
         intent.putExtra("host", configuration.getString("host"));
         intent.putExtra("realm", configuration.getString("realm"));
 
-        if (intent.hasExtra("port")) {
+        if (configuration.hasKey("port")) {
             intent.putExtra("port", configuration.getInt("port"));
         }
-        if (intent.hasExtra("transport")) {
+        if (configuration.hasKey("transport")) {
             intent.putExtra("transport", configuration.getString("transport"));
         }
 
