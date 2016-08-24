@@ -139,7 +139,7 @@ export default class Endpoint extends EventEmitter {
          * @event Endpoint#call_changed
          * @property {Call} call
          */
-        this.emit("call_received", new Call(data));
+        this.emit("call_changed", new Call(data));
     }
 
     /**
@@ -154,7 +154,7 @@ export default class Endpoint extends EventEmitter {
          * @event Endpoint#call_terminated
          * @property {Call} call
          */
-        this.emit("call_received", new Call(data));
+        this.emit("call_terminated", new Call(data));
     }
 
     // setUaConfig(UaConfig value)
