@@ -304,7 +304,7 @@ public class PjSipService extends Service {
 
             // Create account
             AccountConfig cfg = new AccountConfig();
-            cfg.setIdUri("sip:"+ username + "@" + realm);
+            cfg.setIdUri("sip:"+ username + "@" + host);
             cfg.getRegConfig().setRegistrarUri("sip:" + uri);
             AuthCredInfo cred = new AuthCredInfo("Digest", realm, username, 0, password);
             cfg.getSipConfig().getAuthCreds().add(cred);
