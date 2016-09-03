@@ -15,8 +15,6 @@ public class PjSipModule extends ReactContextBaseJavaModule {
     public PjSipModule(ReactApplicationContext context) {
         super(context);
 
-        Log.d(TAG, "PjSipModule init");
-
         // Module could be started several times, but we have to register receiver only once.
         if (receiver == null) {
             receiver = new PjSipBroadcastReceiver(context);
@@ -33,8 +31,6 @@ public class PjSipModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void resume() throws ClassNotFoundException {
-        Log.d(TAG, "Start intent");
-
         Intent intent = new Intent(getReactApplicationContext(), Class.forName("com.carustoconnect.MainActivity"));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -43,8 +39,6 @@ public class PjSipModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void start(Callback callback) {
-        Log.d(TAG, "Start intent");
-
         Intent intent = new Intent(getReactApplicationContext(), PjSipService.class);
         intent.setAction(PjActions.ACTION_START);
         intent.putExtra("callback_id", receiver.register(callback));
@@ -54,8 +48,6 @@ public class PjSipModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void createAccount(ReadableMap configuration, Callback callback) {
-        Log.d(TAG, "Start intent");
-
         int id = receiver.register(callback);
         Intent intent = PjActions.createAccountCreateIntent(id, configuration, getReactApplicationContext());
         getReactApplicationContext().startService(intent);

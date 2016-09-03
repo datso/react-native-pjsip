@@ -15,11 +15,28 @@ public class PjSipAccount extends Account {
 
     private PjSipService service;
 
+    private String username;
+
+    private String password;
+
+    private String host;
+
+    private String port;
+
+    private String realm;
+
     private int transportId;
 
-    public PjSipAccount(PjSipService service, int transportId) {
+    public PjSipAccount(PjSipService service, int transportId,
+                        String username, String password, String host, String port, String realm) {
         this.service = service;
         this.transportId = transportId;
+
+        this.username = username;
+        this.password = password;
+        this.host = host;
+        this.port = port;
+        this.realm = realm;
     }
 
     public PjSipService getService() {
@@ -28,6 +45,22 @@ public class PjSipAccount extends Account {
 
     public int getTransportId() {
         return transportId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public String getRealm() {
+        return realm;
     }
 
     @Override
@@ -100,6 +133,11 @@ public class PjSipAccount extends Account {
 
             json.put("id", getId());
             json.put("uri", getInfo().getUri());
+            json.put("username", username);
+            json.put("password", password);
+            json.put("host", host);
+            json.put("port", port);
+            json.put("realm", realm);
             json.put("registration", registration);
 
             return json;

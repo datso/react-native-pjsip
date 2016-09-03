@@ -313,8 +313,7 @@ public class PjSipService extends Service {
             cfg.getRegConfig().setRegisterOnAdd(true);
             cfg.getVideoConfig().setAutoTransmitOutgoing(true);
 
-            // TODO: Pass username, password, host, realm into Account object for further retrieval
-            PjSipAccount account = new PjSipAccount(this, transportId);
+            PjSipAccount account = new PjSipAccount(this, transportId, username, password, host, port, realm);
             account.create(cfg);
 
             mTrash.add(cfg);

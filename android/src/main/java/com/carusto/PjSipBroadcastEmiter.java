@@ -86,6 +86,9 @@ public class PjSipBroadcastEmiter {
     }
 
     public void fireCallCreated(Intent original, PjSipCall call) {
+
+        // TODO: Remove this event, because makeCall function already returns call info.
+
         Intent intent = new Intent();
         intent.setAction(PjActions.EVENT_CALL_CREATED);
         intent.putExtra("callback_id", original.getIntExtra("callback_id", -1));
