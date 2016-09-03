@@ -1,0 +1,6 @@
+./armeabi-v7a/libopenh264.so filter=lfs diff=lfs merge=lfs -text
+./armeabi-v7a/libpjsua2.so filter=lfs diff=lfs merge=lfs -text
+./armeabi-v7a/libyuv.so filter=lfs diff=lfs merge=lfs -text
+./x86/libopenh264.so filter=lfs diff=lfs merge=lfs -text
+./x86/libpjsua2.so filter=lfs diff=lfs merge=lfs -text
+./x86/libyuv.so filter=lfs diff=lfs merge=lfs -text
