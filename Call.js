@@ -53,6 +53,10 @@ export default class Call extends Record({
         return this.get('accountId');
     }
 
+    isHeld() {
+        // TODO
+    }
+
     /**
      * Returns a duration of call in seconds.
      *

@@ -1,8 +1,8 @@
 'use strict';
 
-import Account from './Account';
-import Call from './Account';
-import Endpoint from './Endpoint';
+import Account from './src/Account';
+import Call from './src/Call';
+import Endpoint from './src/Endpoint';
 
 module.exports = {
     Account,

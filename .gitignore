@@ -1,2 +1,4 @@
+.idea
+android/build
 .DS_Store
 node_modules

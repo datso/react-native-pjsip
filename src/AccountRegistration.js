@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Account registration information. Application can query the registration info
  * by calling account.getRegistration().
