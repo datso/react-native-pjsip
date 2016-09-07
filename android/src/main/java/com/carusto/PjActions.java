@@ -2,7 +2,10 @@ package com.carusto;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
+
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
 public class PjActions {
 
@@ -32,16 +35,19 @@ public class PjActions {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.ACTION_CREATE_ACCOUNT);
         intent.putExtra("callback_id", callbackId);
-        intent.putExtra("username", configuration.getString("username"));
-        intent.putExtra("password", configuration.getString("password"));
-        intent.putExtra("host", configuration.getString("host"));
-        intent.putExtra("realm", configuration.getString("realm"));
 
-        if (configuration.hasKey("port")) {
-            intent.putExtra("port", configuration.getInt("port"));
-        }
-        if (configuration.hasKey("transport")) {
-            intent.putExtra("transport", configuration.getString("transport"));
+        ReadableMapKeySetIterator it = configuration.keySetIterator();
+        while (it.hasNextKey()) {
+            String key = it.nextKey();
+
+            switch (configuration.getType(key)) {
+                case String:
+                    intent.putExtra(key, configuration.getString(key));
+                    break;
+                case Number:
+                    intent.putExtra(key, configuration.getInt(key));
+                    break;
+            }
         }
 
         return intent;

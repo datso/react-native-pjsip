@@ -64,13 +64,23 @@ export default class Endpoint extends EventEmitter {
      * SIP registration session with the SIP registrar server. This SIP registration session will be maintained
      * internally by the library, and application doesn't need to do anything to maintain the registration session.
      *
+     * An example configuration:
+     * {
+     *   name: "John Doe",
+     *   username: "100",
+     *   domain: "pbx.com",
+     *   password: "XXXXXX",
+     *
+     *   proxy: "192.168.100.1:5060", // default disabled.
+     *   transport: "TCP", // default TCP
+     *   regServer: "pbx.com", // default taken from domain
+     *   regTimeout: 300, // default 300
+     * }
+     *
      * @param {Object} configuration
      * @returns {Promise}
      */
     createAccount(configuration) {
-
-        // TODO: Add validation for configuration properties to avoid crash.
-
         return new Promise(function(resolve, reject) {
             NativeModules.PjSipModule.createAccount(configuration, (successful, data) => {
 

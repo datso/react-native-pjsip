@@ -26,6 +26,9 @@
 
 RCT_EXPORT_METHOD(start: (RCTResponseSenderBlock) callback) {
     NSLog(@"start thread%@", [NSThread currentThread]);
+
+    [PjSipEndpoint instance].bridge = self.bridge;
+
     NSDictionary *result = [[PjSipEndpoint instance] start];
     callback(@[@TRUE, result]);
 }
@@ -33,19 +36,22 @@ RCT_EXPORT_METHOD(start: (RCTResponseSenderBlock) callback) {
 // Account methods
 
 RCT_EXPORT_METHOD(createAccount: (NSDictionary *) config callback:(RCTResponseSenderBlock) callback) {
-    NSLog(@"createAccount thread%@", [NSThread currentThread]);
-
     PjSipAccount *account = [[PjSipEndpoint instance] createAccount:config];
     callback(@[@TRUE, [account toJsonDictionary]]);
 }
 
 RCT_EXPORT_METHOD(deleteAccount: (int) accountId callback:(RCTResponseSenderBlock) callback) {
-    callback(@[@FALSE, @"Not implemented"]);
+    [[PjSipEndpoint instance] deleteAccount:accountId];
+    callback(@[@TRUE]);
 }
 
 // -----
 
 RCT_EXPORT_METHOD(makeCall: (int) accountId destination: (NSString *) destination callback:(RCTResponseSenderBlock) callback) {
+    PjSipAccount *account = [[PjSipEndpoint instance] findAccount:accountId];
+
+    // account
+    
     callback(@[@FALSE, @"Not implemented"]);
 }
 

@@ -159,7 +159,9 @@ public class PjSipService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        mWorkerThread.quitSafely();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            mWorkerThread.quitSafely();
+        }
         super.onDestroy();
     }
 
@@ -272,13 +274,18 @@ public class PjSipService extends Service {
      */
     private void handleAccountCreate(Intent intent) {
         try {
+            String name = intent.getStringExtra("name");
             String username = intent.getStringExtra("username");
+            String domain = intent.getStringExtra("domain");
             String password = intent.getStringExtra("password");
-            String host = intent.getStringExtra("host");
-            String realm = intent.getStringExtra("realm");
-            String port = intent.getStringExtra("port");
+            String proxy = intent.getStringExtra("proxy");
             String transport = intent.getStringExtra("transport");
-            String uri = port != null && !port.isEmpty() ? host + ":" + port : host;
+            String regServer = intent.getStringExtra("regServer");
+            Integer regTimeout = null;
+
+            if (intent.hasExtra("regTimeout")) {
+                regTimeout = intent.getIntExtra("regTimeout", -1);
+            }
 
             // Create transport
             TransportConfig transportConfig = new TransportConfig();
@@ -303,17 +310,34 @@ public class PjSipService extends Service {
             int transportId = mEndpoint.transportCreate(transportType, transportConfig);
 
             // Create account
+
+            AuthCredInfo cred = new AuthCredInfo(
+                "Digest",
+                regServer != null && regServer.length() > 0 ? regServer : "*" ,
+                username,
+                0,
+                password
+            );
+
+            String idUri = name + " <sip:"+ username +"@"+ domain +">";
+            String regUri = "sip:"+ domain;
+
             AccountConfig cfg = new AccountConfig();
-            cfg.setIdUri("sip:"+ username + "@" + realm);
-            cfg.getRegConfig().setRegistrarUri("sip:" + uri);
-            AuthCredInfo cred = new AuthCredInfo("Digest", realm, username, 0, password);
+            cfg.setIdUri(idUri);
+            cfg.getRegConfig().setRegistrarUri(regUri);
             cfg.getSipConfig().getAuthCreds().add(cred);
             cfg.getSipConfig().setTransportId(transportId);
             cfg.getMediaConfig().getTransportConfig().setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
             cfg.getRegConfig().setRegisterOnAdd(true);
             cfg.getVideoConfig().setAutoTransmitOutgoing(true);
 
-            PjSipAccount account = new PjSipAccount(this, transportId, username, password, host, port, realm);
+            if (proxy != null && proxy.length() > 0) {
+                StringVector v = new StringVector();
+                v.add(proxy);
+                cfg.getSipConfig().setProxies(v);
+            }
+
+            PjSipAccount account = new PjSipAccount(this, transportId, name, username, domain, password, proxy, transport, regServer, regTimeout);
             account.create(cfg);
 
             mTrash.add(cfg);

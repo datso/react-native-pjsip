@@ -6,14 +6,17 @@ import AccountRegistration from './AccountRegistration'
  * This describes account configuration and registration status
  */
 export default class Account {
-    constructor({id, uri, username, password, host, port, realm, registration}) {
+    constructor({id, uri, name, username, domain, password, proxy, transport, regServer, regTimeout, registration}) {
         this._id = id;
         this._uri = uri;
+        this._name = name;
         this._username = username;
+        this._domain = domain;
         this._password = password;
-        this._host = host;
-        this._port = port;
-        this._realm = realm;
+        this._proxy = proxy;
+        this._transport = transport;
+        this._regServer = regServer;
+        this._regTimeout = regTimeout;
         this._registration = new AccountRegistration(registration);
     }
 
@@ -34,11 +37,27 @@ export default class Account {
     }
 
     /**
+     * Full name specified in Endpoint.createAccount().
+     * @returns {String}
+     */
+    getName() {
+        return this._name;
+    }
+
+    /**
      * Username specified in Endpoint.createAccount().
      * @returns {String}
      */
     getUsername() {
         return this._username;
+    }
+
+    /**
+     * Domain specified in Endpoint.createAccount().
+     * @returns {int|null}
+     */
+    getDomain() {
+        return this._domain;
     }
 
     /**
@@ -50,27 +69,35 @@ export default class Account {
     }
 
     /**
-     * Host specified in Endpoint.createAccount().
-     * @returns {int|null}
+     * Proxy specified in Endpoint.createAccount().
+     * @returns {String}
      */
-    getHost() {
-        return this._host;
+    getProxy() {
+        return this._proxy;
     }
 
     /**
-     * Port specified in Endpoint.createAccount().
-     * @returns {int|null}
+     * Transport specified in Endpoint.createAccount().
+     * @returns {String}
      */
-    getPort() {
-        return this._port;
+    getTransport() {
+        return this._transport;
     }
 
     /**
      * Port specified in Endpoint.createAccount().
      * @returns {String}
      */
-    getRealm() {
-        return this._realm;
+    getRegServer() {
+        return this._regServer;
+    }
+
+    /**
+     * Port specified in Endpoint.createAccount().
+     * @returns {String}
+     */
+    getRegTimeout() {
+        return this._regTimeout;
     }
 
     /**

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6AC71896C76E2C6D27DA49A2 /* PjSipCallbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC710A73861346FCA09ECEC /* PjSipCallbacks.m */; };
 		6AC71DA479E221BF9CDA0BF7 /* PjSipUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC71AB880F59E8403D658FF /* PjSipUtil.m */; };
 		DDFF87721D79D7410096A8BE /* PjSipAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF876B1D79D7410096A8BE /* PjSipAccount.m */; settings = {ASSET_TAGS = (); }; };
 		DDFF87731D79D7410096A8BE /* PjSipCall.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF876D1D79D7410096A8BE /* PjSipCall.m */; settings = {ASSET_TAGS = (); }; };
@@ -27,8 +28,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6AC710A73861346FCA09ECEC /* PjSipCallbacks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipCallbacks.m; sourceTree = "<group>"; };
 		6AC713126F83787B5095F752 /* PjSipUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PjSipUtil.h; sourceTree = "<group>"; };
 		6AC71AB880F59E8403D658FF /* PjSipUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipUtil.m; sourceTree = "<group>"; };
+		6AC71E98C471B34EE027142B /* PjSipCallbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PjSipCallbacks.h; sourceTree = "<group>"; };
 		DDFF87521D79D6F50096A8BE /* libRTCPjSip.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRTCPjSip.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDFF876A1D79D7410096A8BE /* PjSipAccount.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PjSipAccount.h; sourceTree = "<group>"; };
 		DDFF876B1D79D7410096A8BE /* PjSipAccount.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipAccount.m; sourceTree = "<group>"; };
@@ -402,6 +405,8 @@
 				DDFF87711D79D7410096A8BE /* PjSipModule.m */,
 				6AC71AB880F59E8403D658FF /* PjSipUtil.m */,
 				6AC713126F83787B5095F752 /* PjSipUtil.h */,
+				6AC710A73861346FCA09ECEC /* PjSipCallbacks.m */,
+				6AC71E98C471B34EE027142B /* PjSipCallbacks.h */,
 			);
 			path = RTCPjSip;
 			sourceTree = "<group>";
@@ -916,6 +921,7 @@
 				DDFF87751D79D7410096A8BE /* PjSipModule.m in Sources */,
 				DDFF87731D79D7410096A8BE /* PjSipCall.m in Sources */,
 				6AC71DA479E221BF9CDA0BF7 /* PjSipUtil.m in Sources */,
+				6AC71896C76E2C6D27DA49A2 /* PjSipCallbacks.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

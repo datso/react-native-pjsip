@@ -1,9 +1,11 @@
+#import <RCTBridge.h>
 #import "PjSipEndpoint.h"
+#import "PjSipCallbacks.h"
 #import "pjsua.h"
 
 @implementation PjSipEndpoint
 
-+ (instancetype)instance {
++ (instancetype) instance {
     static PjSipEndpoint *sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -13,7 +15,7 @@
     return sharedInstance;
 }
 
-- (instancetype)init {
+- (instancetype) init {
     self = [super init];
     self.accounts = [[NSMutableDictionary alloc] initWithCapacity:12];
 
@@ -30,6 +32,30 @@
         // Init the config structure
         pjsua_config cfg;
         pjsua_config_default(&cfg);
+
+        // cfg.cb.on_reg_state = [self performSelector:@selector(onRegState:) withObject: o];
+        cfg.cb.on_reg_state = &PjSipOnRegState;
+
+//        cfg.cb.on_call_state = &on_call_state;
+//        cfg.cfg.cb.on_call_media_state = &on_call_media_state;
+//        cfg.cfg.cb.on_incoming_call = &on_incoming_call;
+//        cfg.cfg.cb.on_call_tsx_state = &on_call_tsx_state;
+//        cfg.cfg.cb.on_dtmf_digit = &call_on_dtmf_callback;
+//        cfg.cfg.cb.on_call_redirected = &call_on_redirected;
+//        cfg.cfg.cb.on_reg_state = &on_reg_state;
+//        cfg.cfg.cb.on_incoming_subscribe = &on_incoming_subscribe;
+//        cfg.cfg.cb.on_buddy_state = &on_buddy_state;
+//        cfg.cfg.cb.on_buddy_evsub_state = &on_buddy_evsub_state;
+//        cfg.cfg.cb.on_pager = &on_pager;
+//        cfg.cfg.cb.on_typing = &on_typing;
+//        cfg.cfg.cb.on_call_transfer_status = &on_call_transfer_status;
+//        cfg.cfg.cb.on_call_replaced = &on_call_replaced;
+//        cfg.cfg.cb.on_nat_detect = &on_nat_detect;
+//        cfg.cfg.cb.on_mwi_info = &on_mwi_info;
+//        cfg.cfg.cb.on_transport_state = &on_transport_state;
+//        cfg.cfg.cb.on_ice_transport_error = &on_ice_transport_error;
+//        cfg.cfg.cb.on_snd_dev_operation = &on_snd_dev_operation;
+//        cfg.cfg.cb.on_call_media_event = &on_call_media_event;
 
         // Init the logging config structure
         pjsua_logging_config log_cfg;
@@ -74,7 +100,7 @@
     return self;
 }
 
-- (NSDictionary *)start {
+- (NSDictionary *) start {
     NSMutableArray *accountsResult = [[NSMutableArray alloc] initWithCapacity:[@([self.accounts count]) unsignedIntegerValue]];
     NSMutableArray *callsResult = [[NSMutableArray alloc] init];
 
@@ -90,10 +116,19 @@
     PjSipAccount *account = [PjSipAccount itemConfig:config];
     self.accounts[@(account.id)] = account;
 
-    NSLog(@"create account and put it inside account dictionary (%@)", self.accounts);
-
     return account;
 }
 
+- (void)deleteAccount:(int) accountId {
+    if (self.accounts[@(accountId)] == nil) {
+        [NSException raise:@"Failed to delete account" format:@"Account with %@ id not found", @(accountId)];
+    }
+
+    [self.accounts removeObjectForKey:@(accountId)];
+}
+
+- (PjSipAccount *) findAccount: (int) accountId {
+    return self.accounts[@(accountId)];
+}
 
 @end

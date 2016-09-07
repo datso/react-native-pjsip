@@ -1,6 +1,9 @@
+#import "RCTEventDispatcher.h"
+#import "RCTBridge.h"
+#import "PjSipEndpoint.h"
 #import "PjSipAccount.h"
-#import "pjsua.h"
 #import "PjSipUtil.h"
+#import "pjsua.h"
 
 @implementation PjSipAccount
 
@@ -15,14 +18,17 @@
     // TODO: Fire call_received
 
     if (self) {
+        self.name = config[@"name"];
         self.username = config[@"username"];
+        self.domain = config[@"domain"];
         self.password = config[@"password"];
-        self.host = config[@"host"];
-        // self.port = config[@"port"]; // TODO: Support port in URI
-        self.realm = config[@"realm"];
+        self.proxy = config[@"proxy"];
+        self.transport = config[@"transport"];
+        self.regServer = config[@"regServer"];
+        self.regTimeout = config[@"regTimeout"];
 
-        NSString *cfgId = [NSString stringWithFormat:@"sip:%@@%@", self.username, self.realm];
-        NSString *cfgURI = [NSString stringWithFormat:@"sip:%@", self.host];
+        NSString *cfgId = [NSString stringWithFormat:@"%@ <sip:%@@%@>", self.name, self.username, self.domain];
+        NSString *cfgURI = [NSString stringWithFormat:@"sip:%@", self.domain];
 
         pjsua_acc_config cfg;
         pjsua_acc_config_default(&cfg);
@@ -31,8 +37,8 @@
         cfg.reg_uri = pj_str((char *) [cfgURI UTF8String]);
 
         pjsip_cred_info cred;
-        cred.scheme = pj_str((char *) [@"digest" UTF8String]);
-        cred.realm = pj_str((char *) [self.realm UTF8String]);
+        cred.scheme = pj_str("digest");
+        cred.realm = [self.regServer length] > 0 ? pj_str((char *) [self.regServer UTF8String]) : pj_str("*");
         cred.username = pj_str((char *) [self.username UTF8String]);
         cred.data = pj_str((char *) [self.password UTF8String]);
         cred.data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
@@ -40,15 +46,27 @@
         cfg.cred_count = 1;
         cfg.cred_info[0] = cred;
 
+        if ([self.proxy length] > 0) {
+            cfg.proxy_cnt = 1;
+            cfg.proxy[0] = pj_str((char *) [[NSString stringWithFormat:@"sip:%@", self.proxy] UTF8String]);
+        }
+
+        if (self.regTimeout != nil) {
+            cfg.reg_timeout = (unsigned) [self.regTimeout intValue];
+        } else {
+            cfg.reg_timeout = (unsigned) 600;
+        }
+
+        // TODO: Create transport depending on configuration
         // cfg.transport_id = [self initTransport]; // NSString *transport = config[@"transport"];
-        NSLog(@"cfg.transport_id %d", cfg.transport_id);
+        // NSLog(@"cfg.transport_id %d", cfg.transport_id);
 
         pj_status_t status;
         pjsua_acc_id account_id;
 
         status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id);
         if (status != PJ_SUCCESS) {
-            NSLog(@"Error adding account");
+            [NSException raise:@"Failed to create account" format:@"See device logs for more details."];
         }
 
         self.id = account_id;
@@ -72,6 +90,22 @@
     return id;
 }
 
+- (void) dealloc {
+    NSLog(@"Called dealloc");
+    pjsua_acc_set_registration(self.id, PJ_FALSE);
+    pjsua_acc_del(self.id);
+}
+
+
+#pragma mark EventHandlers
+
+- (void)onRegistrationChanged {
+    [[[PjSipEndpoint instance].bridge eventDispatcher] sendAppEventWithName:@"pjSipRegistrationChanged" body:[self toJsonDictionary]];
+}
+
+#pragma mark -
+
+
 - (NSDictionary *)toJsonDictionary {
     pjsua_acc_info info;
     pjsua_acc_get_info(self.id, &info);
@@ -90,14 +124,16 @@
     return @{
         @"id": @(self.id),
         @"uri": [PjSipUtil toString:&info.acc_uri],
+        @"name": self.name,
         @"username": self.username,
+        @"domain": self.domain,
         @"password": self.password,
-        @"host": self.host,
-        @"port": @(self.port),
-        @"realm": self.realm,
+        @"proxy": self.proxy,
+        @"transport": self.transport,
+        @"regServer": self.regServer,
+        @"regTimeout": self.regTimeout,
         @"registration": registration,
     };
 }
-
 
 @end
