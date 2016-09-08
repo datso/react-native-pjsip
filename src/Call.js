@@ -12,6 +12,23 @@ export default class Call {
             connectDuration, totalDuration,
             remoteOfferer, remoteAudioCount, remoteVideoCount, audioCount, videoCount
         }) {
+        let remoteNumber = null;
+        let remoteName = null;
+
+        if (remoteUri) {
+            let match = remoteUri.match(/"([^"]+)" <sip:([^@]+)@/);
+
+            if (match) {
+                remoteName = match[1];
+                remoteNumber = match[2];
+            } else {
+                match = remoteUri.match(/sip:([^@]+)@/);
+
+                if (match) {
+                    remoteNumber = match[1];
+                }
+            }
+        }
 
         this._id = id;
         this._callId = callId;
@@ -27,6 +44,8 @@ export default class Call {
         this._remoteOfferer = remoteOfferer;
         this._remoteAudioCount = remoteAudioCount;
         this._remoteVideoCount = remoteVideoCount;
+        this._remoteNumber = remoteNumber;
+        this._remoteName = remoteName;
         this._audioCount = audioCount;
         this._videoCount = videoCount;
 
@@ -66,7 +85,7 @@ export default class Call {
      * @public
      * @returns {int}
      */
-    getDuration() {
+    getTotalDuration() {
         let time = Math.round(new Date().getTime() / 1000);
         let offset = time - this._constructionTime;
 
@@ -79,8 +98,14 @@ export default class Call {
      * @returns {int}
      */
     getConnectDuration() {
-        // TODO: Verify whether function correctly works
-        return this._connectDuration;
+        if (this._connectDuration < 0 || this._state == "PJSIP_INV_STATE_DISCONNECTED") {
+            return this._connectDuration;
+        }
+
+        let time = Math.round(new Date().getTime() / 1000);
+        let offset = time - this._constructionTime;
+
+        return this._connectDuration + offset;
     }
 
     /**
@@ -89,22 +114,18 @@ export default class Call {
      * @public
      * @returns {string}
      */
-    getFormattedDuration() {
-        var seconds = this.getDuration();
-        if (isNaN(seconds)) {
-            return "00:00";
-        }
-        var hours = parseInt( seconds / 3600 ) % 24;
-        var minutes = parseInt( seconds / 60 ) % 60;
-        var result = "";
-        seconds = seconds % 60;
+    getFormattedTotalDuration() {
+        return this._formatTime(this.getDuration());
+    };
 
-        if (hours > 0) {
-            result += (hours < 10 ? "0" + hours : hours) + ":";
-        }
-
-        result += (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
-        return result;
+    /**
+     * Call duration in "MM:SS" format.
+     *
+     * @public
+     * @returns {string}
+     */
+    getFormattedConnectDuration() {
+        return this._formatTime(this.getConnectDuration());
     };
 
     /**
@@ -141,6 +162,22 @@ export default class Call {
      */
     getRemoteUri() {
         return this._remoteUri;
+    }
+
+    /**
+     * Callee name. Could be null if no name specified in URI.
+     * @returns {String}
+     */
+    getRemoteName() {
+        return this._remoteName;
+    }
+
+    /**
+     * Callee number
+     * @returns {String}
+     */
+    getRemoteNumber() {
+        return this._remoteNumber;
     }
 
     /**
@@ -218,4 +255,26 @@ export default class Call {
         return this._videoCount;
     }
 
+    /**
+     * Format seconds to "MM:SS" format.
+     *
+     * @public
+     * @returns {string}
+     */
+    _formatTime(seconds) {
+        if (isNaN(seconds) || seconds < 0) {
+            return "00:00";
+        }
+        var hours = parseInt( seconds / 3600 ) % 24;
+        var minutes = parseInt( seconds / 60 ) % 60;
+        var result = "";
+        seconds = seconds % 60;
+
+        if (hours > 0) {
+            result += (hours < 10 ? "0" + hours : hours) + ":";
+        }
+
+        result += (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
+        return result;
+    };
 }

@@ -124,7 +124,20 @@ export default class Endpoint extends EventEmitter {
      * @param destination {String} Destination SIP URI.
      */
     makeCall(account, destination) {
-        // TODO: Normalize destination URI should be "sip:%s@%s" (number, host);
+        if (!destination.startsWith("sip:")) {
+            let realm = account.getRegServer();
+
+            if (!realm) {
+                realm = account.getDomain();
+                let s = realm.indexOf(":");
+
+                if (s > 0) {
+                    realm = realm.substr(0, s + 1);
+                }
+            }
+
+            destination = "sip:" + destination + "@" + realm;
+        }
 
         return new Promise(function(resolve, reject) {
             NativeModules.PjSipModule.makeCall(account.getId(), destination, (successful, data) => {
