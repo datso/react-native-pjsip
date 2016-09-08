@@ -205,6 +205,13 @@ public class PjSipCall extends Call {
         JSONObject json = new JSONObject();
 
         try {
+            int connectDuration = -1;
+
+            if (getInfo().getState() == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED ||
+                getInfo().getState() == pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
+                connectDuration = getInfo().getConnectDuration().getSec();
+            }
+
             json.put("id", getId());
             json.put("callId", getInfo().getCallIdString());
             json.put("accountId", account.getId());
@@ -218,7 +225,7 @@ public class PjSipCall extends Call {
             // -----
             json.put("state", getInfo().getState());
             json.put("stateText", getInfo().getStateText());
-            json.put("connectDuration", getInfo().getConnectDuration().getSec());
+            json.put("connectDuration", connectDuration);
             json.put("totalDuration", getInfo().getTotalDuration().getSec());
 
             /**

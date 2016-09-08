@@ -376,6 +376,11 @@ public class PjSipService extends Service {
         }
     }
 
+    public void handleCallReceived(PjSipCall call) {
+        mCalls.add(call);
+        mEmitter.fireCallReceivedEvent(call);
+    }
+
     private void handleCallMake(Intent intent) {
         try {
             Log.d(TAG, "handleCallMake start");
@@ -423,7 +428,9 @@ public class PjSipService extends Service {
 
             // -----
             PjSipCall call = findCall(callId);
-            call.answer(new CallOpParam(true));
+            CallOpParam prm = new CallOpParam();
+            prm.setStatusCode(pjsip_status_code.PJSIP_SC_OK);
+            call.answer(prm);
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {

@@ -103,14 +103,8 @@ public class PjSipAccount extends Account {
 
     @Override
     public void onIncomingCall(OnIncomingCallParam prm) {
-        Log.d(TAG, "onIncomingCall");
-        Log.d(TAG, "onIncomingCall getWholeMsg: " + prm.getRdata().getWholeMsg());
-        Log.d(TAG, "onIncomingCall getInfo: " + prm.getRdata().getInfo());
-        Log.d(TAG, "onIncomingCall getSrcAddress: " + prm.getRdata().getSrcAddress());
-
         PjSipCall call = new PjSipCall(this, prm.getCallId());
-
-        service.getEmitter().fireCallReceivedEvent(call);
+        service.handleCallReceived(call);
     }
 
     @Override
@@ -162,7 +156,7 @@ public class PjSipAccount extends Account {
             json.put("proxy", proxy);
             json.put("transport", transport);
             json.put("regServer", regServer);
-            json.put("regTimeout", regTimeout);
+            json.put("regTimeout", regTimeout > 0 ? String.valueOf(regTimeout) : "");
             json.put("registration", registration);
 
             return json;
