@@ -140,6 +140,13 @@ public class    PjSipModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void dtmfCall(int callId, String digits, Callback callback) {
+        int callbackId = receiver.register(callback);
+        Intent intent = PjActions.createDtmfCallIntent(callbackId, callId, digits, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
     public void startForeground(ReadableMap configuration, Callback callback) {
         int id = receiver.register(callback);
         Intent intent = PjActions.createStartForegroundIntent(id, configuration, getReactApplicationContext());
