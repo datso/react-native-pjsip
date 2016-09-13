@@ -668,7 +668,7 @@ public class PjSipService extends Service {
 
         Resources resources = getApplicationContext().getResources();
 
-        if (smallIcon == null && smallIcon.length() == 0) {
+        if (smallIcon == null) {
             smallIcon = "ic_launcher";
         }
         int smallIconId = resources.getIdentifier(smallIcon, "drawable", getApplicationContext().getPackageName());
