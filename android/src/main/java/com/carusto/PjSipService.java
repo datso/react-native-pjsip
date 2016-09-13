@@ -10,7 +10,6 @@ import android.os.*;
 import android.os.Process;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
-import com.carusto.ReactNativePjSip.R;
 import org.pjsip.pjsua2.*;
 
 import java.util.*;
@@ -394,6 +393,21 @@ public class PjSipService extends Service {
     }
 
     public void handleCallReceived(PjSipCall call) {
+        // Automatically start application when incoming call received.
+        try {
+            String ns = getApplicationContext().getPackageName();
+            String cls = ns + ".MainActivity";
+
+            Intent intent = new Intent(getApplicationContext(), Class.forName(cls));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+            startActivity(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to open application on received call", e);
+        }
+
+        // -----
         mCalls.add(call);
         mEmitter.fireCallReceivedEvent(call);
     }
