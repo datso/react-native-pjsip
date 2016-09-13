@@ -19,7 +19,12 @@ public class PjActions {
     public static final String ACTION_ANSWER_CALL = "call_answer";
     public static final String ACTION_HOLD_CALL = "call_hold";
     public static final String ACTION_UNHOLD_CALL = "call_unhold";
+    public static final String ACTION_MUTE_CALL = "call_mute";
+    public static final String ACTION_UNMUTE_CALL = "call_unmute";
+    public static final String ACTION_USE_SPEAKER_CALL = "call_use_speaker";
+    public static final String ACTION_USE_EARPIECE_CALL = "call_use_earpiece";
     public static final String ACTION_XFER_CALL = "call_xfer";
+    public static final String ACTION_REDIRECT_CALL = "call_redirect";
     public static final String ACTION_DTMF_CALL = "call_dtmf";
 
     public static final String EVENT_STARTED = "com.carusto.account.started";
@@ -108,9 +113,55 @@ public class PjActions {
         return intent;
     }
 
+    public static Intent createMuteCallIntent(int callbackId, int callId, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_MUTE_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra("call_id", callId);
+
+        return intent;
+    }
+
+    public static Intent createUnMuteCallIntent(int callbackId, int callId, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_UNMUTE_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra("call_id", callId);
+
+        return intent;
+    }
+
+    public static Intent createUseSpeakerCallIntent(int callbackId, int callId, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_USE_SPEAKER_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra("call_id", callId);
+
+        return intent;
+    }
+
+    public static Intent createUseEarpieceCallIntent(int callbackId, int callId, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_USE_EARPIECE_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra("call_id", callId);
+
+        return intent;
+    }
+
     public static Intent createXFerCallIntent(int callbackId, int callId, String destination, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.ACTION_XFER_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra("call_id", callId);
+        intent.putExtra("destination", destination);
+
+        return intent;
+    }
+
+    public static Intent createRedirectCallIntent(int callbackId, int callId, String destination, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_REDIRECT_CALL);
         intent.putExtra("callback_id", callbackId);
         intent.putExtra("call_id", callId);
         intent.putExtra("destination", destination);

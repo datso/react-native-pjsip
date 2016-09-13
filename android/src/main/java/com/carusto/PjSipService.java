@@ -253,11 +253,26 @@ public class PjSipService extends Service {
             case PjActions.ACTION_UNHOLD_CALL:
                 handleCallReleaseFromHold(intent);
                 break;
+            case PjActions.ACTION_MUTE_CALL:
+                handleCallMute(intent);
+                break;
+            case PjActions.ACTION_UNMUTE_CALL:
+                handleCallUnMute(intent);
+                break;
+            case PjActions.ACTION_USE_SPEAKER_CALL:
+                handleCallUseSpeaker(intent);
+                break;
+            case PjActions.ACTION_USE_EARPIECE_CALL:
+                handleCallUseEarpiece(intent);
+                break;
             case PjActions.ACTION_XFER_CALL:
-                // TODO: handleCallXFer(intent);
+                handleCallXFer(intent);
+                break;
+            case PjActions.ACTION_REDIRECT_CALL:
+                handleCallRedirect(intent);
                 break;
             case PjActions.ACTION_DTMF_CALL:
-                // TODO: handleCallDtmf(intent);
+                handleCallDtmf(intent);
                 break;
         }
     }
@@ -401,8 +416,6 @@ public class PjSipService extends Service {
 
             mCalls.add(call);
             mEmitter.fireCallCreated(intent, call);
-
-            Log.d(TAG, "handleCallMake end");
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
@@ -444,7 +457,7 @@ public class PjSipService extends Service {
 
             // -----
             PjSipCall call = findCall(callId);
-            call.putOnHold();
+            call.hold();
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {
@@ -458,7 +471,110 @@ public class PjSipService extends Service {
 
             // -----
             PjSipCall call = findCall(callId);
-            call.releaseFromHold();
+            call.unhold();
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleCallMute(Intent intent) {
+        try {
+            int callId = intent.getIntExtra("call_id", -1);
+
+            // -----
+            PjSipCall call = findCall(callId);
+            call.mute();
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleCallUnMute(Intent intent) {
+        try {
+            int callId = intent.getIntExtra("call_id", -1);
+
+            // -----
+            PjSipCall call = findCall(callId);
+            call.unmute();
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    // TODO: When active calls ends, we should reset speaker.
+    private void handleCallUseSpeaker(Intent intent) {
+        try {
+            int callId = intent.getIntExtra("call_id", -1);
+
+            // -----
+            PjSipCall call = findCall(callId);
+            call.useSpeaker();
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    // TODO: Log each action for debug proposal
+    private void handleCallUseEarpiece(Intent intent) {
+        try {
+            int callId = intent.getIntExtra("call_id", -1);
+
+            // -----
+            PjSipCall call = findCall(callId);
+            call.useEarpiece();
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleCallXFer(Intent intent) {
+        try {
+            int callId = intent.getIntExtra("call_id", -1);
+            String destination = intent.getStringExtra("destination");
+
+            // -----
+            PjSipCall call = findCall(callId);
+            call.xfer(destination, new CallOpParam(true));
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleCallRedirect(Intent intent) {
+        try {
+            int callId = intent.getIntExtra("call_id", -1);
+            String destination = intent.getStringExtra("destination");
+
+            // -----
+            PjSipCall call = findCall(callId);
+            call.redirect(destination);
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleCallDtmf(Intent intent) {
+        try {
+            int callId = intent.getIntExtra("call_id", -1);
+            String digits = intent.getStringExtra("digits");
+
+            // -----
+            PjSipCall call = findCall(callId);
+            call.dialDtmf(digits);
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {

@@ -1,10 +1,12 @@
 package com.carusto;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.util.Log;
 import com.facebook.react.bridge.*;
 
-public class PjSipModule extends ReactContextBaseJavaModule {
+public class    PjSipModule extends ReactContextBaseJavaModule {
 
     private static String TAG = "PjSipModule";
 
@@ -96,9 +98,44 @@ public class PjSipModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void muteCall(int callId, Callback callback) {
+        int callbackId = receiver.register(callback);
+        Intent intent = PjActions.createMuteCallIntent(callbackId, callId, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
+    public void unMuteCall(int callId, Callback callback) {
+        int callbackId = receiver.register(callback);
+        Intent intent = PjActions.createUnMuteCallIntent(callbackId, callId, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
+    public void useSpeaker(int callId, Callback callback) {
+        int callbackId = receiver.register(callback);
+        Intent intent = PjActions.createUseSpeakerCallIntent(callbackId, callId, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
+    public void useEarpiece(int callId, Callback callback) {
+        int callbackId = receiver.register(callback);
+        Intent intent = PjActions.createUseEarpieceCallIntent(callbackId, callId, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
     public void xferCall(int callId, String destination, Callback callback) {
         int callbackId = receiver.register(callback);
         Intent intent = PjActions.createXFerCallIntent(callbackId, callId, destination, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
+    public void redirectCall(int callId, String destination, Callback callback) {
+        int callbackId = receiver.register(callback);
+        Intent intent = PjActions.createRedirectCallIntent(callbackId, callId, destination, getReactApplicationContext());
         getReactApplicationContext().startService(intent);
     }
 

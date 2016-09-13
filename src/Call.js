@@ -8,7 +8,7 @@ export default class Call {
     constructor({
             id, callId, accountId,
             localContact, localUri, remoteContact, remoteUri,
-            state, stateText,
+            state, stateText, held, muted, speaker,
             connectDuration, totalDuration,
             remoteOfferer, remoteAudioCount, remoteVideoCount, audioCount, videoCount
         }) {
@@ -39,6 +39,9 @@ export default class Call {
         this._remoteUri = remoteUri;
         this._state = state;
         this._stateText = stateText;
+        this._held = held;
+        this._muted = muted;
+        this._speaker = speaker;
         this._connectDuration = connectDuration;
         this._totalDuration = totalDuration;
         this._remoteOfferer = remoteOfferer;
@@ -207,11 +210,19 @@ export default class Call {
     }
 
     isHeld() {
-        // TODO
+        return this._held;
+    }
+
+    isMuted() {
+        return this._muted;
+    }
+
+    isSpeaker() {
+        return this._speaker;
     }
 
     isTerminated() {
-        // TODO
+        return this._state === 'PJSIP_INV_STATE_DISCONNECTED';
     }
 
     /**
