@@ -1,11 +1,16 @@
 package com.carusto;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.*;
 import android.os.Process;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import com.carusto.ReactNativePjSip.R;
 import org.pjsip.pjsua2.*;
 
 import java.util.*;
@@ -36,6 +41,8 @@ public class PjSipService extends Service {
         return mEmitter;
     }
 
+    protected static final int NOTIFICATION = 1;
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -44,6 +51,14 @@ public class PjSipService extends Service {
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
+
+        // TODO: Use PowerManager to lock while in call.
+        // TODO: Use WifiManager to lock while active account exists.
+        // TODO: Use TelephonyManager to check whether GSM call is available (we should put all calls on hold and don't allow to initiate outgoing calls when received GSM call, also stop ringing if incoming call available)
+        // TODO: Use mAudioManager.setMode(MODE_IN_CALL);
+        // TODO: Ability to adjust volume (starting from ICS, volume must be adjusted by the application, at least for STREAM_VOICE_CALL volume stream)
+        // TODO: Ability to set ringing sound
+        // TODO:
 
         super.onCreate();
 
@@ -56,36 +71,10 @@ public class PjSipService extends Service {
 
         mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 
-//        new Timer().scheduleAtFixedRate(new TimerTask() {
-//            @Override
-//            public void run(){
-//                job(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Log.d(TAG, "service tick");
-//                    }
-//                });
-//            }
-//        }, 0, 1000);
-
         job(new Runnable() {
             @Override
             public void run() {
                 load();
-
-//                Logger.debug(TAG, "Creating SipService with priority: " + Thread.currentThread().getPriority());
-//
-//                loadNativeLibraries();
-//
-//                mRingtoneUri = RingtoneManager.getActualDefaultRingtoneUri(SipService.this, RingtoneManager.TYPE_RINGTONE);
-
-//                mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-//
-//                mBroadcastEmitter = new BroadcastEventEmitter(SipService.this);
-//                loadConfiguredAccounts();
-//                addAllConfiguredAccounts();
-//
-//                Logger.debug(TAG, "SipService created!");
             }
         });
     }
@@ -274,6 +263,12 @@ public class PjSipService extends Service {
             case PjActions.ACTION_DTMF_CALL:
                 handleCallDtmf(intent);
                 break;
+            case PjActions.ACTION_START_FOREGROUND:
+                handleStartForeground(intent);
+                break;
+            case PjActions.ACTION_STOP_FOREGROUND:
+                handleStopForeground(intent);
+                break;
         }
     }
 
@@ -361,6 +356,10 @@ public class PjSipService extends Service {
 
             mAccounts.add(account);
             mEmitter.fireAccountCreated(intent, account);
+
+            // -----
+            handleForeground();
+
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
@@ -386,6 +385,9 @@ public class PjSipService extends Service {
 
             // -----
             mEmitter.fireIntentHandled(intent);
+
+            // -----
+            handleForeground();
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
@@ -582,8 +584,6 @@ public class PjSipService extends Service {
         }
     }
 
-
-
     private PjSipAccount findAccount(int id) throws Exception {
         for (PjSipAccount account : mAccounts) {
             if (account.getId() == id) {
@@ -602,5 +602,83 @@ public class PjSipService extends Service {
         }
 
         throw new Exception("Call with specified \""+ id +"\" id not found");
+    }
+
+    private void handleStartForeground(Intent intent) {
+        try {
+            String title = intent.getStringExtra("title");
+            String text = intent.getStringExtra("text");
+            String info = intent.getStringExtra("info");
+            String ticker = intent.getStringExtra("ticker");
+            String smallIcon = intent.getStringExtra("smallIcon");
+            String largeIcon = intent.getStringExtra("largeIcon");
+
+            startForeground(NOTIFICATION, buildNotification(title, text, info, ticker, smallIcon, largeIcon));
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleStopForeground(Intent intent) {
+        try {
+            stopForeground(true);
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleForeground() throws ClassNotFoundException {
+        // TODO: Add ability to handle foreground state automatically.
+
+        /**
+        if (mAccounts.size() > 0) {
+            startForeground(NOTIFICATION, buildNotification());
+        } else {
+            stopForeground(true);
+        }
+        **/
+    }
+
+    private Notification buildNotification(String title, String text, String info, String ticker, String smallIcon, String largeIcon)
+            throws ClassNotFoundException {
+        String foregroundIntentName = getApplicationContext().getPackageName() + ".MainActivity";
+        Class<?> foregroundIntentCls = Class.forName(foregroundIntentName);
+
+        Intent foregroundIntent = new Intent(this, foregroundIntentCls);
+        foregroundIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendIntent = PendingIntent.getActivity(this, 0, foregroundIntent, 0);
+
+        NotificationCompat.Builder b = new NotificationCompat.Builder(this);
+
+        if (title != null && title.length() > 0) {
+            b.setContentTitle(title);
+        }
+        if (text != null && text.length() > 0) {
+            b.setContentText(text);
+        }
+        if (info != null && info.length() > 0) {
+            b.setContentInfo(info);
+        }
+        if (ticker != null && ticker.length() > 0) {
+            b.setTicker(ticker);
+        }
+
+        Resources resources = getApplicationContext().getResources();
+
+        if (smallIcon == null && smallIcon.length() == 0) {
+            smallIcon = "ic_launcher";
+        }
+        int smallIconId = resources.getIdentifier(smallIcon, "drawable", getApplicationContext().getPackageName());
+
+        if (smallIconId > 0) {
+            b.setSmallIcon(smallIconId);
+        }
+
+        // TODO: Add ability to use largeIcon
+
+        return b.setContentIntent(pendIntent).setWhen(0).build();
     }
 }

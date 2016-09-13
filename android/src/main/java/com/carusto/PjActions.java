@@ -27,6 +27,9 @@ public class PjActions {
     public static final String ACTION_REDIRECT_CALL = "call_redirect";
     public static final String ACTION_DTMF_CALL = "call_dtmf";
 
+    public static final String ACTION_START_FOREGROUND = "start_foreground";
+    public static final String ACTION_STOP_FOREGROUND = "stop_foreground";
+
     public static final String EVENT_STARTED = "com.carusto.account.started";
     public static final String EVENT_ACCOUNT_CREATED = "com.carusto.account.created";
     public static final String EVENT_REGISTRATION_CHANGED = "com.carusto.registration.changed";
@@ -41,19 +44,7 @@ public class PjActions {
         intent.setAction(PjActions.ACTION_CREATE_ACCOUNT);
         intent.putExtra("callback_id", callbackId);
 
-        ReadableMapKeySetIterator it = configuration.keySetIterator();
-        while (it.hasNextKey()) {
-            String key = it.nextKey();
-
-            switch (configuration.getType(key)) {
-                case String:
-                    intent.putExtra(key, configuration.getString(key));
-                    break;
-                case Number:
-                    intent.putExtra(key, configuration.getInt(key));
-                    break;
-            }
-        }
+        overrideIntentProps(intent, configuration);
 
         return intent;
     }
@@ -177,6 +168,40 @@ public class PjActions {
         intent.putExtra("digits", digits);
 
         return intent;
+    }
+
+    public static Intent createStartForegroundIntent(int callbackId, ReadableMap configuration, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_START_FOREGROUND);
+        intent.putExtra("callback_id", callbackId);
+
+        overrideIntentProps(intent, configuration);
+
+        return intent;
+    }
+
+    public static Intent createStopForegroundIntent(int callbackId, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_STOP_FOREGROUND);
+        intent.putExtra("callback_id", callbackId);
+
+        return intent;
+    }
+
+    private static void overrideIntentProps(Intent intent, ReadableMap configuration) {
+        ReadableMapKeySetIterator it = configuration.keySetIterator();
+        while (it.hasNextKey()) {
+            String key = it.nextKey();
+
+            switch (configuration.getType(key)) {
+                case String:
+                    intent.putExtra(key, configuration.getString(key));
+                    break;
+                case Number:
+                    intent.putExtra(key, configuration.getInt(key));
+                    break;
+            }
+        }
     }
 
 }

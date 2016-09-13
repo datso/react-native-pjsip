@@ -340,6 +340,45 @@ export default class Endpoint extends EventEmitter {
     }
 
     /**
+     * Make PjSip service run in the foreground, supplying the ongoing notification to be shown to the user while in this state.
+     * Android only, possible options:
+     * - title
+     * - text
+     * - info
+     * - ticker
+     * - smallIcon
+     *
+     * @returns {Promise}
+     */
+    startForeground(notification) {
+        return new Promise((resolve, reject) => {
+            NativeModules.PjSipModule.startForeground(notification, (successful, data) => {
+                if (successful) {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            });
+        });
+    }
+
+    /**
+     * Remove PjSip service from foreground state, allowing it to be killed if more memory is needed.
+     * @returns {Promise}
+     */
+    stopForeground() {
+        return new Promise((resolve, reject) => {
+            NativeModules.PjSipModule.stopForeground((successful, data) => {
+                if (successful) {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            });
+        });
+    }
+
+    /**
      * @fires Endpoint#registration_changed
      * @private
      * @param data {Object}
