@@ -47,6 +47,10 @@ public class PjSipCall extends Call {
     }
 
     public void hold() throws Exception {
+        if (isHeld) {
+            return;
+        }
+
         isHeld = true;
 
         // Emmit changes
@@ -57,6 +61,10 @@ public class PjSipCall extends Call {
     }
 
     public void unhold() throws Exception {
+        if (!isHeld) {
+            return;
+        }
+
         isHeld = false;
 
         // Emmit changes
@@ -70,6 +78,10 @@ public class PjSipCall extends Call {
     }
 
     public void mute() throws Exception {
+        if (isMuted) {
+            return;
+        }
+
         isMuted = true;
         doMute(true);
 
@@ -78,6 +90,10 @@ public class PjSipCall extends Call {
     }
 
     public void unmute() throws Exception {
+        if (!isMuted) {
+            return;
+        }
+
         isMuted = false;
         doMute(false);
 

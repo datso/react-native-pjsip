@@ -3,12 +3,16 @@ package com.carusto;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.*;
 import android.os.Process;
 import android.support.v7.app.NotificationCompat;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import org.pjsip.pjsua2.*;
 
@@ -36,6 +40,12 @@ public class PjSipService extends Service {
 
     private AudioManager mAudioManager;
 
+    private boolean mGSMIdle;
+
+    private TelephonyManager mTelephonyManager;
+
+    private BroadcastReceiver mPhoneStateChangedReceiver = new PhoneStateChangedReceiver();
+
     public PjSipBroadcastEmiter getEmitter() {
         return mEmitter;
     }
@@ -57,7 +67,7 @@ public class PjSipService extends Service {
         // TODO: Use mAudioManager.setMode(MODE_IN_CALL);
         // TODO: Ability to adjust volume (starting from ICS, volume must be adjusted by the application, at least for STREAM_VOICE_CALL volume stream)
         // TODO: Ability to set ringing sound
-        // TODO:
+        // TODO: Clean up mTrash once call or account not needed
 
         super.onCreate();
 
@@ -69,6 +79,12 @@ public class PjSipService extends Service {
         mEmitter = new PjSipBroadcastEmiter(this);
 
         mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+
+        mTelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        mGSMIdle = mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE;
+
+        IntentFilter phoneStateFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+        registerReceiver(mPhoneStateChangedReceiver, phoneStateFilter);
 
         job(new Runnable() {
             @Override
@@ -393,6 +409,17 @@ public class PjSipService extends Service {
     }
 
     public void handleCallReceived(PjSipCall call) {
+        // Automatically decline incoming call when user uses GSM
+        if (!mGSMIdle) {
+            try {
+                call.hangup(new CallOpParam(true));
+            } catch (Exception e) {
+                Log.d(TAG, "Failed to decline incoming call when user uses GSM", e);
+            }
+
+            return;
+        }
+
         // Automatically start application when incoming call received.
         try {
             String ns = getApplicationContext().getPackageName();
@@ -461,6 +488,9 @@ public class PjSipService extends Service {
             prm.setStatusCode(pjsip_status_code.PJSIP_SC_OK);
             call.answer(prm);
 
+            // Automatically put other calls on hold.
+            doPauseParallelCalls(call);
+
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
@@ -488,6 +518,9 @@ public class PjSipService extends Service {
             // -----
             PjSipCall call = findCall(callId);
             call.unhold();
+
+            // Automatically put other calls on hold.
+            doPauseParallelCalls(call);
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {
@@ -694,5 +727,56 @@ public class PjSipService extends Service {
         // TODO: Add ability to use largeIcon
 
         return b.setContentIntent(pendIntent).setWhen(0).build();
+    }
+
+    /**
+     * Pauses active calls once user answer to incoming calls.
+     */
+    private void doPauseParallelCalls(PjSipCall activeCall) {
+        for (PjSipCall call : mCalls) {
+            if (activeCall.getId() == call.getId()) {
+                continue;
+            }
+
+            try {
+                call.hold();
+            } catch (Exception e) {
+                Log.d(TAG, "Failed to put call on hold", e);
+            }
+        }
+    }
+
+    /**
+     * Pauses all calls, used when received GSM call.
+     */
+    private void doPauseAllCalls() {
+        for (PjSipCall call : mCalls) {
+            try {
+                call.hold();
+            } catch (Exception e) {
+                Log.d(TAG, "Failed to put call on hold", e);
+            }
+        }
+    }
+
+
+    protected class PhoneStateChangedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String extraState = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+
+            if (TelephonyManager.EXTRA_STATE_RINGING.equals(extraState) || TelephonyManager.EXTRA_STATE_OFFHOOK.equals(extraState)) {
+                mGSMIdle = false;
+
+                doPauseAllCalls();
+                // stopRinging();
+
+                Log.d(TAG, "GSM call received, pause all SIP calls and do not accept incoming SIP calls.");
+
+            } else if (TelephonyManager.EXTRA_STATE_IDLE.equals(extraState)) {
+                Log.d(TAG, "GSM call released, allow to accept incoming calls.");
+                mGSMIdle = true;
+            }
+        }
     }
 }
