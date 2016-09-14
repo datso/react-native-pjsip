@@ -156,7 +156,7 @@ public class PjSipAccount extends Account {
             json.put("proxy", proxy);
             json.put("transport", transport);
             json.put("regServer", regServer);
-            json.put("regTimeout", regTimeout > 0 ? String.valueOf(regTimeout) : "");
+            json.put("regTimeout", regTimeout != null && regTimeout > 0 ? String.valueOf(regTimeout) : "");
             json.put("registration", registration);
 
             return json;
