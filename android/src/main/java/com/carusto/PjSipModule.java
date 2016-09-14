@@ -6,13 +6,11 @@ import android.media.AudioManager;
 import android.util.Log;
 import com.facebook.react.bridge.*;
 
-public class    PjSipModule extends ReactContextBaseJavaModule {
+public class PjSipModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
 
     private static String TAG = "PjSipModule";
 
     private static PjSipBroadcastReceiver receiver;
-
-
 
     public PjSipModule(ReactApplicationContext context) {
         super(context);
@@ -24,6 +22,15 @@ public class    PjSipModule extends ReactContextBaseJavaModule {
         } else {
             receiver.setContext(context);
         }
+
+    }
+
+    @Override
+    public void initialize() {
+        getReactApplicationContext().addLifecycleEventListener(this);
+
+        Intent intent = PjActions.createAppVisibleIntent(getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
     }
 
     @Override
@@ -160,4 +167,21 @@ public class    PjSipModule extends ReactContextBaseJavaModule {
         getReactApplicationContext().startService(intent);
     }
 
+    @Override
+    public void onHostResume() {
+        Intent intent = PjActions.createAppVisibleIntent(getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @Override
+    public void onHostPause() {
+        Intent intent = PjActions.createAppHiddenIntent(getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @Override
+    public void onHostDestroy() {
+        Intent intent = PjActions.createAppHiddenIntent(getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
 }

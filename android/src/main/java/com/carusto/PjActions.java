@@ -2,7 +2,6 @@ package com.carusto;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
@@ -38,6 +37,9 @@ public class PjActions {
     public static final String EVENT_CALL_TERMINATED = "com.carusto.call.terminated";
     public static final String EVENT_CALL_RECEIVED = "com.carusto.call.received";
     public static final String EVENT_HANDLED = "com.carusto.handled";
+
+    public static final String EVENT_APP_VISIBLE = "com.carusto.app.visible";
+    public static final String EVENT_APP_HIDDEN = "com.carusto.app.hidden";
 
     public static Intent createAccountCreateIntent(int callbackId, ReadableMap configuration, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
@@ -187,6 +189,18 @@ public class PjActions {
 
         return intent;
     }
+
+    public static Intent createAppVisibleIntent(Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.EVENT_APP_VISIBLE);
+        return intent;
+    }
+    public static Intent createAppHiddenIntent(Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.EVENT_APP_HIDDEN);
+        return intent;
+    }
+
 
     private static void overrideIntentProps(Intent intent, ReadableMap configuration) {
         ReadableMapKeySetIterator it = configuration.keySetIterator();

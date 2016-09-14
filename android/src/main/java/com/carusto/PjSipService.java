@@ -26,6 +26,8 @@ public class PjSipService extends Service {
 
     private Handler mHandler;
 
+    private boolean mAppHidden;
+
     private Endpoint mEndpoint;
 
     private PjSipLogWriter mLogWriter;
@@ -284,6 +286,14 @@ public class PjSipService extends Service {
             case PjActions.ACTION_STOP_FOREGROUND:
                 handleStopForeground(intent);
                 break;
+
+            // Extra actions
+            case PjActions.EVENT_APP_VISIBLE:
+                mAppHidden = false;
+                break;
+            case PjActions.EVENT_APP_HIDDEN:
+                mAppHidden = true;
+                break;
         }
     }
 
@@ -421,17 +431,19 @@ public class PjSipService extends Service {
         }
 
         // Automatically start application when incoming call received.
-        try {
-            String ns = getApplicationContext().getPackageName();
-            String cls = ns + ".MainActivity";
+        if (mAppHidden) {
+            try {
+                String ns = getApplicationContext().getPackageName();
+                String cls = ns + ".MainActivity";
 
-            Intent intent = new Intent(getApplicationContext(), Class.forName(cls));
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
-            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+                Intent intent = new Intent(getApplicationContext(), Class.forName(cls));
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
+                intent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-            startActivity(intent);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to open application on received call", e);
+                startActivity(intent);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to open application on received call", e);
+            }
         }
 
         // -----
