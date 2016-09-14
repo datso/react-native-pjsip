@@ -298,6 +298,27 @@ export default class Endpoint extends EventEmitter {
     }
 
     /**
+     * Initiate attended call transfer.
+     * This function will send REFER request to instruct remote call party to initiate new INVITE session to the URL of destCall.
+     * The party at destCall then should "replace" the call with us with the new call from the REFER recipient.
+     *
+     * @param call {Call} The call to be transferred.
+     * @param destCall {Call} The call to be transferred.
+     * @returns {Promise}
+     */
+    xferReplacesCall(call, destCall) {
+        return new Promise((resolve, reject) => {
+            NativeModules.PjSipModule.xferReplacesCall(call.getId(), destCall.getId(), (successful, data) => {
+                if (successful) {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            });
+        });
+    }
+
+    /**
      * Redirect (forward) specified call to destination.
      * This function will send response to INVITE to instruct remote call party to redirect incoming call to the specified destination/target.
      *

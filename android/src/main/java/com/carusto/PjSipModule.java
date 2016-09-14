@@ -1,9 +1,6 @@
 package com.carusto;
 
-import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
-import android.util.Log;
 import com.facebook.react.bridge.*;
 
 public class PjSipModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
@@ -136,6 +133,13 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
     public void xferCall(int callId, String destination, Callback callback) {
         int callbackId = receiver.register(callback);
         Intent intent = PjActions.createXFerCallIntent(callbackId, callId, destination, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
+    public void xferReplacesCall(int callId, int destCallId, Callback callback) {
+        int callbackId = receiver.register(callback);
+        Intent intent = PjActions.createXFerReplacesCallIntent(callbackId, callId, destCallId, getReactApplicationContext());
         getReactApplicationContext().startService(intent);
     }
 

@@ -23,6 +23,7 @@ public class PjActions {
     public static final String ACTION_USE_SPEAKER_CALL = "call_use_speaker";
     public static final String ACTION_USE_EARPIECE_CALL = "call_use_earpiece";
     public static final String ACTION_XFER_CALL = "call_xfer";
+    public static final String ACTION_XFER_REPLACES_CALL = "call_xfer_replace";
     public static final String ACTION_REDIRECT_CALL = "call_redirect";
     public static final String ACTION_DTMF_CALL = "call_dtmf";
 
@@ -148,6 +149,16 @@ public class PjActions {
         intent.putExtra("callback_id", callbackId);
         intent.putExtra("call_id", callId);
         intent.putExtra("destination", destination);
+
+        return intent;
+    }
+
+    public static Intent createXFerReplacesCallIntent(int callbackId, int callId, int destinationCallId, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_XFER_REPLACES_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra("call_id", callId);
+        intent.putExtra("dest_call_id", destinationCallId);
 
         return intent;
     }

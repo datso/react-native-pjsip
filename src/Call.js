@@ -184,6 +184,19 @@ export default class Call {
     }
 
     /**
+     * @returns {String}
+     */
+    getRemoteFormattedNumber() {
+        if (this._remoteName && this._remoteNumber) {
+            return `${this._remoteName} <${this._remoteNumber}>`;
+        } else if (this._remoteNumber) {
+            return this._remoteNumber;
+        } else {
+            return this._remoteUri
+        }
+    }
+
+    /**
      * Invite session state.
      *
      * PJSIP_INV_STATE_NULL           Before INVITE is sent or received

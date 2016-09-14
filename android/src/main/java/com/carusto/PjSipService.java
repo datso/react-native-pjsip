@@ -65,11 +65,11 @@ public class PjSipService extends Service {
 
         // TODO: Use PowerManager to lock while in call.
         // TODO: Use WifiManager to lock while active account exists.
-        // TODO: Use TelephonyManager to check whether GSM call is available (we should put all calls on hold and don't allow to initiate outgoing calls when received GSM call, also stop ringing if incoming call available)
         // TODO: Use mAudioManager.setMode(MODE_IN_CALL);
         // TODO: Ability to adjust volume (starting from ICS, volume must be adjusted by the application, at least for STREAM_VOICE_CALL volume stream)
         // TODO: Ability to set ringing sound
         // TODO: Clean up mTrash once call or account not needed
+        // TODO: Add debug information for each action
 
         super.onCreate();
 
@@ -273,6 +273,9 @@ public class PjSipService extends Service {
                 break;
             case PjActions.ACTION_XFER_CALL:
                 handleCallXFer(intent);
+                break;
+            case PjActions.ACTION_XFER_REPLACES_CALL:
+                handleCallXFerReplaces(intent);
                 break;
             case PjActions.ACTION_REDIRECT_CALL:
                 handleCallRedirect(intent);
@@ -606,6 +609,22 @@ public class PjSipService extends Service {
             // -----
             PjSipCall call = findCall(callId);
             call.xfer(destination, new CallOpParam(true));
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleCallXFerReplaces(Intent intent) {
+        try {
+            int callId = intent.getIntExtra("call_id", -1);
+            int destinationCallId = intent.getIntExtra("dest_call_id", -1);
+
+            // -----
+            PjSipCall call = findCall(callId);
+            PjSipCall destinationCall = findCall(destinationCallId);
+            call.xferReplaces(destinationCall, new CallOpParam(true));
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {
