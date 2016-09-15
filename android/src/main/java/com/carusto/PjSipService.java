@@ -17,14 +17,20 @@ import android.os.Process;
 import android.support.v7.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import com.carusto.ReactNativePjSip.R;
 import org.pjsip.pjsua2.*;
 
 import java.util.*;
 
-public class PjSipService extends Service {
+public class PjSipService extends Service implements SensorEventListener {
 
     private static String TAG = "PjSipService";
+
+    private static final float PROXIMITY_THRESHOLD = 5.0f;
 
     private HandlerThread mWorkerThread;
 
@@ -65,6 +71,14 @@ public class PjSipService extends Service {
     private WifiManager.WifiLock mWifiLock;
 
     private boolean mGSMIdle;
+
+    private SensorManager mSensorManager;
+
+    private Sensor mProximitySensor;
+
+    private boolean mProximitySensorTracked = false;
+
+    private boolean mProximityFirstRun = true;
 
     private BroadcastReceiver mPhoneStateChangedReceiver = new PhoneStateChangedReceiver();
 
@@ -107,6 +121,9 @@ public class PjSipService extends Service {
 
         mTelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         mGSMIdle = mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE;
+
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
         IntentFilter phoneStateFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         registerReceiver(mPhoneStateChangedReceiver, phoneStateFilter);
@@ -712,6 +729,8 @@ public class PjSipService extends Service {
     }
 
     void emmitCallReceived(PjSipCall call) {
+        final int callId = call.getId();
+
         // Automatically decline incoming call when user uses GSM
         if (!mGSMIdle) {
             try {
@@ -739,23 +758,28 @@ public class PjSipService extends Service {
             }
         }
 
-        // Brighten screen at least 10 seconds
-        PowerManager.WakeLock wl = mPowerManager.newWakeLock(
-            PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE | PowerManager.FULL_WAKE_LOCK,
-            "incoming_call"
-        );
-        wl.acquire(10000);
+        job(new Runnable() {
+            @Override
+            public void run() {
+                // Brighten screen at least 10 seconds
+                PowerManager.WakeLock wl = mPowerManager.newWakeLock(
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE | PowerManager.FULL_WAKE_LOCK,
+                    "incoming_call"
+                );
+                wl.acquire(10000);
 
-        // Play ring sound to speaker or beep if there more than one call
-        mCallsRingerLocks.add(call.getId());
+                // Play ring sound to speaker or beep if there more than one call
+                mCallsRingerLocks.add(callId);
 
-        if (mCallsRingerLocks.size() == 1) {
-            startRinging(mCalls.size() > 1);
-        }
+                if (mCallsRingerLocks.size() == 1) {
+                    startRinging(mCalls.size() > 1);
+                }
 
-        if (mCalls.size() == 0) {
-            mAudioManager.setSpeakerphoneOn(true);
-        }
+                if (mCalls.size() == 0) {
+                    mAudioManager.setSpeakerphoneOn(true);
+                }
+            }
+        });
 
         // -----
         mCalls.add(call);
@@ -772,79 +796,97 @@ public class PjSipService extends Service {
         } catch (Exception e) {
             Log.w(TAG, "Failed to handle call state event", e);
         }
+
+        if (!mProximitySensorTracked) {
+            startProximityTracking();
+        }
     }
 
     void emmitCallChanged(PjSipCall call, OnCallStateParam prm) {
-
-        // Acquire wake lock
-        if (mIncallWakeLock == null) {
-            mIncallWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,	"incall");
-        }
-        if (!mIncallWakeLock.isHeld()) {
-            mIncallWakeLock.acquire();
-        }
-
-        // Ensure that ringing sound is stopped
         try {
-            if (call.getInfo().getState() != pjsip_inv_state.PJSIP_INV_STATE_INCOMING) {
-                if (mCallsRingerLocks.contains(call.getId())) {
-                    mCallsRingerLocks.remove(call.getId());
-                    if (mCallsRingerLocks.size() == 0) {
-                        stopRinging();
-                    } else {
-                        startRinging(true);
+            final int callId = call.getId();
+            final pjsip_inv_state callState = call.getInfo().getState();
+
+            job(new Runnable() {
+                @Override
+                public void run() {
+                    // Acquire wake lock
+                    if (mIncallWakeLock == null) {
+                        mIncallWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,	"incall");
+                    }
+                    if (!mIncallWakeLock.isHeld()) {
+                        mIncallWakeLock.acquire();
+                    }
+
+                    // Ensure that ringing sound is stopped
+                    if (callState != pjsip_inv_state.PJSIP_INV_STATE_INCOMING) {
+                        if (mCallsRingerLocks.contains(callId)) {
+                            mCallsRingerLocks.remove(callId);
+                            if (mCallsRingerLocks.size() == 0) {
+                                stopRinging();
+                            } else {
+                                startRinging(true);
+                            }
+                        }
+
+                        if (!mUseSpeaker && mAudioManager.isSpeakerphoneOn()) {
+                            mAudioManager.setSpeakerphoneOn(false);
+                        }
+                    }
+
+                    // Acquire wifi lock
+                    mWifiLock.acquire();
+
+                    if (callState == pjsip_inv_state.PJSIP_INV_STATE_EARLY || callState == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
+                        mAudioManager.setMode(AudioManager.MODE_IN_CALL);
                     }
                 }
-
-                if (!mUseSpeaker && mAudioManager.isSpeakerphoneOn()) {
-                    mAudioManager.setSpeakerphoneOn(false);
-                }
-            }
+            });
         } catch (Exception e) {
-            Log.w(TAG, "Failed to retrieve call info", e);
-        }
-
-        // Acquire wifi lock
-        mWifiLock.acquire();
-
-        try {
-            CallInfo info = call.getInfo();
-            if (info.getState() == pjsip_inv_state.PJSIP_INV_STATE_EARLY || info.getState() == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
-                mAudioManager.setMode(AudioManager.MODE_IN_CALL);
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to retrieve call info", e);
+            Log.w(TAG, "Failed to retrieve call state", e);
         }
 
         mEmitter.fireCallChanged(call);
     }
 
     void emmitCallTerminated(PjSipCall call, OnCallStateParam prm) {
-        // Stop play ring sound
-        if (mCallsRingerLocks.contains(call.getId())) {
-            mCallsRingerLocks.remove(call.getId());
-            if (mCallsRingerLocks.size() == 0) {
-                stopRinging();
+        final int callId = call.getId();
+
+        job(new Runnable() {
+            @Override
+            public void run() {
+                // Stop play ring sound
+                if (mCallsRingerLocks.contains(callId)) {
+                    mCallsRingerLocks.remove(callId);
+                    if (mCallsRingerLocks.size() == 0) {
+                        stopRinging();
+                    }
+                }
+
+                // Release wake lock
+                if (mCalls.size() == 1) {
+                    if (mIncallWakeLock != null && mIncallWakeLock.isHeld()) {
+                        mIncallWakeLock.release();
+                    }
+                }
+
+                // Release wifi lock
+                if (mCalls.size() == 1) {
+                    mWifiLock.release();
+                }
+
+                // Reset audio settings
+                if (mCalls.size() == 1) {
+                    mAudioManager.setSpeakerphoneOn(false);
+                    mAudioManager.setMode(AudioManager.MODE_NORMAL);
+                }
+
+                // Release proximity sensor
+                if (mCalls.size() == 1 && mProximitySensorTracked) {
+                    stopProximityTracking();
+                }
             }
-        }
-
-        // Release wake lock
-        if (mCalls.size() == 1) {
-            if (mIncallWakeLock != null && mIncallWakeLock.isHeld()) {
-                mIncallWakeLock.release();
-            }
-        }
-
-        // Release wifi lock
-        if (mCalls.size() == 1) {
-            mWifiLock.release();
-        }
-
-        // Reset audio settings
-        if (mCalls.size() == 1) {
-            mAudioManager.setSpeakerphoneOn(false);
-            mAudioManager.setMode(AudioManager.MODE_NORMAL);
-        }
+        });
 
         mEmitter.fireCallTerminated(call);
         evict(call);
@@ -978,6 +1020,52 @@ public class PjSipService extends Service {
         mAudioManager.setMode(AudioManager.MODE_NORMAL);
     }
 
+    public synchronized void startProximityTracking() {
+        Log.d(TAG, "startProximityTracking");
+
+        if (mProximitySensor != null && !mProximitySensorTracked) {
+            // Fall back to manual mode
+            mSensorManager.registerListener(this, mProximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
+            mProximityFirstRun = true;
+            mProximitySensorTracked = true;
+        }
+    }
+
+    public synchronized void stopProximityTracking() {
+        Log.d(TAG, "stopProximityTracking");
+
+        if (mProximitySensor != null && mProximitySensorTracked) {
+            mProximitySensorTracked = false;
+            mSensorManager.unregisterListener(this);
+        }
+
+        emmitCallScreenLock(false);
+    }
+
+    private void emmitCallScreenLock(boolean lock) {
+        Log.d(TAG, "emmitCallScreenLock: " + lock);
+        mEmitter.fireCallScreenLocked(lock);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (mProximitySensorTracked && !mProximityFirstRun) {
+            float distance = event.values[0];
+            boolean active = (distance >= 0.0 && distance < PROXIMITY_THRESHOLD && distance < event.sensor.getMaximumRange());
+
+            emmitCallScreenLock(active);
+        }
+
+        if (mProximityFirstRun) {
+            mProximityFirstRun = false;
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
     protected class PhoneStateChangedReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -986,8 +1074,14 @@ public class PjSipService extends Service {
             if (TelephonyManager.EXTRA_STATE_RINGING.equals(extraState) || TelephonyManager.EXTRA_STATE_OFFHOOK.equals(extraState)) {
                 mGSMIdle = false;
 
-                doPauseAllCalls();
-                // stopRinging();
+                job(new Runnable() {
+                    @Override
+                    public void run() {
+                        doPauseAllCalls();
+                    }
+                });
+
+                // TODO stopRinging();
 
                 Log.d(TAG, "GSM call received, pause all SIP calls and do not accept incoming SIP calls.");
 

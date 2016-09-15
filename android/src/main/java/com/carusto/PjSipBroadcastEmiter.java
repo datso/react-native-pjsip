@@ -120,4 +120,12 @@ public class PjSipBroadcastEmiter {
 
         context.sendBroadcast(intent);
     }
+
+    public void fireCallScreenLocked(boolean lock) {
+        Intent intent = new Intent();
+        intent.setAction(PjActions.EVENT_CALL_SCREEN_LOCKED);
+        intent.putExtra("lock", lock);
+
+        context.sendBroadcast(intent);
+    }
 }

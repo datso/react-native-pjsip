@@ -37,6 +37,7 @@ public class PjActions {
     public static final String EVENT_CALL_CHANGED = "com.carusto.call.changed";
     public static final String EVENT_CALL_TERMINATED = "com.carusto.call.terminated";
     public static final String EVENT_CALL_RECEIVED = "com.carusto.call.received";
+    public static final String EVENT_CALL_SCREEN_LOCKED = "com.carusto.call.screen.locked";
     public static final String EVENT_HANDLED = "com.carusto.handled";
 
     public static final String EVENT_APP_VISIBLE = "com.carusto.app.visible";

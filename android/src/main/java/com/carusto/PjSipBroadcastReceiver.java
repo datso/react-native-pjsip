@@ -46,6 +46,7 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
         filter.addAction(PjActions.EVENT_CALL_CREATED);
         filter.addAction(PjActions.EVENT_CALL_CHANGED);
         filter.addAction(PjActions.EVENT_CALL_TERMINATED);
+        filter.addAction(PjActions.EVENT_CALL_SCREEN_LOCKED);
         filter.addAction(PjActions.EVENT_HANDLED);
 
         return filter;
@@ -76,6 +77,9 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
             case PjActions.EVENT_CALL_TERMINATED:
                 onCallTerminated(intent);
                 break;
+            case PjActions.EVENT_CALL_SCREEN_LOCKED:
+                onCallScreenLocked(intent);
+                break;
             default:
                 onCallback(intent);
                 break;
@@ -104,6 +108,11 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
         String json = intent.getStringExtra("data");
         Object params = ArgumentUtils.fromJson(json);
         context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipCallTerminated", params);
+    }
+
+    private void onCallScreenLocked(Intent intent) {
+        boolean lock = intent.getBooleanExtra("lock", false);
+        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipCallScreenLocked", lock);
     }
 
     private void onCallback(Intent intent) {

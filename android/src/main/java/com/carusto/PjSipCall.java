@@ -126,7 +126,11 @@ public class PjSipCall extends Call {
 
     @Override
     public void onCallState(OnCallStateParam prm) {
-        getService().emmitCallStateChanged(this, prm);
+        try {
+            getService().emmitCallStateChanged(this, prm);
+        } catch (Exception e) {
+            Log.e(TAG, "Exception for onCallState callback", e);
+        }
     }
 
     @Override
