@@ -21,6 +21,7 @@ export default class Endpoint extends EventEmitter {
         DeviceEventEmitter.addListener('pjSipCallReceived', this._onCallReceived.bind(this));
         DeviceEventEmitter.addListener('pjSipCallChanged', this._onCallChanged.bind(this));
         DeviceEventEmitter.addListener('pjSipCallTerminated', this._onCallTerminated.bind(this));
+        DeviceEventEmitter.addListener('pjSipCallScreenLocked', this._onCallScreenLocked.bind(this));
     }
 
     /**
@@ -459,6 +460,21 @@ export default class Endpoint extends EventEmitter {
          * @property {Call} call
          */
         this.emit("call_terminated", new Call(data));
+    }
+
+    /**
+     * @fires Endpoint#call_screen_locked
+     * @private
+     * @param lock lock
+     */
+    _onCallScreenLocked(lock) {
+        /**
+         * TODO
+         *
+         * @event Endpoint#call_screen_locked
+         * @property bool lock
+         */
+        this.emit("call_screen_locked", lock);
     }
 
     /**

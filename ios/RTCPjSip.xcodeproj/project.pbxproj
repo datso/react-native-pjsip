@@ -9,10 +9,10 @@
 /* Begin PBXBuildFile section */
 		6AC71896C76E2C6D27DA49A2 /* PjSipCallbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC710A73861346FCA09ECEC /* PjSipCallbacks.m */; };
 		6AC71DA479E221BF9CDA0BF7 /* PjSipUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC71AB880F59E8403D658FF /* PjSipUtil.m */; };
-		DDFF87721D79D7410096A8BE /* PjSipAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF876B1D79D7410096A8BE /* PjSipAccount.m */; settings = {ASSET_TAGS = (); }; };
-		DDFF87731D79D7410096A8BE /* PjSipCall.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF876D1D79D7410096A8BE /* PjSipCall.m */; settings = {ASSET_TAGS = (); }; };
-		DDFF87741D79D7410096A8BE /* PjSipEndpoint.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF876F1D79D7410096A8BE /* PjSipEndpoint.m */; settings = {ASSET_TAGS = (); }; };
-		DDFF87751D79D7410096A8BE /* PjSipModule.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF87711D79D7410096A8BE /* PjSipModule.m */; settings = {ASSET_TAGS = (); }; };
+		DDFF87721D79D7410096A8BE /* PjSipAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF876B1D79D7410096A8BE /* PjSipAccount.m */; };
+		DDFF87731D79D7410096A8BE /* PjSipCall.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF876D1D79D7410096A8BE /* PjSipCall.m */; };
+		DDFF87741D79D7410096A8BE /* PjSipEndpoint.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF876F1D79D7410096A8BE /* PjSipEndpoint.m */; };
+		DDFF87751D79D7410096A8BE /* PjSipModule.m in Sources */ = {isa = PBXBuildFile; fileRef = DDFF87711D79D7410096A8BE /* PjSipModule.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1017,6 +1017,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/libpjsip",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1034,6 +1035,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/libpjsip",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

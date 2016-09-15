@@ -299,14 +299,14 @@ public class PjSipCall extends Call {
             json.put("muted", isMuted);
             json.put("speaker", speaker);
 
-            /**
             try {
-                info.put("lastStatusCode", info.getLastStatusCode());
+                json.put("lastStatusCode", info.getLastStatusCode());
             } catch (Exception e) {
-                info.put("lastStatusCode", null);
+                Log.d(TAG, "Failed to determine last status code", e);
+                json.put("lastStatusCode", null);
             }
-            info.put("lastReason", info.getLastReason());
-            */
+
+            json.put("lastReason", info.getLastReason());
 
             // -----
             json.put("remoteOfferer", info.getRemOfferer());
