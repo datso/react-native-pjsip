@@ -7,13 +7,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.wifi.WifiManager;
 import android.os.*;
 import android.os.Process;
 import android.support.v7.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import com.carusto.ReactNativePjSip.R;
 import org.pjsip.pjsua2.*;
 
 import java.util.*;
@@ -42,9 +46,25 @@ public class PjSipService extends Service {
 
     private AudioManager mAudioManager;
 
-    private boolean mGSMIdle;
+    private HashSet<Integer> mCallsRingerLocks = new HashSet<>();
+
+    private MediaPlayer mRingerPlayer;
+
+    private boolean mUseSpeaker = false;
+
+    private Vibrator mVibrator;
+
+    private PowerManager mPowerManager;
+
+    private PowerManager.WakeLock mIncallWakeLock;
 
     private TelephonyManager mTelephonyManager;
+
+    private WifiManager mWifiManager;
+
+    private WifiManager.WifiLock mWifiLock;
+
+    private boolean mGSMIdle;
 
     private BroadcastReceiver mPhoneStateChangedReceiver = new PhoneStateChangedReceiver();
 
@@ -63,11 +83,9 @@ public class PjSipService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate");
 
-        // TODO: Use PowerManager to lock while in call.
-        // TODO: Use WifiManager to lock while active account exists.
-        // TODO: Use mAudioManager.setMode(MODE_IN_CALL);
+        // TODO: Listen for WIFI manager to register on server once connection exist.
+        // TODO: Decline seems doesn't work propertly (see crst_ext)
         // TODO: Ability to adjust volume (starting from ICS, volume must be adjusted by the application, at least for STREAM_VOICE_CALL volume stream)
-        // TODO: Ability to set ringing sound
         // TODO: Clean up mTrash once call or account not needed
         // TODO: Add debug information for each action
 
@@ -81,6 +99,11 @@ public class PjSipService extends Service {
         mEmitter = new PjSipBroadcastEmiter(this);
 
         mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
+
+        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, this.getPackageName()+"-wifi-call-lock");
+        mWifiLock.setReferenceCounted(false);
 
         mTelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         mGSMIdle = mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE;
@@ -421,39 +444,6 @@ public class PjSipService extends Service {
         }
     }
 
-    public void handleCallReceived(PjSipCall call) {
-        // Automatically decline incoming call when user uses GSM
-        if (!mGSMIdle) {
-            try {
-                call.hangup(new CallOpParam(true));
-            } catch (Exception e) {
-                Log.d(TAG, "Failed to decline incoming call when user uses GSM", e);
-            }
-
-            return;
-        }
-
-        // Automatically start application when incoming call received.
-        if (mAppHidden) {
-            try {
-                String ns = getApplicationContext().getPackageName();
-                String cls = ns + ".MainActivity";
-
-                Intent intent = new Intent(getApplicationContext(), Class.forName(cls));
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
-                intent.addCategory(Intent.CATEGORY_LAUNCHER);
-
-                startActivity(intent);
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to open application on received call", e);
-            }
-        }
-
-        // -----
-        mCalls.add(call);
-        mEmitter.fireCallReceivedEvent(call);
-    }
-
     private void handleCallMake(Intent intent) {
         try {
             Log.d(TAG, "handleCallMake start");
@@ -571,14 +561,14 @@ public class PjSipService extends Service {
         }
     }
 
-    // TODO: When active calls ends, we should reset speaker.
     private void handleCallUseSpeaker(Intent intent) {
         try {
-            int callId = intent.getIntExtra("call_id", -1);
+            mAudioManager.setSpeakerphoneOn(true);
+            mUseSpeaker = true;
 
-            // -----
-            PjSipCall call = findCall(callId);
-            call.useSpeaker();
+            for (PjSipCall call : mCalls) {
+                emmitCallUpdated(call);
+            }
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {
@@ -589,11 +579,12 @@ public class PjSipService extends Service {
     // TODO: Log each action for debug proposal
     private void handleCallUseEarpiece(Intent intent) {
         try {
-            int callId = intent.getIntExtra("call_id", -1);
+            mAudioManager.setSpeakerphoneOn(false);
+            mUseSpeaker = false;
 
-            // -----
-            PjSipCall call = findCall(callId);
-            call.useEarpiece();
+            for (PjSipCall call : mCalls) {
+                emmitCallUpdated(call);
+            }
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {
@@ -720,6 +711,149 @@ public class PjSipService extends Service {
         **/
     }
 
+    void emmitCallReceived(PjSipCall call) {
+        // Automatically decline incoming call when user uses GSM
+        if (!mGSMIdle) {
+            try {
+                call.hangup(new CallOpParam(true));
+            } catch (Exception e) {
+                Log.d(TAG, "Failed to decline incoming call when user uses GSM", e);
+            }
+
+            return;
+        }
+
+        // Automatically start application when incoming call received.
+        if (mAppHidden) {
+            try {
+                String ns = getApplicationContext().getPackageName();
+                String cls = ns + ".MainActivity";
+
+                Intent intent = new Intent(getApplicationContext(), Class.forName(cls));
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
+                intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+                startActivity(intent);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to open application on received call", e);
+            }
+        }
+
+        // Brighten screen at least 10 seconds
+        PowerManager.WakeLock wl = mPowerManager.newWakeLock(
+            PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE | PowerManager.FULL_WAKE_LOCK,
+            "incoming_call"
+        );
+        wl.acquire(10000);
+
+        // Play ring sound to speaker or beep if there more than one call
+        mCallsRingerLocks.add(call.getId());
+
+        if (mCallsRingerLocks.size() == 1) {
+            startRinging(mCalls.size() > 1);
+        }
+
+        if (mCalls.size() == 0) {
+            mAudioManager.setSpeakerphoneOn(true);
+        }
+
+        // -----
+        mCalls.add(call);
+        mEmitter.fireCallReceivedEvent(call);
+    }
+
+    void emmitCallStateChanged(PjSipCall call, OnCallStateParam prm) {
+        try {
+            if (call.getInfo().getState() == pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
+                emmitCallTerminated(call, prm);
+            } else {
+                emmitCallChanged(call, prm);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to handle call state event", e);
+        }
+    }
+
+    void emmitCallChanged(PjSipCall call, OnCallStateParam prm) {
+
+        // Acquire wake lock
+        if (mIncallWakeLock == null) {
+            mIncallWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,	"incall");
+        }
+        if (!mIncallWakeLock.isHeld()) {
+            mIncallWakeLock.acquire();
+        }
+
+        // Ensure that ringing sound is stopped
+        try {
+            if (call.getInfo().getState() != pjsip_inv_state.PJSIP_INV_STATE_INCOMING) {
+                if (mCallsRingerLocks.contains(call.getId())) {
+                    mCallsRingerLocks.remove(call.getId());
+                    if (mCallsRingerLocks.size() == 0) {
+                        stopRinging();
+                    } else {
+                        startRinging(true);
+                    }
+                }
+
+                if (!mUseSpeaker && mAudioManager.isSpeakerphoneOn()) {
+                    mAudioManager.setSpeakerphoneOn(false);
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to retrieve call info", e);
+        }
+
+        // Acquire wifi lock
+        mWifiLock.acquire();
+
+        try {
+            CallInfo info = call.getInfo();
+            if (info.getState() == pjsip_inv_state.PJSIP_INV_STATE_EARLY || info.getState() == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
+                mAudioManager.setMode(AudioManager.MODE_IN_CALL);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to retrieve call info", e);
+        }
+
+        mEmitter.fireCallChanged(call);
+    }
+
+    void emmitCallTerminated(PjSipCall call, OnCallStateParam prm) {
+        // Stop play ring sound
+        if (mCallsRingerLocks.contains(call.getId())) {
+            mCallsRingerLocks.remove(call.getId());
+            if (mCallsRingerLocks.size() == 0) {
+                stopRinging();
+            }
+        }
+
+        // Release wake lock
+        if (mCalls.size() == 1) {
+            if (mIncallWakeLock != null && mIncallWakeLock.isHeld()) {
+                mIncallWakeLock.release();
+            }
+        }
+
+        // Release wifi lock
+        if (mCalls.size() == 1) {
+            mWifiLock.release();
+        }
+
+        // Reset audio settings
+        if (mCalls.size() == 1) {
+            mAudioManager.setSpeakerphoneOn(false);
+            mAudioManager.setMode(AudioManager.MODE_NORMAL);
+        }
+
+        mEmitter.fireCallTerminated(call);
+        evict(call);
+    }
+
+    void emmitCallUpdated(PjSipCall call) {
+        mEmitter.fireCallChanged(call);
+    }
+
     private Notification buildNotification(String title, String text, String info, String ticker, String smallIcon, String largeIcon)
             throws ClassNotFoundException {
         String foregroundIntentName = getApplicationContext().getPackageName() + ".MainActivity";
@@ -790,6 +924,59 @@ public class PjSipService extends Service {
         }
     }
 
+    /**
+     *
+     */
+    private synchronized void startRinging(boolean ringBack)  {
+        mAudioManager.setMode(AudioManager.MODE_RINGTONE);
+        mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        try {
+            if (mAudioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE && mVibrator != null) {
+                long[] patern = {0,1000,1000};
+                mVibrator.vibrate(patern, 1);
+            } else if (mAudioManager.getRingerMode() == AudioManager.RINGER_MODE_NORMAL && mRingerPlayer == null) {
+                // TODO: Add ability to set resource id from javascript
+                // TODO: Add ability to play default sound
+                // Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                // Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+                // r.play();
+
+                int soundId = ringBack ? R.raw.ringback : R.raw.ring;
+                AssetFileDescriptor soundDesc = getResources().openRawResourceFd(soundId);
+
+                mRingerPlayer = new MediaPlayer();
+                mRingerPlayer.setDataSource(soundDesc.getFileDescriptor(), soundDesc.getStartOffset(), soundDesc.getLength());
+                mRingerPlayer.prepare();
+                mRingerPlayer.setVolume(1.0f, 1.0f);
+                mRingerPlayer.setLooping(true);
+                mRingerPlayer.start();
+
+                Log.d(TAG, "mRingerPlayer playing");
+            } else {
+                Log.w(TAG, "Failed to start ringing (already ringing)");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to start ringing", e);
+        }
+    }
+
+    /**
+     *
+     */
+    private synchronized void stopRinging() {
+        if (mRingerPlayer != null) {
+            mRingerPlayer.stop();
+            mRingerPlayer.release();
+            mRingerPlayer = null;
+        }
+
+        if (mVibrator != null) {
+            mVibrator.cancel();
+        }
+
+        mAudioManager.setMode(AudioManager.MODE_NORMAL);
+    }
 
     protected class PhoneStateChangedReceiver extends BroadcastReceiver {
         @Override

@@ -30,22 +30,6 @@ public class PjSipCall extends Call {
         return account.getService();
     }
 
-    public void useSpeaker() {
-        AudioManager audioManager = (AudioManager) getService().getBaseContext().getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setSpeakerphoneOn(true);
-
-        // Emmit changes
-        getService().getEmitter().fireCallChanged(this);
-    }
-
-    public void useEarpiece() {
-        AudioManager audioManager = (AudioManager) getService().getBaseContext().getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setSpeakerphoneOn(false);
-
-        // Emmit changes
-        getService().getEmitter().fireCallChanged(this);
-    }
-
     public void hold() throws Exception {
         if (isHeld) {
             return;
@@ -54,7 +38,7 @@ public class PjSipCall extends Call {
         isHeld = true;
 
         // Emmit changes
-        getService().getEmitter().fireCallChanged(this);
+        getService().emmitCallUpdated(this);
 
         // Send reinvite to server for hold
         setHold(new CallOpParam(true));
@@ -68,7 +52,7 @@ public class PjSipCall extends Call {
         isHeld = false;
 
         // Emmit changes
-        getService().getEmitter().fireCallChanged(this);
+        getService().emmitCallUpdated(this);
 
         // Send reinvite to server for release from hold
         CallOpParam prm = new CallOpParam(true);
@@ -86,7 +70,7 @@ public class PjSipCall extends Call {
         doMute(true);
 
         // Emmit changes
-        getService().getEmitter().fireCallChanged(this);
+        getService().emmitCallUpdated(this);
     }
 
     public void unmute() throws Exception {
@@ -98,7 +82,7 @@ public class PjSipCall extends Call {
         doMute(false);
 
         // Emmit changes
-        getService().getEmitter().fireCallChanged(this);
+        getService().emmitCallUpdated(this);
     }
 
     private void doMute(boolean mute) throws Exception {
@@ -142,16 +126,7 @@ public class PjSipCall extends Call {
 
     @Override
     public void onCallState(OnCallStateParam prm) {
-        try {
-            if (getInfo().getState() == pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
-                getService().getEmitter().fireCallTerminated(this);
-                getService().evict(this);
-            } else {
-                getService().getEmitter().fireCallChanged(this);
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to handle call state event", e);
-        }
+        getService().emmitCallStateChanged(this, prm);
     }
 
     @Override
@@ -188,7 +163,7 @@ public class PjSipCall extends Call {
         }
 
         // Emmit changes
-        getService().getEmitter().fireCallChanged(this);
+        getService().emmitCallUpdated(this);
     }
 
     @Override

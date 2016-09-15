@@ -104,7 +104,7 @@ public class PjSipAccount extends Account {
     @Override
     public void onIncomingCall(OnIncomingCallParam prm) {
         PjSipCall call = new PjSipCall(this, prm.getCallId());
-        service.handleCallReceived(call);
+        service.emmitCallReceived(call);
     }
 
     @Override
