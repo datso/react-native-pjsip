@@ -479,6 +479,9 @@ public class PjSipService extends Service implements SensorEventListener {
             PjSipCall call = new PjSipCall(account);
             call.makeCall(destination, prm);
 
+            // Automatically put other calls on hold.
+            doPauseParallelCalls(call);
+
             mCalls.add(call);
             mEmitter.fireCallCreated(intent, call);
         } catch (Exception e) {
