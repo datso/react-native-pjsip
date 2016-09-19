@@ -54,3 +54,25 @@ import com.carusto.PjSipModulePackage;  // <--- Add this line
       );
     }
 ```
+
+
+## Additional step: Ability to answer incoming call without Lock Screen
+
+In `android/app/src/main/java/com/xxx/MainActivity.java`
+
+```java
+import android.view.Window;
+import android.view.WindowManager;
+import android.os.Bundle;
+...
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Window w = getWindow();
+        w.setFlags(
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+        );
+    }
+```
