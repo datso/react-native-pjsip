@@ -49,9 +49,18 @@ export default class Endpoint extends EventEmitter {
                         }
                     }
 
+                    let extra = {};
+
+                    for (let key in data) {
+                        if (data.hasOwnProperty(key) && key != "accounts" && key != "calls") {
+                            extra[key] = data[key];
+                        }
+                    }
+
                     resolve({
                         accounts,
-                        calls
+                        calls,
+                        ...extra
                     });
                 } else {
                     reject(data);

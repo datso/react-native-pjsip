@@ -39,11 +39,13 @@ public class PjSipBroadcastEmiter {
             JSONObject data = new JSONObject();
             data.put("accounts", dataAccounts);
             data.put("calls", dataCalls);
+            data.put("foreground", original.getBooleanExtra("foreground", false));
 
             Intent intent = new Intent();
             intent.setAction(PjActions.EVENT_STARTED);
             intent.putExtra("callback_id", original.getIntExtra("callback_id", -1));
             intent.putExtra("data", data.toString());
+
 
             context.sendBroadcast(intent);
         } catch (Exception e) {

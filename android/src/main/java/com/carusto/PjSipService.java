@@ -754,6 +754,7 @@ public class PjSipService extends Service implements SensorEventListener {
                 Intent intent = new Intent(getApplicationContext(), Class.forName(cls));
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
                 intent.addCategory(Intent.CATEGORY_LAUNCHER);
+                intent.putExtra("foreground", true);
 
                 startActivity(intent);
             } catch (Exception e) {

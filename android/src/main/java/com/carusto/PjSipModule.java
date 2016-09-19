@@ -1,6 +1,8 @@
 package com.carusto;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import com.facebook.react.bridge.*;
 
 public class PjSipModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
@@ -19,7 +21,6 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
         } else {
             receiver.setContext(context);
         }
-
     }
 
     @Override
@@ -45,9 +46,20 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
 
     @ReactMethod
     public void start(Callback callback) {
+        boolean foreground = false;
+        Activity activity = getCurrentActivity();
+
+        if (activity != null) {
+            Intent activityIntent = activity.getIntent();
+            if (activityIntent != null) {
+                foreground = activityIntent.getBooleanExtra("foreground", false);
+            }
+        }
+
         Intent intent = new Intent(getReactApplicationContext(), PjSipService.class);
         intent.setAction(PjActions.ACTION_START);
         intent.putExtra("callback_id", receiver.register(callback));
+        intent.putExtra("foreground", foreground);
 
         getReactApplicationContext().startService(intent);
     }
