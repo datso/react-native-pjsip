@@ -22,6 +22,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import com.carusto.ReactNativePjSip.R;
+import com.carusto.configuration.AccountConfiguration;
 import org.pjsip.pjsua2.*;
 
 import java.util.*;
@@ -344,6 +345,19 @@ public class PjSipService extends Service implements SensorEventListener {
      * @param intent
      */
     private void handleStart(Intent intent) {
+        List<AccountConfiguration> accounts = PjSipSharedPreferences.getAccounts(getBaseContext());
+
+        if (mAccounts.size() == 0 && accounts.size() > 0) {
+            for (AccountConfiguration account : accounts) {
+                try {
+                    doAccountCreate(account);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to restore account from shared preferences");
+                }
+            }
+        }
+
+
         mEmitter.fireStarted(intent, mAccounts, mCalls);
     }
 
@@ -352,85 +366,81 @@ public class PjSipService extends Service implements SensorEventListener {
      */
     private void handleAccountCreate(Intent intent) {
         try {
-            String name = intent.getStringExtra("name");
-            String username = intent.getStringExtra("username");
-            String domain = intent.getStringExtra("domain");
-            String password = intent.getStringExtra("password");
-            String proxy = intent.getStringExtra("proxy");
-            String transport = intent.getStringExtra("transport");
-            String regServer = intent.getStringExtra("regServer");
-            Integer regTimeout = null;
+            AccountConfiguration configuration = AccountConfiguration.fromIntent(intent);
+            PjSipAccount account = doAccountCreate(configuration);
 
-            if (intent.hasExtra("regTimeout")) {
-                regTimeout = intent.getIntExtra("regTimeout", -1);
-            }
-
-            // Create transport
-            TransportConfig transportConfig = new TransportConfig();
-            transportConfig.setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
-
-            pjsip_transport_type_e transportType = pjsip_transport_type_e.PJSIP_TRANSPORT_UDP;
-
-            if (transport != null && !transport.isEmpty() && !transport.equals("TCP")) {
-                switch (transport) {
-                    case "UDP":
-                        transportType = pjsip_transport_type_e.PJSIP_TRANSPORT_TCP;
-                        break;
-                    case "TLS":
-                        transportType = pjsip_transport_type_e.PJSIP_TRANSPORT_TLS;
-                        break;
-                    default:
-                        Log.w(TAG, "Illegal \""+ transport +"\" transport (possible values are UDP, TCP or TLS) use TCP instead");
-                        break;
-                }
-            }
-
-            int transportId = mEndpoint.transportCreate(transportType, transportConfig);
-
-            // Create account
-
-            AuthCredInfo cred = new AuthCredInfo(
-                "Digest",
-                regServer != null && regServer.length() > 0 ? regServer : "*" ,
-                username,
-                0,
-                password
-            );
-
-            String idUri = name + " <sip:"+ username +"@"+ domain +">";
-            String regUri = "sip:"+ domain;
-
-            AccountConfig cfg = new AccountConfig();
-            cfg.setIdUri(idUri);
-            cfg.getRegConfig().setRegistrarUri(regUri);
-            cfg.getSipConfig().getAuthCreds().add(cred);
-            cfg.getSipConfig().setTransportId(transportId);
-            cfg.getMediaConfig().getTransportConfig().setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
-            cfg.getRegConfig().setRegisterOnAdd(true);
-            cfg.getVideoConfig().setAutoTransmitOutgoing(true);
-
-            if (proxy != null && proxy.length() > 0) {
-                StringVector v = new StringVector();
-                v.add(proxy);
-                cfg.getSipConfig().setProxies(v);
-            }
-
-            PjSipAccount account = new PjSipAccount(this, transportId, name, username, domain, password, proxy, transport, regServer, regTimeout);
-            account.create(cfg);
-
-            mTrash.add(cfg);
-            mTrash.add(cred);
-            mTrash.add(transportConfig);
-
-            mAccounts.add(account);
+            // Emmit response
             mEmitter.fireAccountCreated(intent, account);
 
-            // -----
-            handleForeground();
+            // Add to persistent preferences to be able to retrieve on next start
+            // (for instance on boot or when connectivity changed)
+            PjSipSharedPreferences.addAccount(getBaseContext(), configuration);
 
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
+    }
+
+    private PjSipAccount doAccountCreate(AccountConfiguration configuration) throws Exception {
+        // Create transport
+        TransportConfig transportConfig = new TransportConfig();
+        transportConfig.setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
+
+        pjsip_transport_type_e transportType = pjsip_transport_type_e.PJSIP_TRANSPORT_UDP;
+
+        if (configuration.isTransportNotEmpty()) {
+            switch (configuration.getTransport()) {
+                case "UDP":
+                    transportType = pjsip_transport_type_e.PJSIP_TRANSPORT_TCP;
+                    break;
+                case "TLS":
+                    transportType = pjsip_transport_type_e.PJSIP_TRANSPORT_TLS;
+                    break;
+                default:
+                    Log.w(TAG, "Illegal \""+ configuration.getTransport() +"\" transport (possible values are UDP, TCP or TLS) use TCP instead");
+                    break;
+            }
+        }
+
+        int transportId = mEndpoint.transportCreate(transportType, transportConfig);
+
+        // Create account
+        AuthCredInfo cred = new AuthCredInfo(
+            "Digest",
+            configuration.getNomalizedRegServer(),
+            configuration.getUsername(),
+            0,
+            configuration.getPassword()
+        );
+
+        String idUri = configuration.getIdUri();
+        String regUri = configuration.getRegUri();
+
+        AccountConfig cfg = new AccountConfig();
+        cfg.setIdUri(idUri);
+        cfg.getRegConfig().setRegistrarUri(regUri);
+        cfg.getSipConfig().getAuthCreds().add(cred);
+        cfg.getSipConfig().setTransportId(transportId);
+        cfg.getMediaConfig().getTransportConfig().setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
+        cfg.getRegConfig().setRegisterOnAdd(true);
+        cfg.getVideoConfig().setAutoTransmitOutgoing(true);
+
+        if (configuration.isProxyNotEmpty()) {
+            StringVector v = new StringVector();
+            v.add(configuration.getProxy());
+            cfg.getSipConfig().setProxies(v);
+        }
+
+        PjSipAccount account = new PjSipAccount(this, transportId, configuration);
+        account.create(cfg);
+
+        mTrash.add(cfg);
+        mTrash.add(cred);
+        mTrash.add(transportConfig);
+
+        mAccounts.add(account);
+
+        return account;
     }
 
     private void handleAccountDelete(Intent intent) {
@@ -451,11 +461,11 @@ public class PjSipService extends Service implements SensorEventListener {
 
             evict(account);
 
-            // -----
-            mEmitter.fireIntentHandled(intent);
+            // Remove account from persistent preferences
+            PjSipSharedPreferences.deleteAccount(getBaseContext(), account.getConfiguration());
 
             // -----
-            handleForeground();
+            mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
@@ -717,18 +727,6 @@ public class PjSipService extends Service implements SensorEventListener {
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
-    }
-
-    private void handleForeground() throws ClassNotFoundException {
-        // TODO: Add ability to handle foreground state automatically.
-
-        /**
-        if (mAccounts.size() > 0) {
-            startForeground(NOTIFICATION, buildNotification());
-        } else {
-            stopForeground(true);
-        }
-        **/
     }
 
     void emmitCallReceived(PjSipCall call) {

@@ -1,6 +1,7 @@
 package com.carusto;
 
 import android.util.Log;
+import com.carusto.configuration.AccountConfiguration;
 import org.json.JSONObject;
 import org.pjsip.pjsua2.*;
 
@@ -15,38 +16,14 @@ public class PjSipAccount extends Account {
 
     private PjSipService service;
 
-    private String name;
-
-    private String username;
-
-    private String domain;
-
-    private String password;
-
-    private String proxy;
-
-    private String transport;
-
-    private String regServer;
-
-    private Integer regTimeout;
+    private AccountConfiguration configuration;
 
     private Integer transportId;
 
-    public PjSipAccount(PjSipService service, int transportId,
-                        String name, String username, String domain, String password,
-                        String proxy, String transport, String regServer, Integer regTimeout) {
+    public PjSipAccount(PjSipService service, int transportId, AccountConfiguration configuration) {
         this.service = service;
         this.transportId = transportId;
-
-        this.name = name;
-        this.username = username;
-        this.domain = domain;
-        this.password = password;
-        this.proxy = proxy;
-        this.transport = transport;
-        this.regServer = regServer;
-        this.regTimeout = regTimeout;
+        this.configuration = configuration;
     }
 
     public PjSipService getService() {
@@ -57,32 +34,8 @@ public class PjSipAccount extends Account {
         return transportId;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public String getProxy() {
-        return proxy;
-    }
-
-    public String getTransport() {
-        return transport;
-    }
-
-    public String getRegServer() {
-        return regServer;
-    }
-
-    public int getRegTimeout() {
-        return regTimeout;
+    public AccountConfiguration getConfiguration() {
+        return configuration;
     }
 
     @Override
@@ -149,14 +102,14 @@ public class PjSipAccount extends Account {
 
             json.put("id", getId());
             json.put("uri", getInfo().getUri());
-            json.put("name", name);
-            json.put("username", username);
-            json.put("domain", domain);
-            json.put("password", password);
-            json.put("proxy", proxy);
-            json.put("transport", transport);
-            json.put("regServer", regServer);
-            json.put("regTimeout", regTimeout != null && regTimeout > 0 ? String.valueOf(regTimeout) : "");
+            json.put("name", configuration.getName());
+            json.put("username", configuration.getUsername());
+            json.put("domain", configuration.getDomain());
+            json.put("password", configuration.getPassword());
+            json.put("proxy", configuration.getProxy());
+            json.put("transport", configuration.getTransport());
+            json.put("regServer", configuration.getRegServer());
+            json.put("regTimeout", configuration.isRegTimeoutNotEmpty() ? String.valueOf(configuration.getRegTimeout()) : "");
             json.put("registration", registration);
 
             return json;

@@ -37,17 +37,9 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
     }
 
     @ReactMethod
-    public void resume() throws ClassNotFoundException {
-        Intent intent = new Intent(getReactApplicationContext(), Class.forName("com.carustoconnect.MainActivity"));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        getReactApplicationContext().startActivity(intent);
-    }
-
-    @ReactMethod
     public void start(Callback callback) {
         boolean foreground = false;
-        Activity activity = getCurrentActivity();
+        final Activity activity = getCurrentActivity();
 
         if (activity != null) {
             Intent activityIntent = activity.getIntent();
@@ -63,6 +55,9 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
 
         getReactApplicationContext().startService(intent);
     }
+
+    // TODO: set network configuration
+    // TODO: set media configuration
 
     @ReactMethod
     public void createAccount(ReadableMap configuration, Callback callback) {
