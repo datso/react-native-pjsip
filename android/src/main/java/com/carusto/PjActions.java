@@ -3,12 +3,13 @@ package com.carusto;
 import android.content.Context;
 import android.content.Intent;
 
+import android.util.Log;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
 public class PjActions {
 
-    public static final String TEST = "test";
+    public static final String TAG = "PjActions";
 
     public static final String ACTION_START = "start";
     public static final String ACTION_CREATE_ACCOUNT = "account_create";
@@ -27,8 +28,8 @@ public class PjActions {
     public static final String ACTION_REDIRECT_CALL = "call_redirect";
     public static final String ACTION_DTMF_CALL = "call_dtmf";
 
-    public static final String ACTION_START_FOREGROUND = "start_foreground";
-    public static final String ACTION_STOP_FOREGROUND = "stop_foreground";
+    public static final String ACTION_SET_NETWORK_CONFIGURATION = "set_network_configuration";
+    public static final String ACTION_SET_SERVICE_CONFIGURATION = "set_service_configuration";
 
     public static final String EVENT_STARTED = "com.carusto.account.started";
     public static final String EVENT_ACCOUNT_CREATED = "com.carusto.account.created";
@@ -42,6 +43,38 @@ public class PjActions {
 
     public static final String EVENT_APP_VISIBLE = "com.carusto.app.visible";
     public static final String EVENT_APP_HIDDEN = "com.carusto.app.hidden";
+    public static final String EVENT_APP_DESTROY = "com.carusto.app.destroy";
+    public static final String EVENT_CONNECTIVITY_CHANGED = "com.carusto.connectivity.changed";
+
+    public static Intent createStartIntent(int callbackId, ReadableMap configuration, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_START);
+        intent.putExtra("callback_id", callbackId);
+
+        overrideIntentProps(intent, configuration);
+
+        return intent;
+    }
+
+    public static Intent createSetNetworkConfigurationIntent(int callbackId, ReadableMap configuration, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_SET_NETWORK_CONFIGURATION);
+        intent.putExtra("callback_id", callbackId);
+
+        overrideIntentProps(intent, configuration);
+
+        return intent;
+    }
+
+    public static Intent createSetServiceConfigurationIntent(int callbackId, ReadableMap configuration, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_SET_SERVICE_CONFIGURATION);
+        intent.putExtra("callback_id", callbackId);
+
+        overrideIntentProps(intent, configuration);
+
+        return intent;
+    }
 
     public static Intent createAccountCreateIntent(int callbackId, ReadableMap configuration, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
@@ -184,21 +217,9 @@ public class PjActions {
         return intent;
     }
 
-    public static Intent createStartForegroundIntent(int callbackId, ReadableMap configuration, Context context) {
+    public static Intent createConnectivityChangedIntent(Context context) {
         Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.ACTION_START_FOREGROUND);
-        intent.putExtra("callback_id", callbackId);
-
-        overrideIntentProps(intent, configuration);
-
-        return intent;
-    }
-
-    public static Intent createStopForegroundIntent(int callbackId, Context context) {
-        Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.ACTION_STOP_FOREGROUND);
-        intent.putExtra("callback_id", callbackId);
-
+        intent.setAction(PjActions.EVENT_CONNECTIVITY_CHANGED);
         return intent;
     }
 
@@ -207,12 +228,12 @@ public class PjActions {
         intent.setAction(PjActions.EVENT_APP_VISIBLE);
         return intent;
     }
+
     public static Intent createAppHiddenIntent(Context context) {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.EVENT_APP_HIDDEN);
         return intent;
     }
-
 
     private static void overrideIntentProps(Intent intent, ReadableMap configuration) {
         ReadableMapKeySetIterator it = configuration.keySetIterator();
@@ -220,11 +241,20 @@ public class PjActions {
             String key = it.nextKey();
 
             switch (configuration.getType(key)) {
+                case Null:
+                    intent.putExtra(key, (String) null);
+                    break;
                 case String:
                     intent.putExtra(key, configuration.getString(key));
                     break;
                 case Number:
                     intent.putExtra(key, configuration.getInt(key));
+                    break;
+                case Boolean:
+                    intent.putExtra(key, configuration.getBoolean(key));
+                    break;
+                default:
+                    Log.w(TAG, "Unable to put extra information for intent: unknown type \""+ configuration.getType(key) +"\"");
                     break;
             }
         }

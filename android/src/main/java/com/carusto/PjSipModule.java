@@ -37,7 +37,7 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
     }
 
     @ReactMethod
-    public void start(Callback callback) {
+    public void start(ReadableMap configuration, Callback callback) {
         boolean foreground = false;
         final Activity activity = getCurrentActivity();
 
@@ -48,15 +48,26 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
             }
         }
 
-        Intent intent = new Intent(getReactApplicationContext(), PjSipService.class);
-        intent.setAction(PjActions.ACTION_START);
-        intent.putExtra("callback_id", receiver.register(callback));
+        int id = receiver.register(callback);
+        Intent intent = PjActions.createStartIntent(id, configuration, getReactApplicationContext());
         intent.putExtra("foreground", foreground);
-
         getReactApplicationContext().startService(intent);
     }
 
-    // TODO: set network configuration
+    @ReactMethod
+    public void changeNetworkConfiguration(ReadableMap configuration, Callback callback) {
+        int id = receiver.register(callback);
+        Intent intent = PjActions.createSetNetworkConfigurationIntent(id, configuration, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
+    public void changeServiceConfiguration(ReadableMap configuration, Callback callback) {
+        int id = receiver.register(callback);
+        Intent intent = PjActions.createSetServiceConfigurationIntent(id, configuration, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
     // TODO: set media configuration
 
     @ReactMethod
@@ -164,20 +175,6 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
         getReactApplicationContext().startService(intent);
     }
 
-    @ReactMethod
-    public void startForeground(ReadableMap configuration, Callback callback) {
-        int id = receiver.register(callback);
-        Intent intent = PjActions.createStartForegroundIntent(id, configuration, getReactApplicationContext());
-        getReactApplicationContext().startService(intent);
-    }
-
-    @ReactMethod
-    public void stopForeground(Callback callback) {
-        int id = receiver.register(callback);
-        Intent intent = PjActions.createStopForegroundIntent(id, getReactApplicationContext());
-        getReactApplicationContext().startService(intent);
-    }
-
     @Override
     public void onHostResume() {
         Intent intent = PjActions.createAppVisibleIntent(getReactApplicationContext());
@@ -192,7 +189,6 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
 
     @Override
     public void onHostDestroy() {
-        Intent intent = PjActions.createAppHiddenIntent(getReactApplicationContext());
-        getReactApplicationContext().startService(intent);
+        // Nothing
     }
 }

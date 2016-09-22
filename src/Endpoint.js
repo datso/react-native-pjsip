@@ -30,9 +30,9 @@ export default class Endpoint extends EventEmitter {
      *
      * @returns {Promise}
      */
-    start() {
+    start(configuration) {
         return new Promise(function(resolve, reject) {
-            NativeModules.PjSipModule.start((successful, data) => {
+            NativeModules.PjSipModule.start(configuration, (successful, data) => {
                 if (successful) {
                     let accounts = [];
                     let calls = [];
@@ -62,6 +62,38 @@ export default class Endpoint extends EventEmitter {
                         calls,
                         ...extra
                     });
+                } else {
+                    reject(data);
+                }
+            });
+        });
+    }
+
+    /**
+     * @param configuration
+     * @returns {Promise}
+     */
+    changeNetworkConfiguration(configuration) {
+        return new Promise(function(resolve, reject) {
+            NativeModules.PjSipModule.changeNetworkConfiguration(configuration, (successful, data) => {
+                if (successful) {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            });
+        });
+    }
+
+    /**
+     * @param configuration
+     * @returns {Promise}
+     */
+    changeServiceConfiguration(configuration) {
+        return new Promise(function(resolve, reject) {
+            NativeModules.PjSipModule.changeServiceConfiguration(configuration, (successful, data) => {
+                if (successful) {
+                    resolve(data);
                 } else {
                     reject(data);
                 }
@@ -371,42 +403,18 @@ export default class Endpoint extends EventEmitter {
     }
 
     /**
-     * Make PjSip service run in the foreground, supplying the ongoing notification to be shown to the user while in this state.
-     * Android only, possible options:
-     * - title
-     * - text
-     * - info
-     * - ticker
-     * - smallIcon
-     *
-     * @returns {Promise}
+     * @fires Endpoint#connectivity_changed
+     * @private
+     * @param data {Object}
      */
-    startForeground(notification) {
-        return new Promise((resolve, reject) => {
-            NativeModules.PjSipModule.startForeground(notification, (successful, data) => {
-                if (successful) {
-                    resolve(data);
-                } else {
-                    reject(data);
-                }
-            });
-        });
-    }
-
-    /**
-     * Remove PjSip service from foreground state, allowing it to be killed if more memory is needed.
-     * @returns {Promise}
-     */
-    stopForeground() {
-        return new Promise((resolve, reject) => {
-            NativeModules.PjSipModule.stopForeground((successful, data) => {
-                if (successful) {
-                    resolve(data);
-                } else {
-                    reject(data);
-                }
-            });
-        });
+    _onConnectivityChanged(data) {
+        /**
+         * Fires when registration status has changed.
+         *
+         * @event Endpoint#connectivity_changed
+         * @property {Account} account
+         */
+        this.emit("connectivity_changed", new Account(data));
     }
 
     /**

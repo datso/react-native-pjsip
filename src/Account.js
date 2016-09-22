@@ -73,7 +73,7 @@ export default class Account {
      * @returns {String}
      */
     getProxy() {
-        return this._proxy;
+        return this._proxy || "";
     }
 
     /**
@@ -81,7 +81,7 @@ export default class Account {
      * @returns {String}
      */
     getTransport() {
-        return this._transport;
+        return this._transport || "";
     }
 
     /**
@@ -89,7 +89,7 @@ export default class Account {
      * @returns {String}
      */
     getRegServer() {
-        return this._regServer;
+        return this._regServer || "";
     }
 
     /**

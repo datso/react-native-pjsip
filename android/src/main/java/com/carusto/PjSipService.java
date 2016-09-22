@@ -11,6 +11,8 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.*;
 import android.os.Process;
@@ -23,6 +25,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import com.carusto.ReactNativePjSip.R;
 import com.carusto.configuration.AccountConfiguration;
+import com.carusto.configuration.NetworkConfiguration;
+import com.carusto.configuration.ServiceConfiguration;
+import org.json.JSONObject;
 import org.pjsip.pjsua2.*;
 
 import java.util.*;
@@ -69,6 +74,10 @@ public class PjSipService extends Service implements SensorEventListener {
 
     private WifiManager mWifiManager;
 
+    private ConnectivityManager mConnectivityManager;
+
+    private boolean mConnectivityAvailable;
+
     private WifiManager.WifiLock mWifiLock;
 
     private boolean mGSMIdle;
@@ -80,6 +89,8 @@ public class PjSipService extends Service implements SensorEventListener {
     private boolean mProximitySensorTracked = false;
 
     private boolean mProximityFirstRun = true;
+
+    private boolean mForegroundPermitted = false;
 
     private BroadcastReceiver mPhoneStateChangedReceiver = new PhoneStateChangedReceiver();
 
@@ -119,6 +130,9 @@ public class PjSipService extends Service implements SensorEventListener {
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, this.getPackageName()+"-wifi-call-lock");
         mWifiLock.setReferenceCounted(false);
+
+        mConnectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        mConnectivityAvailable = PjSipSharedPreferences.getNetworkSettings(getBaseContext()).isMatches(mConnectivityManager.getActiveNetworkInfo());
 
         mTelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         mGSMIdle = mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE;
@@ -160,6 +174,8 @@ public class PjSipService extends Service implements SensorEventListener {
             throw new RuntimeException(error);
         }
 
+        ServiceConfiguration configuration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+
         // Start stack
         try {
             mEndpoint = new Endpoint();
@@ -174,7 +190,12 @@ public class PjSipService extends Service implements SensorEventListener {
             mLogWriter = new PjSipLogWriter();
             epConfig.getLogConfig().setWriter(mLogWriter);
 
-            // epConfig.getUaConfig().setUserAgent("");
+            if (configuration.isUserAgentNotEmpty()) {
+                epConfig.getUaConfig().setUserAgent(configuration.getUserAgent());
+            } else {
+                epConfig.getUaConfig().setUserAgent("React Native PjSip ("+ mEndpoint.libVersion().getFull() +")");
+            }
+
             epConfig.getMedConfig().setHasIoqueue(true);
             epConfig.getMedConfig().setClockRate(8000);
             epConfig.getMedConfig().setQuality(4);
@@ -324,19 +345,29 @@ public class PjSipService extends Service implements SensorEventListener {
             case PjActions.ACTION_DTMF_CALL:
                 handleCallDtmf(intent);
                 break;
-            case PjActions.ACTION_START_FOREGROUND:
-                handleStartForeground(intent);
+
+            // Configuration actions
+            case PjActions.ACTION_SET_NETWORK_CONFIGURATION:
+                handleSetNetworkConfiguration(intent);
                 break;
-            case PjActions.ACTION_STOP_FOREGROUND:
-                handleStopForeground(intent);
+            case PjActions.ACTION_SET_SERVICE_CONFIGURATION:
+                handleSetServiceConfiguration(intent);
                 break;
 
             // Extra actions
+            case PjActions.EVENT_CONNECTIVITY_CHANGED:
+                handleConnectivityChangedEvent();
+                break;
             case PjActions.EVENT_APP_VISIBLE:
                 mAppHidden = false;
                 break;
             case PjActions.EVENT_APP_HIDDEN:
                 mAppHidden = true;
+                break;
+            case PjActions.EVENT_APP_DESTROY:
+                mAppHidden = true;
+                // TODO: Add this event and stop service in case no connectivity or empty accounts or foreground is false
+
                 break;
         }
     }
@@ -345,6 +376,7 @@ public class PjSipService extends Service implements SensorEventListener {
      * @param intent
      */
     private void handleStart(Intent intent) {
+        // Initialize accounts from persistent storage
         List<AccountConfiguration> accounts = PjSipSharedPreferences.getAccounts(getBaseContext());
 
         if (mAccounts.size() == 0 && accounts.size() > 0) {
@@ -355,10 +387,144 @@ public class PjSipService extends Service implements SensorEventListener {
                     Log.e(TAG, "Failed to restore account from shared preferences");
                 }
             }
+
+            ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+
+            // Start foreground
+            if (mConnectivityAvailable && serviceConfiguration.isForeground()) {
+                doStartForeground();
+            }
         }
 
+        // Format settings
+        NetworkConfiguration networkConfiguration = PjSipSharedPreferences.getNetworkSettings(getBaseContext());
+        ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+        JSONObject settings = new JSONObject();
 
-        mEmitter.fireStarted(intent, mAccounts, mCalls);
+        try {
+            settings.put("network", networkConfiguration.toJson());
+            settings.put("service", serviceConfiguration.toJson());
+        } catch (Exception e) {
+            Log.d(TAG, "Failed to format settings json", e);
+        }
+
+        mEmitter.fireStarted(intent, mAccounts, mCalls, settings);
+    }
+
+    private void handleSetNetworkConfiguration(Intent intent) {
+        try {
+            NetworkConfiguration configuration = NetworkConfiguration.fromIntent(intent);
+            boolean matches = configuration.isMatches(mConnectivityManager.getActiveNetworkInfo());
+
+            // Add to persistent preferences to be able to retrieve on next start
+            // (for instance on boot or when connectivity changed)
+            PjSipSharedPreferences.saveNetworkSettings(getBaseContext(), configuration);
+
+            if (mConnectivityAvailable != matches) {
+                mConnectivityAvailable = matches;
+
+                if (matches) {
+                    handleConnectivityAvailable();
+                } else {
+                    handleConnectivityUnavailable();
+                }
+            }
+
+            // Emmit response
+            mEmitter.fireIntentHandled(intent, configuration.toJson());
+
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleSetServiceConfiguration(Intent intent) {
+        try {
+            ServiceConfiguration configuration = ServiceConfiguration.fromIntent(intent);
+
+            // Add to persistent preferences to be able to retrieve on next start
+            PjSipSharedPreferences.saveServiceSettings(getBaseContext(), configuration);
+
+            // Add or remove foreground notification
+            mForegroundPermitted = configuration.isForeground();
+
+            if (mForegroundPermitted) {
+                doStartForeground();
+            } else {
+                doStopForeground();
+            }
+
+            // Emmit response
+            JSONObject response = PjSipSharedPreferences.getSettingsAsJson(getBaseContext());
+            mEmitter.fireIntentHandled(intent, response);
+
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleConnectivityChangedEvent() {
+        NetworkConfiguration c = PjSipSharedPreferences.getNetworkSettings(getBaseContext());
+        NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
+        final boolean matches = c.isMatches(info);
+
+        if (mConnectivityAvailable != matches) {
+            mConnectivityAvailable = matches;
+
+            job(new Runnable() {
+                @Override
+                public void run() {
+                    if (matches) {
+                        handleConnectivityAvailable();
+                    } else {
+                        handleConnectivityUnavailable();
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Fires when application can register.
+     * Also service should be started in foreground to persist connection to server (only if more then one account).
+     */
+    private void handleConnectivityAvailable() {
+        if (mAccounts.size() == 0) {
+            return;
+        }
+
+        // Force register on server
+        for (PjSipAccount account : mAccounts) {
+            try {
+                account.setRegistration(true);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to register on server", e);
+            }
+        }
+
+        // Start foreground
+        ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+        if (serviceConfiguration.isForeground()) {
+            doStartForeground();
+        }
+    }
+
+    /**
+     * Fires when application should disable any active registration.
+     * Also service should be stopped in foreground, until connection will be available.
+     */
+    private void handleConnectivityUnavailable() {
+        // Stop foreground
+        doStopForeground();
+
+        // Try to send unregister event
+        for (PjSipAccount account : mAccounts) {
+            try {
+                account.setRegistration(false);
+            } catch (Exception e) {
+
+            }
+        }
     }
 
     /**
@@ -366,15 +532,21 @@ public class PjSipService extends Service implements SensorEventListener {
      */
     private void handleAccountCreate(Intent intent) {
         try {
-            AccountConfiguration configuration = AccountConfiguration.fromIntent(intent);
-            PjSipAccount account = doAccountCreate(configuration);
+            ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+            AccountConfiguration accountConfiguration = AccountConfiguration.fromIntent(intent);
+            PjSipAccount account = doAccountCreate(accountConfiguration);
 
             // Emmit response
             mEmitter.fireAccountCreated(intent, account);
 
+            // Start foreground
+            if (mConnectivityAvailable && serviceConfiguration.isForeground()) {
+                doStartForeground();
+            }
+
             // Add to persistent preferences to be able to retrieve on next start
             // (for instance on boot or when connectivity changed)
-            PjSipSharedPreferences.addAccount(getBaseContext(), configuration);
+            PjSipSharedPreferences.addAccount(getBaseContext(), accountConfiguration);
 
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
@@ -424,6 +596,7 @@ public class PjSipService extends Service implements SensorEventListener {
         cfg.getMediaConfig().getTransportConfig().setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
         cfg.getRegConfig().setRegisterOnAdd(true);
         cfg.getVideoConfig().setAutoTransmitOutgoing(true);
+        cfg.getRegConfig().setRegisterOnAdd(false);
 
         if (configuration.isProxyNotEmpty()) {
             StringVector v = new StringVector();
@@ -433,6 +606,10 @@ public class PjSipService extends Service implements SensorEventListener {
 
         PjSipAccount account = new PjSipAccount(this, transportId, configuration);
         account.create(cfg);
+
+        if (mConnectivityAvailable) {
+            account.setRegistration(true);
+        }
 
         mTrash.add(cfg);
         mTrash.add(cred);
@@ -460,6 +637,11 @@ public class PjSipService extends Service implements SensorEventListener {
             }
 
             evict(account);
+
+            // Stop foreground
+            if (mAccounts.size() == 0) {
+                doStopForeground();
+            }
 
             // Remove account from persistent preferences
             PjSipSharedPreferences.deleteAccount(getBaseContext(), account.getConfiguration());
@@ -703,30 +885,29 @@ public class PjSipService extends Service implements SensorEventListener {
         throw new Exception("Call with specified \""+ id +"\" id not found");
     }
 
-    private void handleStartForeground(Intent intent) {
-        try {
-            String title = intent.getStringExtra("title");
-            String text = intent.getStringExtra("text");
-            String info = intent.getStringExtra("info");
-            String ticker = intent.getStringExtra("ticker");
-            String smallIcon = intent.getStringExtra("smallIcon");
-            String largeIcon = intent.getStringExtra("largeIcon");
+    private void doStartForeground() {
+        ServiceConfiguration configuration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
 
-            startForeground(NOTIFICATION, buildNotification(title, text, info, ticker, smallIcon, largeIcon));
+        String title = configuration.getForegroundTitle();
+        String text = configuration.getForegroundText();
+        String info = configuration.getForegroundInfo();
+        String ticker = configuration.getForegroundTicker();
+        String smallIcon = configuration.getForegroundSmallIcon();
+        String largeIcon = configuration.getForegroundLargeIcon();
 
-            mEmitter.fireIntentHandled(intent);
-        } catch (Exception e) {
-            mEmitter.fireIntentHandled(intent, e);
+        if (title == null || text == null) {
+            if (mAccounts.size() > 0) {
+                PjSipAccount account = mAccounts.get(0);
+                title = account.getConfiguration().getUsername();
+                text = account.getRegistrationStatusText();
+            }
         }
+
+        startForeground(NOTIFICATION, buildNotification(title, text, info, ticker, smallIcon, largeIcon));
     }
 
-    private void handleStopForeground(Intent intent) {
-        try {
-            stopForeground(true);
-            mEmitter.fireIntentHandled(intent);
-        } catch (Exception e) {
-            mEmitter.fireIntentHandled(intent, e);
-        }
+    private void doStopForeground() {
+        stopForeground(true);
     }
 
     void emmitCallReceived(PjSipCall call) {
@@ -898,10 +1079,16 @@ public class PjSipService extends Service implements SensorEventListener {
         mEmitter.fireCallChanged(call);
     }
 
-    private Notification buildNotification(String title, String text, String info, String ticker, String smallIcon, String largeIcon)
-            throws ClassNotFoundException {
+    private Notification buildNotification(String title, String text, String info, String ticker, String smallIcon, String largeIcon) {
         String foregroundIntentName = getApplicationContext().getPackageName() + ".MainActivity";
-        Class<?> foregroundIntentCls = Class.forName(foregroundIntentName);
+        Class<?> foregroundIntentCls = null;
+
+        try {
+            foregroundIntentCls = Class.forName(foregroundIntentName);
+        } catch (ClassNotFoundException e) {
+            Log.e(TAG, "Could not found main activity class, please check whether \""+ foregroundIntentName +"\" available");
+            throw new RuntimeException(e);
+        }
 
         Intent foregroundIntent = new Intent(this, foregroundIntentCls);
         foregroundIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);

@@ -38,6 +38,14 @@ public class PjSipAccount extends Account {
         return configuration;
     }
 
+    public String getRegistrationStatusText() {
+        try {
+            return getInfo().getRegStatusText();
+        } catch (Exception e) {
+            return "Connecting...";
+        }
+    }
+
     @Override
     public void onRegStarted(OnRegStartedParam prm) {
         Log.d(TAG, "onRegStarted: " + prm.getRenew());

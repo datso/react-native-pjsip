@@ -22,8 +22,7 @@ public class PjSipBroadcastEmiter {
         this.context = context;
     }
 
-    public void fireStarted(Intent original, List<PjSipAccount> accounts, List<PjSipCall> calls) {
-        Log.d(TAG, "fireStarted");
+    public void fireStarted(Intent original, List<PjSipAccount> accounts, List<PjSipCall> calls, JSONObject settings) {
 
         try {
             JSONArray dataAccounts = new JSONArray();
@@ -40,17 +39,26 @@ public class PjSipBroadcastEmiter {
             data.put("accounts", dataAccounts);
             data.put("calls", dataCalls);
             data.put("foreground", original.getBooleanExtra("foreground", false));
+            data.put("settings", settings);
 
             Intent intent = new Intent();
             intent.setAction(PjActions.EVENT_STARTED);
             intent.putExtra("callback_id", original.getIntExtra("callback_id", -1));
             intent.putExtra("data", data.toString());
 
-
             context.sendBroadcast(intent);
         } catch (Exception e) {
             Log.e(TAG, "Failed to send ACCOUNT_CREATED event", e);
         }
+    }
+
+    public void fireIntentHandled(Intent original, JSONObject result) {
+        Intent intent = new Intent();
+        intent.setAction(PjActions.EVENT_HANDLED);
+        intent.putExtra("callback_id", original.getIntExtra("callback_id", -1));
+        intent.putExtra("data", result.toString());
+
+        context.sendBroadcast(intent);
     }
 
     public void fireIntentHandled(Intent original) {
@@ -88,7 +96,6 @@ public class PjSipBroadcastEmiter {
     }
 
     public void fireCallCreated(Intent original, PjSipCall call) {
-
         // TODO: Remove this event, because makeCall function already returns call info.
 
         Intent intent = new Intent();
