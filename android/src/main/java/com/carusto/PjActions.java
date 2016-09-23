@@ -16,6 +16,7 @@ public class PjActions {
     public static final String ACTION_DELETE_ACCOUNT = "account_delete";
     public static final String ACTION_MAKE_CALL = "call_make";
     public static final String ACTION_HANGUP_CALL = "call_hangup";
+    public static final String ACTION_DECLINE_CALL = "call_decline";
     public static final String ACTION_ANSWER_CALL = "call_answer";
     public static final String ACTION_HOLD_CALL = "call_hold";
     public static final String ACTION_UNHOLD_CALL = "call_unhold";
@@ -108,6 +109,15 @@ public class PjActions {
     public static Intent createHangupCallIntent(int callbackId, int callId, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.ACTION_HANGUP_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra("call_id", callId);
+
+        return intent;
+    }
+
+    public static Intent createDeclineCallIntent(int callbackId, int callId, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_DECLINE_CALL);
         intent.putExtra("callback_id", callbackId);
         intent.putExtra("call_id", callId);
 

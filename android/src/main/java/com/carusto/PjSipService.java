@@ -114,7 +114,6 @@ public class PjSipService extends Service implements SensorEventListener {
     public void onCreate() {
         Log.d(TAG, "onCreate");
 
-        // TODO: Listen for WIFI manager to register on server once connection exist.
         // TODO: Decline seems doesn't work propertly (see crst_ext)
         // TODO: Ability to adjust volume (starting from ICS, volume must be adjusted by the application, at least for STREAM_VOICE_CALL volume stream)
         // TODO: Clean up mTrash once call or account not needed
@@ -331,6 +330,9 @@ public class PjSipService extends Service implements SensorEventListener {
                 break;
             case PjActions.ACTION_HANGUP_CALL:
                 handleCallHangup(intent);
+                break;
+            case PjActions.ACTION_DECLINE_CALL:
+                handleCallDecline(intent);
                 break;
             case PjActions.ACTION_ANSWER_CALL:
                 handleCallAnswer(intent);
@@ -712,6 +714,23 @@ public class PjSipService extends Service implements SensorEventListener {
             // -----
             PjSipCall call = findCall(callId);
             call.hangup(new CallOpParam(true));
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleCallDecline(Intent intent) {
+        try {
+            int callId = intent.getIntExtra("call_id", -1);
+
+            // -----
+            PjSipCall call = findCall(callId);
+            CallOpParam prm = new CallOpParam(true);
+            prm.setStatusCode(pjsip_status_code.PJSIP_SC_DECLINE);
+            call.hangup(prm);
+            prm.delete();
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {

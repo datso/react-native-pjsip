@@ -115,6 +115,13 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
     }
 
     @ReactMethod
+    public void declineCall(int callId, Callback callback) {
+        int callbackId = receiver.register(callback);
+        Intent intent = PjActions.createDeclineCallIntent(callbackId, callId, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
     public void answerCall(int callId, Callback callback) {
         int callbackId = receiver.register(callback);
         Intent intent = PjActions.createAnswerCallIntent(callbackId, callId, getReactApplicationContext());
