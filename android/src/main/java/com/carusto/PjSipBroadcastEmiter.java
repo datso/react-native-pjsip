@@ -23,7 +23,6 @@ public class PjSipBroadcastEmiter {
     }
 
     public void fireStarted(Intent original, List<PjSipAccount> accounts, List<PjSipCall> calls, JSONObject settings) {
-
         try {
             JSONArray dataAccounts = new JSONArray();
             for (PjSipAccount account : accounts) {
@@ -91,17 +90,6 @@ public class PjSipBroadcastEmiter {
         Intent intent = new Intent();
         intent.setAction(PjActions.EVENT_REGISTRATION_CHANGED);
         intent.putExtra("data", account.toJsonString());
-
-        context.sendBroadcast(intent);
-    }
-
-    public void fireCallCreated(Intent original, PjSipCall call) {
-        // TODO: Remove this event, because makeCall function already returns call info.
-
-        Intent intent = new Intent();
-        intent.setAction(PjActions.EVENT_CALL_CREATED);
-        intent.putExtra("callback_id", original.getIntExtra("callback_id", -1));
-        intent.putExtra("data", call.toJsonString());
 
         context.sendBroadcast(intent);
     }

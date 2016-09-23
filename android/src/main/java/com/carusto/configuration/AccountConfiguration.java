@@ -122,10 +122,16 @@ public class AccountConfiguration {
         c.regTimeout = null;
 
         if (intent.hasExtra("regTimeout")) {
-            c.regTimeout = intent.getIntExtra("regTimeout", -1);
+            String regTimeout = intent.getStringExtra("regTimeout");
+
+            if (regTimeout != null && !regTimeout.isEmpty()) {
+                int timeout = Integer.parseInt(regTimeout);
+                if (timeout > 0) {
+                    c.regTimeout = timeout;
+                }
+            }
         }
 
         return c;
     }
-
 }

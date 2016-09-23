@@ -84,8 +84,6 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
         getReactApplicationContext().startService(intent);
     }
 
-    // TODO: set media configuration
-
     @ReactMethod
     public void createAccount(ReadableMap configuration, Callback callback) {
         int id = receiver.register(callback);

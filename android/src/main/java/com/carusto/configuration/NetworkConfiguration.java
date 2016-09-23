@@ -9,6 +9,8 @@ import org.json.JSONObject;
 
 public class NetworkConfiguration {
 
+    private static final String TAG = "NetworkConfiguration";
+
     public boolean useAnyway;
 
     public boolean useWifi;
@@ -71,7 +73,7 @@ public class NetworkConfiguration {
 
         // In Roaming
         if (!useInRoaming && ni.isRoaming()) {
-            Log.d("NetworkConfiguration", "Application in roaming");
+            Log.d(TAG, "Application in roaming");
             return false;
         }
 
@@ -104,7 +106,7 @@ public class NetworkConfiguration {
             return true;
         }
 
-        Log.d("NetworkConfiguration", "Application not match any type (" + type + ")" );
+        Log.d(TAG, "Application not match any type (" + type + ")" );
 
         return false;
     }

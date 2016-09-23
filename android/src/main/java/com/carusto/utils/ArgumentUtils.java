@@ -1,5 +1,6 @@
 package com.carusto.utils;
 
+import android.content.Intent;
 import android.util.Log;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
@@ -8,7 +9,9 @@ import com.facebook.react.bridge.WritableNativeMap;
 import com.google.gson.*;
 import com.google.gson.internal.LazilyParsedNumber;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ArgumentUtils {
 
@@ -97,5 +100,23 @@ public class ArgumentUtils {
 
         return result;
     }
+
+
+    public static String dumpIntentExtraParameters(Intent intent) {
+        if (intent == null || intent.getExtras() == null) {
+            return "empty extras";
+        }
+
+        Set<String> keys = intent.getExtras().keySet();
+        Map<String, Object> data = new HashMap<>(keys.size());
+
+        for (String key : keys) {
+            data.put(key, intent.getExtras().get(key));
+        }
+
+        Gson gson = new Gson();
+        return gson.toJson(data);
+    }
+
 
 }

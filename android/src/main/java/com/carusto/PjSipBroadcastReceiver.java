@@ -43,7 +43,6 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
         filter.addAction(PjActions.EVENT_ACCOUNT_CREATED);
         filter.addAction(PjActions.EVENT_REGISTRATION_CHANGED);
         filter.addAction(PjActions.EVENT_CALL_RECEIVED);
-        filter.addAction(PjActions.EVENT_CALL_CREATED);
         filter.addAction(PjActions.EVENT_CALL_CHANGED);
         filter.addAction(PjActions.EVENT_CALL_TERMINATED);
         filter.addAction(PjActions.EVENT_CALL_SCREEN_LOCKED);
@@ -54,9 +53,9 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "onReceive: " + intent.getAction());
-
         String action = intent.getAction();
+
+        Log.d(TAG, "Received \""+ action +"\" response from service (" + ArgumentUtils.dumpIntentExtraParameters(intent) + ")");
 
         switch (action) {
             case PjActions.EVENT_STARTED:

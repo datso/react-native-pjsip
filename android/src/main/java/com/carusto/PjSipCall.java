@@ -134,13 +134,6 @@ public class PjSipCall extends Call {
     }
 
     @Override
-    public void onCallTsxState(OnCallTsxStateParam prm) {
-        Log.d(TAG, "onCallTsxState");
-
-        super.onCallTsxState(prm);
-    }
-
-    @Override
     public void onCallMediaState(OnCallMediaStateParam prm) {
         try {
             CallInfo info = getInfo();
@@ -168,97 +161,6 @@ public class PjSipCall extends Call {
 
         // Emmit changes
         getService().emmitCallUpdated(this);
-    }
-
-    @Override
-    public void onCallSdpCreated(OnCallSdpCreatedParam prm) {
-        Log.d(TAG, "onCallSdpCreated");
-
-        super.onCallSdpCreated(prm);
-    }
-
-    @Override
-    public void onStreamCreated(OnStreamCreatedParam prm) {
-        Log.d(TAG, "onStreamCreated");
-
-        super.onStreamCreated(prm);
-    }
-
-    @Override
-    public void onStreamDestroyed(OnStreamDestroyedParam prm) {
-        Log.d(TAG, "onStreamDestroyed");
-
-        super.onStreamDestroyed(prm);
-    }
-
-    @Override
-    public void onDtmfDigit(OnDtmfDigitParam prm) {
-        Log.d(TAG, "onDtmfDigit");
-
-        super.onDtmfDigit(prm);
-    }
-
-    @Override
-    public void onCallTransferRequest(OnCallTransferRequestParam prm) {
-        Log.d(TAG, "onCallTransferRequest");
-
-        super.onCallTransferRequest(prm);
-    }
-
-    @Override
-    public void onCallTransferStatus(OnCallTransferStatusParam prm) {
-        Log.d(TAG, "onCallTransferStatus");
-
-        super.onCallTransferStatus(prm);
-    }
-
-    @Override
-    public void onCallReplaceRequest(OnCallReplaceRequestParam prm) {
-        Log.d(TAG, "onCallReplaceRequest");
-
-        super.onCallReplaceRequest(prm);
-    }
-
-    @Override
-    public void onCallReplaced(OnCallReplacedParam prm) {
-        Log.d(TAG, "onCallReplaced");
-
-        super.onCallReplaced(prm);
-    }
-
-    @Override
-    public void onCallRxOffer(OnCallRxOfferParam prm) {
-        Log.d(TAG, "onCallRxOffer");
-
-        super.onCallRxOffer(prm);
-    }
-
-    @Override
-    public pjsip_redirect_op onCallRedirected(OnCallRedirectedParam prm) {
-        Log.d(TAG, "onCallRedirected");
-
-        return super.onCallRedirected(prm);
-    }
-
-    @Override
-    public void onCallMediaTransportState(OnCallMediaTransportStateParam prm) {
-        Log.d(TAG, "onCallMediaTransportState");
-
-        super.onCallMediaTransportState(prm);
-    }
-
-    @Override
-    public void onCallMediaEvent(OnCallMediaEventParam prm) {
-        Log.d(TAG, "onCallMediaEvent");
-
-        super.onCallMediaEvent(prm);
-    }
-
-    @Override
-    public void onCreateMediaTransport(OnCreateMediaTransportParam prm) {
-        Log.d(TAG, "onCreateMediaTransport");
-
-        super.onCreateMediaTransport(prm);
     }
 
     public JSONObject toJson() {
@@ -302,7 +204,6 @@ public class PjSipCall extends Call {
             try {
                 json.put("lastStatusCode", info.getLastStatusCode());
             } catch (Exception e) {
-                Log.d(TAG, "Failed to determine last status code", e);
                 json.put("lastStatusCode", null);
             }
 

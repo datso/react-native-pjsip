@@ -47,16 +47,6 @@ public class PjSipAccount extends Account {
     }
 
     @Override
-    public void onRegStarted(OnRegStartedParam prm) {
-        Log.d(TAG, "onRegStarted: " + prm.getRenew());
-
-        // Do not track registration renewal
-        // if (!prm.getRenew()) {
-        //     service.getEmitter().fireRegistrationChangeEvent(this);
-        // }
-    }
-
-    @Override
     public void onRegState(OnRegStateParam prm) {
         reason = prm.getReason();
         service.getEmitter().fireRegistrationChangeEvent(this);
@@ -66,36 +56,6 @@ public class PjSipAccount extends Account {
     public void onIncomingCall(OnIncomingCallParam prm) {
         PjSipCall call = new PjSipCall(this, prm.getCallId());
         service.emmitCallReceived(this, call);
-    }
-
-    @Override
-    public void onIncomingSubscribe(OnIncomingSubscribeParam prm) {
-        super.onIncomingSubscribe(prm);
-        Log.d(TAG, "onIncomingSubscribe");
-    }
-
-    @Override
-    public void onInstantMessage(OnInstantMessageParam prm) {
-        super.onInstantMessage(prm);
-        Log.d(TAG, "onInstantMessage");
-    }
-
-    @Override
-    public void onInstantMessageStatus(OnInstantMessageStatusParam prm) {
-        super.onInstantMessageStatus(prm);
-        Log.d(TAG, "onInstantMessageStatus");
-    }
-
-    @Override
-    public void onTypingIndication(OnTypingIndicationParam prm) {
-        super.onTypingIndication(prm);
-        Log.d(TAG, "onTypingIndication");
-    }
-
-    @Override
-    public void onMwiInfo(OnMwiInfoParam prm) {
-        super.onMwiInfo(prm);
-        Log.d(TAG, "onMwiInfo");
     }
 
     public JSONObject toJson() {

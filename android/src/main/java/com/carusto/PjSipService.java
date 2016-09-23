@@ -28,6 +28,8 @@ import com.carusto.ReactNativePjSip.R;
 import com.carusto.configuration.AccountConfiguration;
 import com.carusto.configuration.NetworkConfiguration;
 import com.carusto.configuration.ServiceConfiguration;
+import com.carusto.utils.ArgumentUtils;
+import com.google.gson.Gson;
 import org.json.JSONObject;
 import org.pjsip.pjsua2.*;
 
@@ -112,12 +114,8 @@ public class PjSipService extends Service implements SensorEventListener {
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "onCreate");
-
-        // TODO: Decline seems doesn't work propertly (see crst_ext)
         // TODO: Ability to adjust volume (starting from ICS, volume must be adjusted by the application, at least for STREAM_VOICE_CALL volume stream)
         // TODO: Clean up mTrash once call or account not needed
-        // TODO: Add debug information for each action
 
         super.onCreate();
 
@@ -310,6 +308,8 @@ public class PjSipService extends Service implements SensorEventListener {
             return;
         }
 
+        Log.d(TAG, "Handle \""+ intent.getAction() +"\" action ("+ ArgumentUtils.dumpIntentExtraParameters(intent) +")");
+
         switch (intent.getAction()) {
             // General actions
             case PjActions.ACTION_START:
@@ -419,16 +419,7 @@ public class PjSipService extends Service implements SensorEventListener {
         }
 
         // Format settings
-        NetworkConfiguration networkConfiguration = PjSipSharedPreferences.getNetworkSettings(getBaseContext());
-        ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
-        JSONObject settings = new JSONObject();
-
-        try {
-            settings.put("network", networkConfiguration.toJson());
-            settings.put("service", serviceConfiguration.toJson());
-        } catch (Exception e) {
-            Log.d(TAG, "Failed to format settings json", e);
-        }
+        JSONObject settings = PjSipSharedPreferences.getSettingsAsJson(getBaseContext());
 
         mEmitter.fireStarted(intent, mAccounts, mCalls, settings);
     }
@@ -520,7 +511,7 @@ public class PjSipService extends Service implements SensorEventListener {
             try {
                 account.setRegistration(true);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to register on server", e);
+                Log.w(TAG, "Failed to register on server", e);
             }
         }
 
@@ -554,8 +545,9 @@ public class PjSipService extends Service implements SensorEventListener {
      */
     private void handleAccountCreate(Intent intent) {
         try {
-            ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
             AccountConfiguration accountConfiguration = AccountConfiguration.fromIntent(intent);
+            ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+
             PjSipAccount account = doAccountCreate(accountConfiguration);
 
             // Emmit response
@@ -676,22 +668,17 @@ public class PjSipService extends Service implements SensorEventListener {
     }
 
     private void handleCallMake(Intent intent) {
-        try {
-            Log.d(TAG, "handleCallMake start");
 
+        try {
             int accountId = intent.getIntExtra("account_id", -1);
+            PjSipAccount account = findAccount(accountId);
             String destination = intent.getStringExtra("destination");
 
             // -----
-            PjSipAccount account = findAccount(accountId);
-
-            // -----
             CallOpParam prm = new CallOpParam(true);
-            // TODO: Allow to send also headers and other information
-
-            // -----
             PjSipCall call = new PjSipCall(account);
             call.makeCall(destination, prm);
+            prm.delete();
 
             // Automatically put other calls on hold.
             doPauseParallelCalls(call);
@@ -701,7 +688,8 @@ public class PjSipService extends Service implements SensorEventListener {
             mNotificationManager.notify(NOTIFICATION_ACTIVE_CALL, notification);
 
             mCalls.add(call);
-            mEmitter.fireCallCreated(intent, call);
+
+            mEmitter.fireIntentHandled(intent, call.toJson());
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
@@ -710,8 +698,6 @@ public class PjSipService extends Service implements SensorEventListener {
     private void handleCallHangup(Intent intent) {
         try {
             int callId = intent.getIntExtra("call_id", -1);
-
-            // -----
             PjSipCall call = findCall(callId);
             call.hangup(new CallOpParam(true));
 
@@ -961,7 +947,7 @@ public class PjSipService extends Service implements SensorEventListener {
             try {
                 call.hangup(new CallOpParam(true));
             } catch (Exception e) {
-                Log.d(TAG, "Failed to decline incoming call when user uses GSM", e);
+                Log.w(TAG, "Failed to decline incoming call when user uses GSM", e);
             }
 
             return;
@@ -980,7 +966,7 @@ public class PjSipService extends Service implements SensorEventListener {
 
                 startActivity(intent);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to open application on received call", e);
+                Log.w(TAG, "Failed to open application on received call", e);
             }
         }
 
@@ -1171,7 +1157,7 @@ public class PjSipService extends Service implements SensorEventListener {
         try {
             text = call.getInfo().getRemoteUri();
         } catch (Exception e) {
-            Log.w(TAG, "Failed to retrieve Remote URI of call");
+            Log.w(TAG, "Failed to retrieve Remote URI of call", e);
         }
 
         NotificationCompat.Builder b = new NotificationCompat.Builder(this);
@@ -1192,7 +1178,7 @@ public class PjSipService extends Service implements SensorEventListener {
         try {
             foregroundIntentCls = Class.forName(foregroundIntentName);
         } catch (ClassNotFoundException e) {
-            Log.e(TAG, "Could not found main activity class, please check whether \""+ foregroundIntentName +"\" available");
+            Log.e(TAG, "Could not found main activity class, please check whether \""+ foregroundIntentName +"\" available", e);
             throw new RuntimeException(e);
         }
 
@@ -1215,7 +1201,7 @@ public class PjSipService extends Service implements SensorEventListener {
             try {
                 call.hold();
             } catch (Exception e) {
-                Log.d(TAG, "Failed to put call on hold", e);
+                Log.w(TAG, "Failed to put call on hold", e);
             }
         }
     }
@@ -1228,7 +1214,7 @@ public class PjSipService extends Service implements SensorEventListener {
             try {
                 call.hold();
             } catch (Exception e) {
-                Log.d(TAG, "Failed to put call on hold", e);
+                Log.w(TAG, "Failed to put call on hold", e);
             }
         }
     }
@@ -1260,8 +1246,6 @@ public class PjSipService extends Service implements SensorEventListener {
                 mRingerPlayer.setVolume(1.0f, 1.0f);
                 mRingerPlayer.setLooping(true);
                 mRingerPlayer.start();
-
-                Log.d(TAG, "mRingerPlayer playing");
             } else {
                 Log.w(TAG, "Failed to start ringing (already ringing)");
             }
@@ -1288,8 +1272,6 @@ public class PjSipService extends Service implements SensorEventListener {
     }
 
     public synchronized void startProximityTracking() {
-        Log.d(TAG, "startProximityTracking");
-
         if (mProximitySensor != null && !mProximitySensorTracked) {
             // Fall back to manual mode
             mSensorManager.registerListener(this, mProximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
@@ -1299,8 +1281,6 @@ public class PjSipService extends Service implements SensorEventListener {
     }
 
     public synchronized void stopProximityTracking() {
-        Log.d(TAG, "stopProximityTracking");
-
         if (mProximitySensor != null && mProximitySensorTracked) {
             mProximitySensorTracked = false;
             mSensorManager.unregisterListener(this);
@@ -1310,7 +1290,6 @@ public class PjSipService extends Service implements SensorEventListener {
     }
 
     private void emmitCallScreenLock(boolean lock) {
-        Log.d(TAG, "emmitCallScreenLock: " + lock);
         mEmitter.fireCallScreenLocked(lock);
     }
 
@@ -1339,6 +1318,8 @@ public class PjSipService extends Service implements SensorEventListener {
             final String extraState = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
 
             if (TelephonyManager.EXTRA_STATE_RINGING.equals(extraState) || TelephonyManager.EXTRA_STATE_OFFHOOK.equals(extraState)) {
+                Log.d(TAG, "GSM call received, pause all SIP calls and do not accept incoming SIP calls.");
+
                 mGSMIdle = false;
 
                 job(new Runnable() {
@@ -1348,10 +1329,7 @@ public class PjSipService extends Service implements SensorEventListener {
                     }
                 });
 
-                // TODO stopRinging();
-
-                Log.d(TAG, "GSM call received, pause all SIP calls and do not accept incoming SIP calls.");
-
+                stopRinging();
             } else if (TelephonyManager.EXTRA_STATE_IDLE.equals(extraState)) {
                 Log.d(TAG, "GSM call released, allow to accept incoming calls.");
                 mGSMIdle = true;
