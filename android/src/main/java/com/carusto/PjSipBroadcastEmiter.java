@@ -2,15 +2,11 @@ package com.carusto;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 public class PjSipBroadcastEmiter {
 
@@ -37,8 +33,12 @@ public class PjSipBroadcastEmiter {
             JSONObject data = new JSONObject();
             data.put("accounts", dataAccounts);
             data.put("calls", dataCalls);
-            data.put("foreground", original.getBooleanExtra("foreground", false));
             data.put("settings", settings);
+
+            data.put("notificationIsFromForeground", original.getBooleanExtra("notificationIsFromForeground", false));
+            if (original.hasExtra("notificationCallId")) {
+                data.put("notificationCallId", original.getIntExtra("notificationCallId", -1));
+            }
 
             Intent intent = new Intent();
             intent.setAction(PjActions.EVENT_STARTED);
