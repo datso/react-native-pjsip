@@ -408,8 +408,6 @@ public class PjSipService extends Service implements SensorEventListener {
             }
         }
 
-        // TODO: Save service and network settings on start!
-
         // Format settings
         NetworkConfiguration networkConfiguration = PjSipSharedPreferences.getNetworkSettings(getBaseContext());
         ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());

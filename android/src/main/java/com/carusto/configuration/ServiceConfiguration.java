@@ -1,6 +1,7 @@
 package com.carusto.configuration;
 
 import android.content.Intent;
+import com.facebook.react.bridge.ReadableMap;
 import org.json.JSONObject;
 
 public class ServiceConfiguration {
@@ -77,15 +78,63 @@ public class ServiceConfiguration {
     }
 
     public static ServiceConfiguration fromIntent(Intent intent) {
-        ServiceConfiguration c = new ServiceConfiguration();
-        c.ua = intent.getStringExtra("ua");
-        c.foreground = intent.getBooleanExtra("foreground", false);
-        c.foregroundTitle = intent.getStringExtra("foregroundTitle");
-        c.foregroundText = intent.getStringExtra("foregroundText");
-        c.foregroundInfo = intent.getStringExtra("foregroundInfo");
-        c.foregroundTicker = intent.getStringExtra("foregroundTicker");
-        c.foregroundSmallIcon = intent.getStringExtra("foregroundSmallIcon");
-        c.foregroundLargeIcon = intent.getStringExtra("foregroundLargeIcon");
+        ServiceConfiguration c = defaultConfiguration();
+
+        if (intent.hasExtra("ua")) {
+            c.ua = intent.getStringExtra("ua");
+        }
+        if (intent.hasExtra("foreground")) {
+            c.foreground = intent.getBooleanExtra("foreground", false);
+        }
+        if (intent.hasExtra("foregroundTitle")) {
+            c.foregroundTitle = intent.getStringExtra("foregroundTitle");
+        }
+        if (intent.hasExtra("foregroundText")) {
+            c.foregroundText = intent.getStringExtra("foregroundText");
+        }
+        if (intent.hasExtra("foregroundInfo")) {
+            c.foregroundInfo = intent.getStringExtra("foregroundInfo");
+        }
+        if (intent.hasExtra("foregroundTicker")) {
+            c.foregroundTicker = intent.getStringExtra("foregroundTicker");
+        }
+        if (intent.hasExtra("foregroundSmallIcon")) {
+            c.foregroundSmallIcon = intent.getStringExtra("foregroundSmallIcon");
+        }
+        if (intent.hasExtra("foregroundLargeIcon")) {
+            c.foregroundLargeIcon = intent.getStringExtra("foregroundLargeIcon");
+        }
+
+        return c;
+    }
+
+    public static ServiceConfiguration fromConfiguration(ReadableMap data) {
+        ServiceConfiguration c = defaultConfiguration();
+
+        if (data.hasKey("ua")) {
+            c.ua = data.getString("ua");
+        }
+        if (data.hasKey("foreground")) {
+            c.foreground = data.getBoolean("foreground");
+        }
+        if (data.hasKey("foregroundTitle")) {
+            c.foregroundTitle = data.getString("foregroundTitle");
+        }
+        if (data.hasKey("foregroundText")) {
+            c.foregroundText = data.getString("foregroundText");
+        }
+        if (data.hasKey("foregroundInfo")) {
+            c.foregroundInfo = data.getString("foregroundInfo");
+        }
+        if (data.hasKey("foregroundTicker")) {
+            c.foregroundTicker = data.getString("foregroundTicker");
+        }
+        if (data.hasKey("foregroundSmallIcon")) {
+            c.foregroundSmallIcon = data.getString("foregroundSmallIcon");
+        }
+        if (data.hasKey("foregroundLargeIcon")) {
+            c.foregroundLargeIcon = data.getString("foregroundLargeIcon");
+        }
 
         return c;
     }

@@ -1,8 +1,10 @@
 package com.carusto;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Intent;
 import android.util.Log;
+import com.carusto.configuration.ServiceConfiguration;
 import com.facebook.react.bridge.*;
 
 public class PjSipModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
@@ -57,6 +59,13 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
         if (notificationCallId >= 0) {
             intent.putExtra("notificationCallId", notificationCallId);
         }
+
+        // Save service settings before start.
+        // It is necessary because library is initialized before intent are handled.
+        if (configuration != null) {
+            PjSipSharedPreferences.saveServiceSettings(getReactApplicationContext(), ServiceConfiguration.fromConfiguration(configuration));
+        }
+
 
         getReactApplicationContext().startService(intent);
     }
