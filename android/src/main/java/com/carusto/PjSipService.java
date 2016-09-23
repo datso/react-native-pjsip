@@ -233,10 +233,18 @@ public class PjSipService extends Service implements SensorEventListener {
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "onDestroy");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             mWorkerThread.quitSafely();
         }
+
+        try {
+            if (mEndpoint != null) {
+                mEndpoint.libDestroy();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to destroy PjSip library", e);
+        }
+
         super.onDestroy();
     }
 
