@@ -38,19 +38,26 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
 
     @ReactMethod
     public void start(ReadableMap configuration, Callback callback) {
-        boolean foreground = false;
+        boolean notificationForeground = false;
+        int notificationCallId = -1;
         final Activity activity = getCurrentActivity();
 
         if (activity != null) {
             Intent activityIntent = activity.getIntent();
             if (activityIntent != null) {
-                foreground = activityIntent.getBooleanExtra("foreground", false);
+                notificationForeground = activityIntent.getBooleanExtra("foreground", false);
+                notificationCallId = activityIntent.getIntExtra("call", -1);
             }
         }
 
         int id = receiver.register(callback);
         Intent intent = PjActions.createStartIntent(id, configuration, getReactApplicationContext());
-        intent.putExtra("foreground", foreground);
+        intent.putExtra("notificationIsFromForeground", notificationForeground);
+
+        if (notificationCallId >= 0) {
+            intent.putExtra("notificationCallId", notificationCallId);
+        }
+
         getReactApplicationContext().startService(intent);
     }
 

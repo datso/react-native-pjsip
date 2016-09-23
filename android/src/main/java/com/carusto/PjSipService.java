@@ -1,6 +1,7 @@
 package com.carusto;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -38,6 +39,10 @@ public class PjSipService extends Service implements SensorEventListener {
 
     private static final float PROXIMITY_THRESHOLD = 5.0f;
 
+    private static final int NOTIFICATION_ACTIVE_REGISTRATION = 1;
+
+    private static final int NOTIFICATION_ACTIVE_CALL = 2;
+
     private HandlerThread mWorkerThread;
 
     private Handler mHandler;
@@ -55,6 +60,8 @@ public class PjSipService extends Service implements SensorEventListener {
     private List<PjSipCall> mCalls = new ArrayList<>();
 
     private List<Object> mTrash = new LinkedList<>();
+
+    private NotificationManager mNotificationManager;
 
     private AudioManager mAudioManager;
 
@@ -98,8 +105,6 @@ public class PjSipService extends Service implements SensorEventListener {
         return mEmitter;
     }
 
-    protected static final int NOTIFICATION = 1;
-
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -123,6 +128,8 @@ public class PjSipService extends Service implements SensorEventListener {
         mHandler = new Handler(mWorkerThread.getLooper());
 
         mEmitter = new PjSipBroadcastEmiter(this);
+
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
@@ -281,6 +288,11 @@ public class PjSipService extends Service implements SensorEventListener {
         // Remove link to call
         mCalls.remove(call);
 
+        // Remove call notification
+        if (mCalls.size() == 0) {
+            mNotificationManager.cancel(NOTIFICATION_ACTIVE_CALL);
+        }
+
         // Remove call in PjSip
         call.delete();
     }
@@ -395,6 +407,8 @@ public class PjSipService extends Service implements SensorEventListener {
                 doStartForeground();
             }
         }
+
+        // TODO: Save service and network settings on start!
 
         // Format settings
         NetworkConfiguration networkConfiguration = PjSipSharedPreferences.getNetworkSettings(getBaseContext());
@@ -674,6 +688,10 @@ public class PjSipService extends Service implements SensorEventListener {
             // Automatically put other calls on hold.
             doPauseParallelCalls(call);
 
+            // Show call notification
+            Notification notification = buildCallNotification(account, call);
+            mNotificationManager.notify(NOTIFICATION_ACTIVE_CALL, notification);
+
             mCalls.add(call);
             mEmitter.fireCallCreated(intent, call);
         } catch (Exception e) {
@@ -903,14 +921,14 @@ public class PjSipService extends Service implements SensorEventListener {
             }
         }
 
-        startForeground(NOTIFICATION, buildNotification(title, text, info, ticker, smallIcon, largeIcon));
+        startForeground(NOTIFICATION_ACTIVE_REGISTRATION, buildNotification(title, text, info, ticker, smallIcon, largeIcon));
     }
 
     private void doStopForeground() {
         stopForeground(true);
     }
 
-    void emmitCallReceived(PjSipCall call) {
+    void emmitCallReceived(PjSipAccount account, PjSipCall call) {
         final int callId = call.getId();
 
         // Automatically decline incoming call when user uses GSM
@@ -963,6 +981,10 @@ public class PjSipService extends Service implements SensorEventListener {
                 }
             }
         });
+
+        // Show call notification
+        Notification notification = buildCallNotification(account, call);
+        mNotificationManager.notify(NOTIFICATION_ACTIVE_CALL, notification);
 
         // -----
         mCalls.add(call);
@@ -1080,18 +1102,7 @@ public class PjSipService extends Service implements SensorEventListener {
     }
 
     private Notification buildNotification(String title, String text, String info, String ticker, String smallIcon, String largeIcon) {
-        String foregroundIntentName = getApplicationContext().getPackageName() + ".MainActivity";
-        Class<?> foregroundIntentCls = null;
-
-        try {
-            foregroundIntentCls = Class.forName(foregroundIntentName);
-        } catch (ClassNotFoundException e) {
-            Log.e(TAG, "Could not found main activity class, please check whether \""+ foregroundIntentName +"\" available");
-            throw new RuntimeException(e);
-        }
-
-        Intent foregroundIntent = new Intent(this, foregroundIntentCls);
-        foregroundIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        Intent foregroundIntent = buildForegroundIntent();
         PendingIntent pendIntent = PendingIntent.getActivity(this, 0, foregroundIntent, 0);
 
         NotificationCompat.Builder b = new NotificationCompat.Builder(this);
@@ -1114,7 +1125,7 @@ public class PjSipService extends Service implements SensorEventListener {
         if (smallIcon == null) {
             smallIcon = "ic_launcher";
         }
-        int smallIconId = resources.getIdentifier(smallIcon, "drawable", getApplicationContext().getPackageName());
+        int smallIconId = resources.getIdentifier(smallIcon, "mipmap", getApplicationContext().getPackageName());
 
         if (smallIconId > 0) {
             b.setSmallIcon(smallIconId);
@@ -1123,6 +1134,48 @@ public class PjSipService extends Service implements SensorEventListener {
         // TODO: Add ability to use largeIcon
 
         return b.setContentIntent(pendIntent).setWhen(0).build();
+    }
+
+    private Notification buildCallNotification(PjSipAccount account, PjSipCall call) {
+        Intent intent = buildForegroundIntent();
+        intent.putExtra("call", call.getId());
+        PendingIntent pendIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+        String title = "Call in Progress" + " - " + account.getConfiguration().getName();
+        String text = null;
+        try {
+            text = call.getInfo().getRemoteUri();
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to retrieve Remote URI of call");
+        }
+
+        NotificationCompat.Builder b = new NotificationCompat.Builder(this);
+        b.setContentTitle(title); // Call in Progress - %Account Name%
+        b.setContentText(text); // %Caller Name% (%Number%)
+        b.setTicker("Call in Progress");
+        b.setOngoing(true);
+        b.setSmallIcon(android.R.drawable.stat_sys_phone_call);
+        b.setWhen(System.currentTimeMillis());
+
+        return b.setContentIntent(pendIntent).build();
+    }
+
+    private Intent buildForegroundIntent() {
+        String foregroundIntentName = getApplicationContext().getPackageName() + ".MainActivity";
+        Class<?> foregroundIntentCls = null;
+
+        try {
+            foregroundIntentCls = Class.forName(foregroundIntentName);
+        } catch (ClassNotFoundException e) {
+            Log.e(TAG, "Could not found main activity class, please check whether \""+ foregroundIntentName +"\" available");
+            throw new RuntimeException(e);
+        }
+
+        Intent foregroundIntent = new Intent(this, foregroundIntentCls);
+        foregroundIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+
+        return foregroundIntent;
     }
 
     /**
@@ -1164,8 +1217,8 @@ public class PjSipService extends Service implements SensorEventListener {
 
         try {
             if (mAudioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE && mVibrator != null) {
-                long[] patern = {0,1000,1000};
-                mVibrator.vibrate(patern, 1);
+                long[] pattern = {0,1000,1000};
+                mVibrator.vibrate(pattern, 1);
             } else if (mAudioManager.getRingerMode() == AudioManager.RINGER_MODE_NORMAL && mRingerPlayer == null) {
                 // TODO: Add ability to set resource id from javascript
                 // TODO: Add ability to play default sound
