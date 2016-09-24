@@ -99,8 +99,6 @@ public class PjSipService extends Service implements SensorEventListener {
 
     private boolean mProximityFirstRun = true;
 
-    private boolean mForegroundPermitted = false;
-
     private BroadcastReceiver mPhoneStateChangedReceiver = new PhoneStateChangedReceiver();
 
     public PjSipBroadcastEmiter getEmitter() {
@@ -459,9 +457,7 @@ public class PjSipService extends Service implements SensorEventListener {
             PjSipSharedPreferences.saveServiceSettings(getBaseContext(), configuration);
 
             // Add or remove foreground notification
-            mForegroundPermitted = configuration.isForeground();
-
-            if (mForegroundPermitted) {
+            if (mConnectivityAvailable && configuration.isForeground()) {
                 doStartForeground();
             } else {
                 doStopForeground();
