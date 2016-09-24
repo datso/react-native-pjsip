@@ -419,7 +419,7 @@ public class PjSipService extends Service implements SensorEventListener {
         // Format settings
         JSONObject settings = PjSipSharedPreferences.getSettingsAsJson(getBaseContext());
 
-        mEmitter.fireStarted(intent, mAccounts, mCalls, settings);
+        mEmitter.fireStarted(intent, mAccounts, mCalls, settings, mConnectivityAvailable);
     }
 
     private void handleSetNetworkConfiguration(Intent intent) {
@@ -444,6 +444,8 @@ public class PjSipService extends Service implements SensorEventListener {
             // Emmit response
             mEmitter.fireIntentHandled(intent, configuration.toJson());
 
+            // Emmit connectivity event
+            mEmitter.fireConnectivityChanged(mConnectivityAvailable);
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
@@ -490,7 +492,11 @@ public class PjSipService extends Service implements SensorEventListener {
                     }
                 }
             });
+
+            // Emmit event to React application
+            mEmitter.fireConnectivityChanged(mConnectivityAvailable);
         }
+
     }
 
     /**
@@ -920,7 +926,7 @@ public class PjSipService extends Service implements SensorEventListener {
         String smallIcon = configuration.getForegroundSmallIcon();
         String largeIcon = configuration.getForegroundLargeIcon();
 
-        if (title == null || text == null) {
+        if (!configuration.isForegroundNotificationStatic()) {
             if (mAccounts.size() > 0) {
                 PjSipAccount account = mAccounts.get(0);
                 title = account.getConfiguration().getUsername();
@@ -933,6 +939,17 @@ public class PjSipService extends Service implements SensorEventListener {
 
     private void doStopForeground() {
         stopForeground(true);
+    }
+
+    void emmitRegistrationChanged(PjSipAccount account, OnRegStateParam prm) {
+        ServiceConfiguration configuration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+
+        // Update foreground notification
+        if (mConnectivityAvailable && configuration.isForeground()) {
+            doStartForeground();
+        }
+
+        getEmitter().fireRegistrationChangeEvent(account);
     }
 
     void emmitCallReceived(PjSipAccount account, PjSipCall call) {

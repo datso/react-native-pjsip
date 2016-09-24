@@ -46,6 +46,7 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
         filter.addAction(PjActions.EVENT_CALL_CHANGED);
         filter.addAction(PjActions.EVENT_CALL_TERMINATED);
         filter.addAction(PjActions.EVENT_CALL_SCREEN_LOCKED);
+        filter.addAction(PjActions.EVENT_CONNECTIVITY_CHANGED);
         filter.addAction(PjActions.EVENT_HANDLED);
 
         return filter;
@@ -78,6 +79,9 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
                 break;
             case PjActions.EVENT_CALL_SCREEN_LOCKED:
                 onCallScreenLocked(intent);
+                break;
+            case PjActions.EVENT_CONNECTIVITY_CHANGED:
+                onConnectivityChanged(intent);
                 break;
             default:
                 onCallback(intent);
@@ -112,6 +116,11 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
     private void onCallScreenLocked(Intent intent) {
         boolean lock = intent.getBooleanExtra("lock", false);
         context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipCallScreenLocked", lock);
+    }
+
+    private void onConnectivityChanged(Intent intent) {
+        boolean available = intent.getBooleanExtra("available", false);
+        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipConnectivityChanged", available);
     }
 
     private void onCallback(Intent intent) {

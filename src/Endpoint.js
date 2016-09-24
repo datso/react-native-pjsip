@@ -22,6 +22,7 @@ export default class Endpoint extends EventEmitter {
         DeviceEventEmitter.addListener('pjSipCallChanged', this._onCallChanged.bind(this));
         DeviceEventEmitter.addListener('pjSipCallTerminated', this._onCallTerminated.bind(this));
         DeviceEventEmitter.addListener('pjSipCallScreenLocked', this._onCallScreenLocked.bind(this));
+        DeviceEventEmitter.addListener('pjSipConnectivityChanged', this._onConnectivityChanged.bind(this));
     }
 
     /**
@@ -500,7 +501,7 @@ export default class Endpoint extends EventEmitter {
     /**
      * @fires Endpoint#call_screen_locked
      * @private
-     * @param lock lock
+     * @param lock bool
      */
     _onCallScreenLocked(lock) {
         /**
@@ -510,6 +511,19 @@ export default class Endpoint extends EventEmitter {
          * @property bool lock
          */
         this.emit("call_screen_locked", lock);
+    }
+
+    /**
+     * @fires Endpoint#connectivity_changed
+     * @private
+     * @param available bool
+     */
+    _onConnectivityChanged(available) {
+        /**
+         * @event Endpoint#connectivity_changed
+         * @property bool available True if connectivity matches current Network settings, otherwise false.
+         */
+        this.emit("connectivity_changed", available);
     }
 
     /**

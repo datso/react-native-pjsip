@@ -49,7 +49,7 @@ public class PjSipAccount extends Account {
     @Override
     public void onRegState(OnRegStateParam prm) {
         reason = prm.getReason();
-        service.getEmitter().fireRegistrationChangeEvent(this);
+        service.emmitRegistrationChanged(this, prm);
     }
 
     @Override

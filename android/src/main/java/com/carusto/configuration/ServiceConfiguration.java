@@ -58,6 +58,10 @@ public class ServiceConfiguration {
         return foregroundLargeIcon;
     }
 
+    public boolean isForegroundNotificationStatic() {
+        return foregroundTitle != null && foregroundText != null && !foregroundTitle.isEmpty() && !foregroundText.isEmpty();
+    }
+
     public JSONObject toJson() {
         JSONObject json = new JSONObject();
 

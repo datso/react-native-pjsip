@@ -18,7 +18,7 @@ public class PjSipBroadcastEmiter {
         this.context = context;
     }
 
-    public void fireStarted(Intent original, List<PjSipAccount> accounts, List<PjSipCall> calls, JSONObject settings) {
+    public void fireStarted(Intent original, List<PjSipAccount> accounts, List<PjSipCall> calls, JSONObject settings, boolean connectivity) {
         try {
             JSONArray dataAccounts = new JSONArray();
             for (PjSipAccount account : accounts) {
@@ -34,6 +34,7 @@ public class PjSipBroadcastEmiter {
             data.put("accounts", dataAccounts);
             data.put("calls", dataCalls);
             data.put("settings", settings);
+            data.put("connectivity", connectivity);
 
             data.put("notificationIsFromForeground", original.getBooleanExtra("notificationIsFromForeground", false));
             if (original.hasExtra("notificationCallId")) {
@@ -114,6 +115,14 @@ public class PjSipBroadcastEmiter {
         Intent intent = new Intent();
         intent.setAction(PjActions.EVENT_CALL_TERMINATED);
         intent.putExtra("data", call.toJsonString());
+
+        context.sendBroadcast(intent);
+    }
+
+    public void fireConnectivityChanged(boolean available) {
+        Intent intent = new Intent();
+        intent.setAction(PjActions.EVENT_CONNECTIVITY_CHANGED);
+        intent.putExtra("available", available);
 
         context.sendBroadcast(intent);
     }
