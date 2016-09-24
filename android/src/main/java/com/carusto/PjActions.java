@@ -245,6 +245,10 @@ public class PjActions {
     }
 
     private static void overrideIntentProps(Intent intent, ReadableMap configuration) {
+        if (configuration == null) {
+            return;
+        }
+
         ReadableMapKeySetIterator it = configuration.keySetIterator();
         while (it.hasNextKey()) {
             String key = it.nextKey();
