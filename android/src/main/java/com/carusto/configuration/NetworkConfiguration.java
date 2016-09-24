@@ -61,6 +61,10 @@ public class NetworkConfiguration {
             return true;
         }
 
+        if (ni == null) {
+            return false;
+        }
+
         // WiFi (we consider ethernet as wifi)
         if (useWifi) {
             int type = ni.getType();
