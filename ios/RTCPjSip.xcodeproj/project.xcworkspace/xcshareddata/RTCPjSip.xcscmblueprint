@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "76DFC5D234DBB7DF07CA8A4A7F8D04D050533479",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "5841BB3ACF6C8ED064EDBC4A19CC0FD643E22C6E" : 0,
+    "76DFC5D234DBB7DF07CA8A4A7F8D04D050533479" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "3F760B6C-DFE0-4541-B95D-65003559AFAA",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "5841BB3ACF6C8ED064EDBC4A19CC0FD643E22C6E" : "..",
+    "76DFC5D234DBB7DF07CA8A4A7F8D04D050533479" : "react-native-pjsip\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "RTCPjSip",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "ios\/RTCPjSip.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "http:\/\/git.carusto.com\/development\/carusto-mobile.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "5841BB3ACF6C8ED064EDBC4A19CC0FD643E22C6E"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/datso\/react-native-pjsip.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "76DFC5D234DBB7DF07CA8A4A7F8D04D050533479"
+    }
+  ]
+}

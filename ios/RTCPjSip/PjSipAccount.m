@@ -1,9 +1,9 @@
-#import "RCTEventDispatcher.h"
-#import "RCTBridge.h"
+#import <React/RCTBridge.h>
+#import <React/RCTEventDispatcher.h>
+
 #import "PjSipEndpoint.h"
 #import "PjSipAccount.h"
 #import "PjSipUtil.h"
-#import "pjsua.h"
 
 @implementation PjSipAccount
 
@@ -47,8 +47,11 @@
         cfg.cred_info[0] = cred;
 
         if ([self.proxy length] > 0) {
+            NSLog(@"proxy %@", self.proxy);
+            
             cfg.proxy_cnt = 1;
-            cfg.proxy[0] = pj_str((char *) [[NSString stringWithFormat:@"sip:%@", self.proxy] UTF8String]);
+            // cfg.proxy[0] = pj_str((char *) [[NSString stringWithFormat:@"sip:%@", self.proxy] UTF8String]);
+            cfg.proxy[0] = pj_str((char *) [[NSString stringWithFormat:@"%@", self.proxy] UTF8String]);
         }
 
         if (self.regTimeout != nil) {
@@ -120,19 +123,21 @@
     };
 
     // Format account info
-
+    
+    // TODO: BOOL result = value ? YES : NO;
+    
     return @{
         @"id": @(self.id),
         @"uri": [PjSipUtil toString:&info.acc_uri],
-        @"name": self.name,
+        @"name": [NSNull null], // self.name,
         @"username": self.username,
         @"domain": self.domain,
         @"password": self.password,
         @"proxy": self.proxy,
-        @"transport": self.transport,
-        @"regServer": self.regServer,
-        @"regTimeout": self.regTimeout,
-        @"registration": registration,
+        @"transport": [NSNull null], // self.transport,
+        @"regServer": [NSNull null], // self.regServer,
+        @"regTimeout": [NSNull null], // self.regTimeout,
+        @"registration": registration
     };
 }
 

@@ -1,9 +1,9 @@
 #import "PjSipEndpoint.h"
 #import "PjSipModule.h"
 
-#import "RCTBridge.h"
-#import "RCTEventDispatcher.h"
-#import "RCTUtils.h"
+#import <React/RCTBridge.h>
+#import <React/RCTEventDispatcher.h>
+#import <React/RCTUtils.h>
 
 @interface PjSipModule ()
 
@@ -36,7 +36,11 @@ RCT_EXPORT_METHOD(start: (RCTResponseSenderBlock) callback) {
 // Account methods
 
 RCT_EXPORT_METHOD(createAccount: (NSDictionary *) config callback:(RCTResponseSenderBlock) callback) {
+    NSLog(@"create acc 1");
     PjSipAccount *account = [[PjSipEndpoint instance] createAccount:config];
+    NSLog(@"create acc 2");
+    NSLog(@"create acc = %@", [account toJsonDictionary]);
+    
     callback(@[@TRUE, [account toJsonDictionary]]);
 }
 

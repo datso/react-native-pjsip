@@ -1,4 +1,4 @@
-/* $Id: config.h 4981 2015-02-11 05:10:06Z nanang $ */
+/* $Id: config.h 5301 2016-05-17 15:25:51Z riza $ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -657,6 +657,24 @@
 
 
 /**
+ * WebRtc Accoustic Echo Cancellation (AEC).
+ * By default is disabled.
+ */
+#ifndef PJMEDIA_HAS_WEBRTC_AEC
+#   define PJMEDIA_HAS_WEBRTC_AEC		0
+#endif
+
+/**
+ * Specify whether WebRtc EC should use its mobile version AEC.
+ *
+ * Default: 0 (no)
+ */
+#ifndef PJMEDIA_WEBRTC_AEC_USE_MOBILE
+#   define PJMEDIA_WEBRTC_AEC_USE_MOBILE 	0
+#endif
+
+
+/**
  * Maximum number of parameters in SDP fmtp attribute.
  *
  * Default: 16
@@ -954,6 +972,7 @@
  * See:
  *  - G.722      : RFC 3551 4.5.2
  *  - MPEG audio : RFC 3551 4.5.13 & RFC 3119
+ *  - OPUS	 : RFC 7587
  *
  * Also when this feature is enabled, some handling will be performed
  * to deal with clock rate incompatibilities of some phones.
@@ -1119,15 +1138,6 @@
  */
 #ifndef PJMEDIA_HAS_LIBAVDEVICE
 #   define PJMEDIA_HAS_LIBAVDEVICE			PJMEDIA_HAS_FFMPEG
-#endif
-
-/**
- * Specify if FFMPEG libavcore is available.
- *
- * Default: PJMEDIA_HAS_FFMPEG (or detected by configure)
- */
-#ifndef PJMEDIA_HAS_LIBAVCORE
-#   define PJMEDIA_HAS_LIBAVCORE			PJMEDIA_HAS_FFMPEG
 #endif
 
 /**
@@ -1302,6 +1312,7 @@
 #   endif
 #endif
 
+
 /**
  * Specify if libyuv is available.
  *
@@ -1310,6 +1321,15 @@
 #ifndef PJMEDIA_HAS_LIBYUV
 #   define PJMEDIA_HAS_LIBYUV				0
 #endif
+
+
+/**
+ * Specify if dtmf flash in RFC 2833 is available.
+ */
+#ifndef PJMEDIA_HAS_DTMF_FLASH
+#   define PJMEDIA_HAS_DTMF_FLASH			1
+#endif
+
 
 /**
  * @}

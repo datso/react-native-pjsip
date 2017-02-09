@@ -1,4 +1,4 @@
-/* $Id: endpoint.hpp 5131 2015-07-13 07:56:19Z ming $ */
+/* $Id: endpoint.hpp 5297 2016-05-13 10:56:48Z ming $ */
 /* 
  * Copyright (C) 2013 Teluu Inc. (http://www.teluu.com)
  *
@@ -904,6 +904,32 @@ public:
     pj_stun_nat_type natGetType() throw(Error);
 
     /**
+     * Update the STUN servers list. The libInit() must have been called
+     * before calling this function.
+     *
+     * @param prmServers	Array of STUN servers to try. The endpoint
+     * 				will try to resolve and contact each of the
+     * 				STUN server entry until it finds one that is
+     * 				usable. Each entry may be a domain name, host
+     * 				name, IP address, and it may contain an
+     * 				optional port number. For example:
+     *				- "pjsip.org" (domain name)
+     *				- "sip.pjsip.org" (host name)
+     *				- "pjsip.org:33478" (domain name and a non-
+     *				   standard port number)
+     *				- "10.0.0.1:3478" (IP address and port number)
+     * @param prmWait		Specify if the function should block until
+     *				it gets the result. In this case, the
+     *				function will block while the resolution
+     * 				is being done, and the callback
+     * 				onNatCheckStunServersComplete() will be called
+     * 				before this function returns.
+     *
+     */
+    void natUpdateStunServers(const StringVector &prmServers,
+                              bool prmWait) throw(Error);
+
+    /**
      * Auxiliary function to resolve and contact each of the STUN server
      * entries (sequentially) to find which is usable. The libInit() must
      * have been called before calling this function.
@@ -1150,18 +1176,25 @@ public:
      *			will be thrown.
      *
      */
-    CodecParam videoCodecGetParam(const string &codec_id) const throw(Error);
+    VidCodecParam getVideoCodecParam(const string &codec_id) const throw(Error);
 
     /**
      * Set video codec parameters.
      *
      * @param codec_id	Codec ID.
-     * @param param	Codec parameter to set. Set to NULL to reset
-     *			codec parameter to library default settings.
+     * @param param	Codec parameter to set.
      *
      */
-    void videoCodecSetParam(const string &codec_id,
-			    const CodecParam param) throw(Error);
+    void setVideoCodecParam(const string &codec_id,
+			    const VidCodecParam &param) throw(Error);
+			    
+    /**
+     * Reset video codec parameters to library default settings.
+     *
+     * @param codec_id	Codec ID.
+     *
+     */
+    void resetVideoCodecParam(const string &codec_id) throw(Error);
 
 public:
     /*
@@ -1182,7 +1215,7 @@ public:
     /**
      * Callback when the Endpoint has finished performing STUN server
      * checking that is initiated when calling libInit(), or by
-     * calling natCheckStunServers().
+     * calling natCheckStunServers() or natUpdateStunServers().
      *
      * @param prm	Callback parameters.
      */
@@ -1303,7 +1336,8 @@ private:
                            pjsua_acc_id acc_id);
     static void on_mwi_info(pjsua_acc_id acc_id,
                             pjsua_mwi_info *mwi_info);
-
+    static void on_acc_find_for_incoming(const pjsip_rx_data *rdata,
+				     	 pjsua_acc_id* acc_id);
     static void on_buddy_state(pjsua_buddy_id buddy_id);
     // Call callbacks
     static void on_call_state(pjsua_call_id call_id, pjsip_event *e);
@@ -1351,6 +1385,9 @@ private:
                                  void *reserved,
                                  pjsip_status_code *code,
                                  pjsua_call_setting *opt);
+    static void on_call_tx_offer(pjsua_call_id call_id,
+				 void *reserved,
+				 pjsua_call_setting *opt);
     static pjsip_redirect_op on_call_redirected(pjsua_call_id call_id,
                                                 const pjsip_uri *target,
                                                 const pjsip_event *e);

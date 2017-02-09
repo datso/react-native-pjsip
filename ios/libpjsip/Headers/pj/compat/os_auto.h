@@ -1,5 +1,5 @@
 /* pjlib/include/pj/compat/os_auto.h.  Generated from os_auto.h.in by configure.  */
-/* $Id: os_auto.h.in 3841 2011-10-24 09:28:13Z ming $ */
+/* $Id: os_auto.h.in 5247 2016-02-25 04:54:17Z nanang $ */
 /* 
  * Copyright (C) 2008-2009 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -129,6 +129,9 @@
  */
 #define PJ_SELECT_NEEDS_NFDS 0
 
+/* Was Linux epoll support enabled */
+/* #undef PJ_HAS_LINUX_EPOLL */
+
 /* Is errno a good way to retrieve OS errors?
  */
 #define PJ_HAS_ERRNO_VAR 1
@@ -205,7 +208,7 @@
 
 /* SSL socket availability. */
 #ifndef PJ_HAS_SSL_SOCK
-#define PJ_HAS_SSL_SOCK 1
+/* #undef PJ_HAS_SSL_SOCK */
 #endif
 
 
