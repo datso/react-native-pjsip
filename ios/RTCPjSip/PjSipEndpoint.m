@@ -109,7 +109,7 @@
         [accountsResult addObject:[acc toJsonDictionary]];
     }
 
-    return @{@"accounts": accountsResult, @"calls": callsResult};
+    return @{@"accounts": accountsResult, @"calls": callsResult, @"connectivity": @YES};
 }
 
 - (PjSipAccount *)createAccount:(NSDictionary *)config {
