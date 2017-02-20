@@ -1071,7 +1071,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../react-native/React/**",
-					"$(SRCROOT)/libpjsip/Headers/**",
+					"$(SRCROOT)/libpjsip/Headers",
 				);
 				INFOPLIST_PREPROCESSOR_DEFINITIONS = "";
 				LIBRARY_SEARCH_PATHS = (
@@ -1091,7 +1091,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../react-native/React/**",
-					"$(SRCROOT)/libpjsip/Headers/**",
+					"$(SRCROOT)/libpjsip/Headers",
 				);
 				INFOPLIST_PREPROCESSOR_DEFINITIONS = "";
 				LIBRARY_SEARCH_PATHS = (
