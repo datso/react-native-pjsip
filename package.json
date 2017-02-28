@@ -21,8 +21,8 @@
     "sip"
   ],
   "peerDependencies": {
-    "events": "^1.1.0",
-    "react-native": "^0.40.0"
+    "events": ">=1.1.0",
+    "react-native": ">=0.40.0"
   },
   "bugs": {
     "url": "https://github.com/datso/react-native-pjsip/issues"
