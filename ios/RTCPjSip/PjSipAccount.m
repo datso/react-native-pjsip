@@ -99,7 +99,6 @@
     pjsua_acc_del(self.id);
 }
 
-
 #pragma mark EventHandlers
 
 - (void)onRegistrationChanged {

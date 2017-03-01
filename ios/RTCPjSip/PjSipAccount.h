@@ -1,4 +1,5 @@
 #import <React/RCTUtils.h>
+
 #import "PjSipCall.h"
 
 @interface PjSipAccount : NSObject
@@ -13,16 +14,17 @@
 @property NSString * regServer;
 @property NSNumber * regTimeout;
 
-// -(void) change: (NSDictionary *) configuration;
-// -(PjSipCall *) makeCall: (NSDictionary *) configuration;
+
 
 + (instancetype)itemConfig:(NSDictionary *)config;
 
 - (id)initWithConfig:(NSDictionary *)config;
+// -(void) change: (NSDictionary *) configuration;
 
 - (int)id;
 
+- (PjSipCall *)makeCall:(NSString *)destination;
+
 - (NSDictionary *)toJsonDictionary;
 
-- (void)onRegistrationChanged;
 @end

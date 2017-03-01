@@ -33,14 +33,10 @@ RCT_EXPORT_METHOD(start: (NSDictionary *) config callback: (RCTResponseSenderBlo
     callback(@[@TRUE, result]);
 }
 
-// Account methods
+#pragma mark - Account Actions
 
 RCT_EXPORT_METHOD(createAccount: (NSDictionary *) config callback:(RCTResponseSenderBlock) callback) {
-    NSLog(@"create acc 1");
     PjSipAccount *account = [[PjSipEndpoint instance] createAccount:config];
-    NSLog(@"create acc 2");
-    NSLog(@"create acc = %@", [account toJsonDictionary]);
-    
     callback(@[@TRUE, [account toJsonDictionary]]);
 }
 
@@ -49,38 +45,151 @@ RCT_EXPORT_METHOD(deleteAccount: (int) accountId callback:(RCTResponseSenderBloc
     callback(@[@TRUE]);
 }
 
-// -----
+#pragma mark - Call Actions
 
 RCT_EXPORT_METHOD(makeCall: (int) accountId destination: (NSString *) destination callback:(RCTResponseSenderBlock) callback) {
-    PjSipAccount *account = [[PjSipEndpoint instance] findAccount:accountId];
+    PjSipEndpoint* endpoint = [PjSipEndpoint instance];
+    PjSipAccount *account = [endpoint findAccount:accountId];
+    PjSipCall *call = [endpoint makeCall:account destination:destination];
 
-    // account
-    
-    callback(@[@FALSE, @"Not implemented"]);
-}
-
-RCT_EXPORT_METHOD(answerCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
-    callback(@[@FALSE, @"Not implemented"]);
+    callback(@[@TRUE, [call toJsonDictionary:endpoint.isSpeaker]]);
 }
 
 RCT_EXPORT_METHOD(hangupCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
-    callback(@[@FALSE, @"Not implemented"]);
+    PjSipCall *call = [[PjSipEndpoint instance] findCall:callId];
+    
+    if (call) {
+        [call hangup];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
+}
+
+RCT_EXPORT_METHOD(declineCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
+    PjSipCall *call = [[PjSipEndpoint instance] findCall:callId];
+    
+    if (call) {
+        [call decline];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
+}
+
+RCT_EXPORT_METHOD(answerCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
+    PjSipCall *call = [[PjSipEndpoint instance] findCall:callId];
+    
+    if (call) {
+        [call answer];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
 }
 
 RCT_EXPORT_METHOD(holdCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
-    callback(@[@FALSE, @"Not implemented"]);
+    PjSipEndpoint* endpoint = [PjSipEndpoint instance];
+    PjSipCall *call = [endpoint findCall:callId];
+    
+    if (call) {
+        [call hold];
+        [endpoint emmitCallChanged:call];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
 }
 
 RCT_EXPORT_METHOD(unholdCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
-    callback(@[@FALSE, @"Not implemented"]);
+    PjSipEndpoint* endpoint = [PjSipEndpoint instance];
+    PjSipCall *call = [endpoint findCall:callId];
+    
+    if (call) {
+        [call unhold];
+        [endpoint emmitCallChanged:call];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
+}
+
+RCT_EXPORT_METHOD(muteCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
+    PjSipEndpoint* endpoint = [PjSipEndpoint instance];
+    PjSipCall *call = [endpoint findCall:callId];
+    
+    if (call) {
+        [call mute];
+        [endpoint emmitCallChanged:call];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
+}
+
+RCT_EXPORT_METHOD(unMuteCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
+    PjSipEndpoint* endpoint = [PjSipEndpoint instance];
+    PjSipCall *call = [endpoint findCall:callId];
+    
+    if (call) {
+        [call unmute];
+        [endpoint emmitCallChanged:call];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
 }
 
 RCT_EXPORT_METHOD(xferCall: (int) callId destination: (NSString *) destination callback:(RCTResponseSenderBlock) callback) {
-    callback(@[@FALSE, @"Not implemented"]);
+    PjSipCall *call = [[PjSipEndpoint instance] findCall:callId];
+    
+    if (call) {
+        [call xfer:destination];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
 }
 
-RCT_EXPORT_METHOD(dtmfCall: (int) callId destination: (NSString *) digits callback:(RCTResponseSenderBlock) callback) {
-    callback(@[@FALSE, @"Not implemented"]);
+RCT_EXPORT_METHOD(xferReplacesCall: (int) callId destinationCallId: (int) destinationCallId callback:(RCTResponseSenderBlock) callback) {
+    PjSipCall *call = [[PjSipEndpoint instance] findCall:callId];
+    
+    if (call) {
+        [call xferReplaces:destinationCallId];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
+}
+
+RCT_EXPORT_METHOD(redirectCall: (int) callId destination: (NSString *) destination callback:(RCTResponseSenderBlock) callback) {
+    PjSipCall *call = [[PjSipEndpoint instance] findCall:callId];
+    
+    if (call) {
+        [call redirect:destination];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
+}
+
+RCT_EXPORT_METHOD(dtmfCall: (int) callId digits: (NSString *) digits callback:(RCTResponseSenderBlock) callback) {
+    PjSipCall *call = [[PjSipEndpoint instance] findCall:callId];
+    
+    if (call) {
+        [call dtmf:digits];
+        callback(@[@TRUE]);
+    } else {
+        callback(@[@FALSE, @"Call not found"]);
+    }
+}
+
+RCT_EXPORT_METHOD(useSpeaker: (int) callId callback:(RCTResponseSenderBlock) callback) {
+    [[PjSipEndpoint instance] useSpeaker];
+}
+
+RCT_EXPORT_METHOD(useEarpiece: (int) callId callback:(RCTResponseSenderBlock) callback) {
+    [[PjSipEndpoint instance] useEarpiece];
 }
 
 RCT_EXPORT_MODULE();

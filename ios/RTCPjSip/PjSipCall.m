@@ -1,147 +1,182 @@
+#import <React/RCTBridge.h>
+#import <React/RCTEventDispatcher.h>
+
 #import "PjSipCall.h"
+#import "PjSipUtil.h"
 
 @implementation PjSipCall
 
++ (instancetype)itemConfig:(int)id {
+    return [[self alloc] initWithId:id];
+}
+
+- (id)initWithId:(int)id {
+    self = [super init];
+    
+    if (self) {
+        self.id = id;
+        self.isHeld = false;
+        self.isMuted = false;
+    }
+    
+    return self;
+}
+
+#pragma mark - Actions
+
+- (void)hangup {
+    pj_status_t status = pjsua_call_hangup(self.id, 0, NULL, NULL);
+    
+    if (status != PJ_SUCCESS) {
+        NSLog(@"Failed to hangup a call (%d)", status);
+    } else {
+        NSLog(@"Hangup success");
+    }
+}
+
+- (void)decline {
+    pjsua_call_hangup(self.id, PJSIP_SC_DECLINE, NULL, NULL);
+}
 
 
+- (void)answer {
+    // TODO: Put on hold previous call
+    
+    pjsua_msg_data msgData;
+    pjsua_msg_data_init(&msgData);
+    pjsua_call_setting  callOpt;
+    pjsua_call_setting_default(&callOpt);
+    pjsua_call_answer2(self.id, &callOpt, 200, NULL, &msgData);
+}
 
+- (void)hold {
+    if (self.isHeld) {
+        return;
+    }
+    
+    self.isHeld = true;
+    
+    // TODO: May be check whether call is answered before putting on hold
+    pjsua_call_set_hold(self.id, NULL);
+}
 
+- (void)unhold {
+    if (!self.isHeld) {
+        return;
+    }
+    
+    self.isHeld = false;
+    
+    // TODO: May be check whether call is answered before releasing from hold
+    pjsua_call_reinvite(self.id, PJSUA_CALL_UNHOLD, NULL);
+}
 
-- (NSDictionary *)toJsonDictionary {
+- (void)mute {
+    pjsua_call_info info;
+    pjsua_call_get_info(self.id, &info);
+    
+    pjsua_conf_adjust_rx_level(info.conf_slot, 0);
+    
+    self.isMuted = true;
+}
 
+- (void)unmute {
+    pjsua_call_info info;
+    pjsua_call_get_info(self.id, &info);
+    
+    pjsua_conf_adjust_rx_level(info.conf_slot, 1);
+    
+    self.isMuted = false;
+}
 
-    // Retrieve call info
+- (void)xfer:(NSString*) destination {
+    pj_str_t value = pj_str((char *) [destination UTF8String]);
+    pjsua_call_xfer(self.id, &value, NULL);
+}
 
-//    pjsua_call *call = NULL;
-//    pj_json_elem *data_json = NULL;
-//    struct pjsua_data *pjsua_var = pjsua_get_var();
-//
-//    if (id < 0) return data_json;
-//
-//    PJSUA_LOCK();
-//    call = &pjsua_var->calls[id];
-//    if (call->inv != NULL && call->async_call.dlg != NULL) {
-//        pjsua_call_info call_info;
-//        pjsua_call_get_info(id, &call_info);
-//        data_json = crst_get_call_info_to_json(pool, &call_info);
-//    }
-//    PJSUA_UNLOCK();
+- (void)xferReplaces:(int) destinationCallId {
+    pjsua_call_xfer_replaces(self.id, destinationCallId, 0, NULL);
+}
 
+- (void)redirect:(NSString*) destination {
+    pjsua_msg_data msgData;
+    pjsip_generic_string_hdr my_hdr;
+    pj_str_t hname = pj_str("Contact");
+    pj_str_t hvalue = pj_str((char *) [destination UTF8String]);
+    pjsua_msg_data_init(&msgData);
+    pjsip_generic_string_hdr_init2(&my_hdr, &hname, &hvalue);
+    pj_list_push_back(&msgData.hdr_list, &my_hdr);
 
+    pjsua_call_setting callOpt;
+    pjsua_call_setting_default(&callOpt);
+    pjsua_call_answer2(self.id, &callOpt, PJSIP_SC_MOVED_TEMPORARILY, NULL, &msgData);
+}
 
+- (void)dtmf:(NSString*) digits {
+    // TODO: Fallback for "The RFC 2833 payload format did not work".
+    
+    pj_str_t value = pj_str((char *) [digits UTF8String]);
+    pjsua_call_dial_dtmf(self.id, &value);
+}
 
-    // Format response
+#pragma mark - Callback methods
 
-//    if (!call)
-//        return NULL;
-//
-//    char *call_id = NULL, *status = NULL;
-//
-//    pj_json_elem *root = json_add_element_with_name(pool, NULL, "data");
-//    if (!root) return NULL;
-//
-//    call_id = pj_pool_alloc(pool, call->call_id.slen + 1);
-//    status = pj_pool_alloc(pool, call->state_text.slen + 1);
-//
-//    snprintf(call_id, call->call_id.slen + 1, "%s", call->call_id.ptr);
-//    snprintf(status, call->state_text.slen + 1, "%s", call->state_text.ptr);
-//
-//    json_add_string_element(pool, root, "id", call_id);
-//    json_add_string_element(pool, root, "status", status);
-//    json_add_string_element(pool, root, "direction", call->role == PJSIP_ROLE_UAC ? "OUTGOING" : "INCOMING");
-//    json_add_number_element(pool, root, "duration", call->connect_duration.sec);
-////	json_add_number_element(pool, root, "quality", -1);
-//    char *name = NULL;
-//    char *number = NULL;
-//    if (call->remote_pai[0] != '\0') {
-//        name = crst_strdup(pool, (char *)call->remote_pai);
-//        number = crst_strdup(pool, (char *)call->remote_pai);
-//    } else if (call->remote_info.slen > 0)
-//    {
-//        name = crst_strndup(pool, call->remote_info.ptr, call->remote_info.slen);
-//        number = crst_strndup(pool, call->remote_info.ptr, call->remote_info.slen);
-//    }
-//    if (name) {
-//        char *foo = strchr(name, '"');
-//        if (foo) {
-//            name = ++foo;
-//            foo = strchr(foo, '"');
-//            if (foo) {
-//                *foo = '\0';
-//                foo++;
-//                number = foo;
-//            }
-//        }
-//        if (name == strstr(name, "sip")) name = NULL;
-//    }
-//    if (number) {
-//        char *foo = strchr(number, ':');
-//        if (foo) {
-//            number = ++foo;
-//        }
-//        if (number) {
-//            foo = strchr(number, '@');
-//            if (foo) {
-//                *foo = '\0';
-//            }
-//        }
-//    }
-//    if (name) {
-//        json_add_string_element(pool, root, "callee_name", name);
-//    }
-//    if (number) {
-//        json_add_string_element(pool, root, "callee_number", number);
-//    }
-//    return root;
+- (void)onStateChanged:(pjsua_call_info)info {
+    // TODO ?
+}
 
+- (void)onMediaStateChanged:(pjsua_call_info)info {
+    // TODO: Description why this needed
+    pjsua_call_media_status status = info.media_status;
+    
+    if (status == PJSUA_CALL_MEDIA_ACTIVE || status == PJSUA_CALL_MEDIA_REMOTE_HOLD) {
+        pjsua_conf_connect(info.conf_slot, 0);
+        pjsua_conf_connect(0, info.conf_slot);
+    }
+}
 
+#pragma mark - Extra
 
+- (NSDictionary *)toJsonDictionary:(bool) isSpeaker {
+    pjsua_call_info info;
+    pjsua_call_get_info(self.id, &info);
 
+    // -----
+    int connectDuration = -1;
+    
+    if (info.state == PJSIP_INV_STATE_CONFIRMED ||
+        info.state == PJSIP_INV_STATE_DISCONNECTED) {
+        connectDuration = info.connect_duration.sec;
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    json.put("id", getId());
-//    json.put("callId", getInfo().getCallIdString());
-//    json.put("accountId", account.getId());
-//
-//    // -----
-//    json.put("localContact", getInfo().getLocalContact());
-//    json.put("localUri", getInfo().getLocalUri());
-//    json.put("remoteContact", getInfo().getRemoteContact());
-//    json.put("remoteUri", getInfo().getRemoteUri());
-//
-//    // -----
-//    json.put("state", getInfo().getState());
-//    json.put("stateText", getInfo().getStateText());
-//    json.put("connectDuration", getInfo().getConnectDuration().getSec());
-//    json.put("totalDuration", getInfo().getTotalDuration().getSec());
-//
-//    // -----
-//    info.put("lastStatusCode", getInfo().getLastStatusCode());
-//    info.put("lastReason", getInfo().getLastReason());
-//
-//    // -----
-//    json.put("remoteOfferer", getInfo().getRemOfferer());
-//    json.put("remoteAudioCount", getInfo().getRemAudioCount());
-//    json.put("remoteVideoCount", getInfo().getRemVideoCount());
-//
-//    // -----
-//    json.put("audioCount", getInfo().getSetting().getAudioCount());
-//    json.put("videoCount", getInfo().getSetting().getVideoCount());
-
-
-    return nil;
+    return @{
+        @"id": @(self.id),
+        @"callId": [PjSipUtil toString:&info.call_id],
+        @"accountId": @(info.acc_id),
+        
+        @"localContact": [PjSipUtil toString:&info.local_contact],
+        @"localUri": [PjSipUtil toString:&info.local_info],
+        @"remoteContact": [PjSipUtil toString:&info.remote_contact],
+        @"remoteUri": [PjSipUtil toString:&info.remote_info],
+        @"state": [PjSipUtil callStateToString:info.state],
+        @"stateText": [PjSipUtil toString:&info.state_text],
+        @"connectDuration": @(connectDuration),
+        @"totalDuration": @(info.total_duration.sec),
+        
+        @"lastStatusCode": [PjSipUtil callStatusToString:info.last_status],
+        @"lastReason": [PjSipUtil toString:&info.last_status_text],
+        
+        @"held": @(self.isHeld),
+        @"muted": @(self.isMuted),
+        @"speaker": @(isSpeaker),
+        
+        @"remoteOfferer": @(info.rem_offerer),
+        @"remoteAudioCount": @(info.rem_aud_cnt),
+        @"remoteVideoCount": @(info.rem_vid_cnt),
+        
+        @"audioCount": @(info.setting.aud_cnt),
+        @"videoCount": @(info.setting.vid_cnt)
+    };
 }
 
 
