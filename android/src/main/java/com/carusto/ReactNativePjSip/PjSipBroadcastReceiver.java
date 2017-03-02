@@ -46,6 +46,7 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
         filter.addAction(PjActions.EVENT_CALL_TERMINATED);
         filter.addAction(PjActions.EVENT_CALL_SCREEN_LOCKED);
         filter.addAction(PjActions.EVENT_CONNECTIVITY_CHANGED);
+        filter.addAction(PjActions.EVENT_MESSAGE_RECEIVED);
         filter.addAction(PjActions.EVENT_HANDLED);
 
         return filter;
@@ -66,6 +67,9 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
                 break;
             case PjActions.EVENT_REGISTRATION_CHANGED:
                 onRegistrationChanged(intent);
+                break;
+            case PjActions.EVENT_MESSAGE_RECEIVED:
+                onMessageReceived(intent);
                 break;
             case PjActions.EVENT_CALL_RECEIVED:
                 onCallReceived(intent);
@@ -92,6 +96,13 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
         String json = intent.getStringExtra("data");
         Object params = ArgumentUtils.fromJson(json);
         context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipRegistrationChanged", params);
+    }
+
+    private void onMessageReceived(Intent intent) {
+        String json = intent.getStringExtra("data");
+        Object params = ArgumentUtils.fromJson(json);
+
+        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipMessageReceived", params);
     }
 
     private void onCallReceived(Intent intent) {

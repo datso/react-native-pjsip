@@ -1,12 +1,8 @@
-'use strict';
-
-import React, {
-    DeviceEventEmitter,
-    NativeModules,
-} from 'react-native';
+import React, {DeviceEventEmitter, NativeModules} from 'react-native';
 import {EventEmitter} from 'events'
 
 import Call from './Call'
+import Message from './Message'
 import Account from './Account'
 
 export default class Endpoint extends EventEmitter {
@@ -22,6 +18,7 @@ export default class Endpoint extends EventEmitter {
         DeviceEventEmitter.addListener('pjSipCallChanged', this._onCallChanged.bind(this));
         DeviceEventEmitter.addListener('pjSipCallTerminated', this._onCallTerminated.bind(this));
         DeviceEventEmitter.addListener('pjSipCallScreenLocked', this._onCallScreenLocked.bind(this));
+        DeviceEventEmitter.addListener('pjSipMessageReceived', this._onMessageReceived.bind(this));
         DeviceEventEmitter.addListener('pjSipConnectivityChanged', this._onConnectivityChanged.bind(this));
     }
 
@@ -457,8 +454,6 @@ export default class Endpoint extends EventEmitter {
      * @param data {Object}
      */
     _onCallReceived(data) {
-
-
         /**
          * TODO
          *
@@ -511,6 +506,21 @@ export default class Endpoint extends EventEmitter {
          * @property bool lock
          */
         this.emit("call_screen_locked", lock);
+    }
+
+    /**
+     * @fires Endpoint#message_received
+     * @private
+     * @param data {Object}
+     */
+    _onMessageReceived(data) {
+        /**
+         * TODO
+         *
+         * @event Endpoint#message_received
+         * @property {Message} message
+         */
+        this.emit("message_received", new Message(data));
     }
 
     /**

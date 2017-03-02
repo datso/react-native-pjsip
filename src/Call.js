@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * This class describes the information and current status of a call.
  */

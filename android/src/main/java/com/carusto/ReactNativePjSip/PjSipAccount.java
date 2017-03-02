@@ -2,7 +2,10 @@ package com.carusto.ReactNativePjSip;
 
 import com.carusto.ReactNativePjSip.configuration.AccountConfiguration;
 import org.json.JSONObject;
-import org.pjsip.pjsua2.*;
+import org.pjsip.pjsua2.Account;
+import org.pjsip.pjsua2.OnIncomingCallParam;
+import org.pjsip.pjsua2.OnInstantMessageParam;
+import org.pjsip.pjsua2.OnRegStateParam;
 
 public class PjSipAccount extends Account {
 
@@ -55,6 +58,12 @@ public class PjSipAccount extends Account {
     public void onIncomingCall(OnIncomingCallParam prm) {
         PjSipCall call = new PjSipCall(this, prm.getCallId());
         service.emmitCallReceived(this, call);
+    }
+
+    @Override
+    public void onInstantMessage(OnInstantMessageParam prm) {
+        PjSipMessage message = new PjSipMessage(this, prm);
+        service.emmitMessageReceived(this, message);
     }
 
     public JSONObject toJson() {

@@ -950,6 +950,10 @@ public class PjSipService extends Service implements SensorEventListener {
         getEmitter().fireRegistrationChangeEvent(account);
     }
 
+    void emmitMessageReceived(PjSipAccount account, PjSipMessage message) {
+        getEmitter().fireMessageReceivedEvent(message);
+    }
+
     void emmitCallReceived(PjSipAccount account, PjSipCall call) {
         final int callId = call.getId();
 

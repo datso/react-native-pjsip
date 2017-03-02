@@ -95,6 +95,14 @@ public class PjSipBroadcastEmiter {
         context.sendBroadcast(intent);
     }
 
+    public void fireMessageReceivedEvent(PjSipMessage message) {
+        Intent intent = new Intent();
+        intent.setAction(PjActions.EVENT_MESSAGE_RECEIVED);
+        intent.putExtra("data", message.toJsonString());
+
+        context.sendBroadcast(intent);
+    }
+
     public void fireCallReceivedEvent(PjSipCall call) {
         Intent intent = new Intent();
         intent.setAction(PjActions.EVENT_CALL_RECEIVED);
