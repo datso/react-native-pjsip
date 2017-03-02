@@ -23,38 +23,9 @@ Add permissions & service to `android/app/src/main/AndroidManifest.xml`
 ```
 
 ## Step 2
-In `android/settings.gradle`, include PJSIPModule
-
-```gradle
-include ':PJSIPModule', ':app'
-project(':PJSIPModule').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-pjsip/android')
+```bash
+react-native link
 ```
-
-## Step 3
-In `android/app/build.gradle`, add PJSIPModule to dependencies
-
-```gradle
-dependencies {
-  ...
-  compile project(':PJSIPModule')
-}
-```
-
-## Step 4
-In `android/app/src/main/java/com/xxx/MainApplication.java`
-
-```java
-import com.carusto.PjSipModulePackage;  // <--- Add this line
-...
-    @Override
-    protected List<ReactPackage> getPackages() {
-      return Arrays.<ReactPackage>asList(
-        new MainReactPackage(),
-        new PjSipModulePackage()                  // <--- Add this line
-      );
-    }
-```
-
 
 ## Additional step: Ability to answer incoming call without Lock Screen
 
