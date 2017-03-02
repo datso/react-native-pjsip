@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		A61DD9FB1E66BE9300278F2D /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DD9FA1E66BE9300278F2D /* AVFoundation.framework */; };
 		A6D3BE1B1E68277400949DCF /* VialerPJSIP.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D3BE1A1E68277400949DCF /* VialerPJSIP.framework */; };
-		A6D3BE1D1E68279600949DCF /* VialerPJSIP in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D3BE1C1E68279600949DCF /* VialerPJSIP */; };
+		A6D3BE311E6845AF00949DCF /* VialerPJSIP in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D3BE301E6845AF00949DCF /* VialerPJSIP */; };
 		A6D8F1201E65E482007D5702 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D8F11F1E65E482007D5702 /* CallKit.framework */; };
 		A6F413A01E38CE9600340CC2 /* PjSipAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F413931E38CE9600340CC2 /* PjSipAccount.m */; };
 		A6F413A11E38CE9600340CC2 /* PjSipCall.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F413951E38CE9600340CC2 /* PjSipCall.m */; };
@@ -34,7 +34,7 @@
 /* Begin PBXFileReference section */
 		A61DD9FA1E66BE9300278F2D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		A6D3BE1A1E68277400949DCF /* VialerPJSIP.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = VialerPJSIP.framework; sourceTree = "<group>"; };
-		A6D3BE1C1E68279600949DCF /* VialerPJSIP */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = VialerPJSIP; path = VialerPJSIP.framework/Versions/A/VialerPJSIP; sourceTree = "<group>"; };
+		A6D3BE301E6845AF00949DCF /* VialerPJSIP */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = VialerPJSIP; path = VialerPJSIP.framework/VialerPJSIP; sourceTree = "<group>"; };
 		A6D8F11F1E65E482007D5702 /* CallKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CallKit.framework; path = System/Library/Frameworks/CallKit.framework; sourceTree = SDKROOT; };
 		A6F413921E38CE9600340CC2 /* PjSipAccount.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PjSipAccount.h; sourceTree = "<group>"; };
 		A6F413931E38CE9600340CC2 /* PjSipAccount.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipAccount.m; sourceTree = "<group>"; };
@@ -58,8 +58,8 @@
 			files = (
 				A61DD9FB1E66BE9300278F2D /* AVFoundation.framework in Frameworks */,
 				A6D8F1201E65E482007D5702 /* CallKit.framework in Frameworks */,
+				A6D3BE311E6845AF00949DCF /* VialerPJSIP in Frameworks */,
 				A6D3BE1B1E68277400949DCF /* VialerPJSIP.framework in Frameworks */,
-				A6D3BE1D1E68279600949DCF /* VialerPJSIP in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -69,7 +69,7 @@
 		A6A12F5D1E65A8400002151D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				A6D3BE1C1E68279600949DCF /* VialerPJSIP */,
+				A6D3BE301E6845AF00949DCF /* VialerPJSIP */,
 				A6D3BE1A1E68277400949DCF /* VialerPJSIP.framework */,
 				A61DD9FA1E66BE9300278F2D /* AVFoundation.framework */,
 				A6D8F11F1E65E482007D5702 /* CallKit.framework */,
@@ -279,10 +279,7 @@
 				INFOPLIST_PREPROCESSOR_DEFINITIONS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/VialerPJSIP\"",
-					"$(PROJECT_DIR)/VialerPJSIP",
-					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/VialerPJSIP.framework/Versions/A",
+					"$(PROJECT_DIR)/VialerPJSIP.framework",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
@@ -307,10 +304,7 @@
 				INFOPLIST_PREPROCESSOR_DEFINITIONS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/VialerPJSIP\"",
-					"$(PROJECT_DIR)/VialerPJSIP",
-					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/VialerPJSIP.framework/Versions/A",
+					"$(PROJECT_DIR)/VialerPJSIP.framework",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
