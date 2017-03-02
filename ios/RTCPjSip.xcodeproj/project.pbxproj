@@ -8,26 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		A61DD9FB1E66BE9300278F2D /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DD9FA1E66BE9300278F2D /* AVFoundation.framework */; };
-		A61DDA101E6712D400278F2D /* libg7221codec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DD9FC1E6712D400278F2D /* libg7221codec.a */; };
-		A61DDA111E6712D400278F2D /* libgsmcodec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DD9FD1E6712D400278F2D /* libgsmcodec.a */; };
-		A61DDA121E6712D400278F2D /* libilbccodec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DD9FE1E6712D400278F2D /* libilbccodec.a */; };
-		A61DDA131E6712D400278F2D /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DD9FF1E6712D400278F2D /* libpj.a */; };
-		A61DDA141E6712D400278F2D /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA001E6712D400278F2D /* libpjlib-util.a */; };
-		A61DDA151E6712D400278F2D /* libpjmedia-audiodev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA011E6712D400278F2D /* libpjmedia-audiodev.a */; };
-		A61DDA161E6712D400278F2D /* libpjmedia-codec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA021E6712D400278F2D /* libpjmedia-codec.a */; };
-		A61DDA171E6712D400278F2D /* libpjmedia-videodev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA031E6712D400278F2D /* libpjmedia-videodev.a */; };
-		A61DDA181E6712D400278F2D /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA041E6712D400278F2D /* libpjmedia.a */; };
-		A61DDA191E6712D400278F2D /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA051E6712D400278F2D /* libpjnath.a */; };
-		A61DDA1A1E6712D400278F2D /* libpjsdp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA061E6712D400278F2D /* libpjsdp.a */; };
-		A61DDA1B1E6712D400278F2D /* libpjsip-simple.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA071E6712D400278F2D /* libpjsip-simple.a */; };
-		A61DDA1C1E6712D400278F2D /* libpjsip-ua.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA081E6712D400278F2D /* libpjsip-ua.a */; };
-		A61DDA1D1E6712D400278F2D /* libpjsip.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA091E6712D400278F2D /* libpjsip.a */; };
-		A61DDA1E1E6712D400278F2D /* libpjsua.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA0A1E6712D400278F2D /* libpjsua.a */; };
-		A61DDA1F1E6712D400278F2D /* libpjsua2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA0B1E6712D400278F2D /* libpjsua2.a */; };
-		A61DDA201E6712D400278F2D /* libresample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA0C1E6712D400278F2D /* libresample.a */; };
-		A61DDA211E6712D400278F2D /* libspeex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA0D1E6712D400278F2D /* libspeex.a */; };
-		A61DDA221E6712D400278F2D /* libsrtp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA0E1E6712D400278F2D /* libsrtp.a */; };
-		A61DDA231E6712D400278F2D /* libyuv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DDA0F1E6712D400278F2D /* libyuv.a */; };
+		A6D3BE1B1E68277400949DCF /* VialerPJSIP.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D3BE1A1E68277400949DCF /* VialerPJSIP.framework */; };
+		A6D3BE1D1E68279600949DCF /* VialerPJSIP in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D3BE1C1E68279600949DCF /* VialerPJSIP */; };
 		A6D8F1201E65E482007D5702 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D8F11F1E65E482007D5702 /* CallKit.framework */; };
 		A6F413A01E38CE9600340CC2 /* PjSipAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F413931E38CE9600340CC2 /* PjSipAccount.m */; };
 		A6F413A11E38CE9600340CC2 /* PjSipCall.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F413951E38CE9600340CC2 /* PjSipCall.m */; };
@@ -51,26 +33,8 @@
 
 /* Begin PBXFileReference section */
 		A61DD9FA1E66BE9300278F2D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		A61DD9FC1E6712D400278F2D /* libg7221codec.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libg7221codec.a; path = libpjsip/Libs/libg7221codec.a; sourceTree = "<group>"; };
-		A61DD9FD1E6712D400278F2D /* libgsmcodec.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgsmcodec.a; path = libpjsip/Libs/libgsmcodec.a; sourceTree = "<group>"; };
-		A61DD9FE1E6712D400278F2D /* libilbccodec.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libilbccodec.a; path = libpjsip/Libs/libilbccodec.a; sourceTree = "<group>"; };
-		A61DD9FF1E6712D400278F2D /* libpj.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpj.a; path = libpjsip/Libs/libpj.a; sourceTree = "<group>"; };
-		A61DDA001E6712D400278F2D /* libpjlib-util.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjlib-util.a"; path = "libpjsip/Libs/libpjlib-util.a"; sourceTree = "<group>"; };
-		A61DDA011E6712D400278F2D /* libpjmedia-audiodev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjmedia-audiodev.a"; path = "libpjsip/Libs/libpjmedia-audiodev.a"; sourceTree = "<group>"; };
-		A61DDA021E6712D400278F2D /* libpjmedia-codec.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjmedia-codec.a"; path = "libpjsip/Libs/libpjmedia-codec.a"; sourceTree = "<group>"; };
-		A61DDA031E6712D400278F2D /* libpjmedia-videodev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjmedia-videodev.a"; path = "libpjsip/Libs/libpjmedia-videodev.a"; sourceTree = "<group>"; };
-		A61DDA041E6712D400278F2D /* libpjmedia.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjmedia.a; path = libpjsip/Libs/libpjmedia.a; sourceTree = "<group>"; };
-		A61DDA051E6712D400278F2D /* libpjnath.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjnath.a; path = libpjsip/Libs/libpjnath.a; sourceTree = "<group>"; };
-		A61DDA061E6712D400278F2D /* libpjsdp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjsdp.a; path = libpjsip/Libs/libpjsdp.a; sourceTree = "<group>"; };
-		A61DDA071E6712D400278F2D /* libpjsip-simple.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjsip-simple.a"; path = "libpjsip/Libs/libpjsip-simple.a"; sourceTree = "<group>"; };
-		A61DDA081E6712D400278F2D /* libpjsip-ua.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjsip-ua.a"; path = "libpjsip/Libs/libpjsip-ua.a"; sourceTree = "<group>"; };
-		A61DDA091E6712D400278F2D /* libpjsip.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjsip.a; path = libpjsip/Libs/libpjsip.a; sourceTree = "<group>"; };
-		A61DDA0A1E6712D400278F2D /* libpjsua.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjsua.a; path = libpjsip/Libs/libpjsua.a; sourceTree = "<group>"; };
-		A61DDA0B1E6712D400278F2D /* libpjsua2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpjsua2.a; path = libpjsip/Libs/libpjsua2.a; sourceTree = "<group>"; };
-		A61DDA0C1E6712D400278F2D /* libresample.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libresample.a; path = libpjsip/Libs/libresample.a; sourceTree = "<group>"; };
-		A61DDA0D1E6712D400278F2D /* libspeex.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspeex.a; path = libpjsip/Libs/libspeex.a; sourceTree = "<group>"; };
-		A61DDA0E1E6712D400278F2D /* libsrtp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsrtp.a; path = libpjsip/Libs/libsrtp.a; sourceTree = "<group>"; };
-		A61DDA0F1E6712D400278F2D /* libyuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyuv.a; path = libpjsip/Libs/libyuv.a; sourceTree = "<group>"; };
+		A6D3BE1A1E68277400949DCF /* VialerPJSIP.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = VialerPJSIP.framework; sourceTree = "<group>"; };
+		A6D3BE1C1E68279600949DCF /* VialerPJSIP */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = VialerPJSIP; path = VialerPJSIP.framework/Versions/A/VialerPJSIP; sourceTree = "<group>"; };
 		A6D8F11F1E65E482007D5702 /* CallKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CallKit.framework; path = System/Library/Frameworks/CallKit.framework; sourceTree = SDKROOT; };
 		A6F413921E38CE9600340CC2 /* PjSipAccount.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PjSipAccount.h; sourceTree = "<group>"; };
 		A6F413931E38CE9600340CC2 /* PjSipAccount.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipAccount.m; sourceTree = "<group>"; };
@@ -94,26 +58,8 @@
 			files = (
 				A61DD9FB1E66BE9300278F2D /* AVFoundation.framework in Frameworks */,
 				A6D8F1201E65E482007D5702 /* CallKit.framework in Frameworks */,
-				A61DDA101E6712D400278F2D /* libg7221codec.a in Frameworks */,
-				A61DDA111E6712D400278F2D /* libgsmcodec.a in Frameworks */,
-				A61DDA121E6712D400278F2D /* libilbccodec.a in Frameworks */,
-				A61DDA131E6712D400278F2D /* libpj.a in Frameworks */,
-				A61DDA141E6712D400278F2D /* libpjlib-util.a in Frameworks */,
-				A61DDA151E6712D400278F2D /* libpjmedia-audiodev.a in Frameworks */,
-				A61DDA161E6712D400278F2D /* libpjmedia-codec.a in Frameworks */,
-				A61DDA171E6712D400278F2D /* libpjmedia-videodev.a in Frameworks */,
-				A61DDA181E6712D400278F2D /* libpjmedia.a in Frameworks */,
-				A61DDA191E6712D400278F2D /* libpjnath.a in Frameworks */,
-				A61DDA1A1E6712D400278F2D /* libpjsdp.a in Frameworks */,
-				A61DDA1B1E6712D400278F2D /* libpjsip-simple.a in Frameworks */,
-				A61DDA1C1E6712D400278F2D /* libpjsip-ua.a in Frameworks */,
-				A61DDA1D1E6712D400278F2D /* libpjsip.a in Frameworks */,
-				A61DDA1E1E6712D400278F2D /* libpjsua.a in Frameworks */,
-				A61DDA1F1E6712D400278F2D /* libpjsua2.a in Frameworks */,
-				A61DDA201E6712D400278F2D /* libresample.a in Frameworks */,
-				A61DDA211E6712D400278F2D /* libspeex.a in Frameworks */,
-				A61DDA221E6712D400278F2D /* libsrtp.a in Frameworks */,
-				A61DDA231E6712D400278F2D /* libyuv.a in Frameworks */,
+				A6D3BE1B1E68277400949DCF /* VialerPJSIP.framework in Frameworks */,
+				A6D3BE1D1E68279600949DCF /* VialerPJSIP in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,26 +69,8 @@
 		A6A12F5D1E65A8400002151D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				A61DD9FC1E6712D400278F2D /* libg7221codec.a */,
-				A61DD9FD1E6712D400278F2D /* libgsmcodec.a */,
-				A61DD9FE1E6712D400278F2D /* libilbccodec.a */,
-				A61DD9FF1E6712D400278F2D /* libpj.a */,
-				A61DDA001E6712D400278F2D /* libpjlib-util.a */,
-				A61DDA011E6712D400278F2D /* libpjmedia-audiodev.a */,
-				A61DDA021E6712D400278F2D /* libpjmedia-codec.a */,
-				A61DDA031E6712D400278F2D /* libpjmedia-videodev.a */,
-				A61DDA041E6712D400278F2D /* libpjmedia.a */,
-				A61DDA051E6712D400278F2D /* libpjnath.a */,
-				A61DDA061E6712D400278F2D /* libpjsdp.a */,
-				A61DDA071E6712D400278F2D /* libpjsip-simple.a */,
-				A61DDA081E6712D400278F2D /* libpjsip-ua.a */,
-				A61DDA091E6712D400278F2D /* libpjsip.a */,
-				A61DDA0A1E6712D400278F2D /* libpjsua.a */,
-				A61DDA0B1E6712D400278F2D /* libpjsua2.a */,
-				A61DDA0C1E6712D400278F2D /* libresample.a */,
-				A61DDA0D1E6712D400278F2D /* libspeex.a */,
-				A61DDA0E1E6712D400278F2D /* libsrtp.a */,
-				A61DDA0F1E6712D400278F2D /* libyuv.a */,
+				A6D3BE1C1E68279600949DCF /* VialerPJSIP */,
+				A6D3BE1A1E68277400949DCF /* VialerPJSIP.framework */,
 				A61DD9FA1E66BE9300278F2D /* AVFoundation.framework */,
 				A6D8F11F1E65E482007D5702 /* CallKit.framework */,
 			);
@@ -336,18 +264,25 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					PJ_AUTOCONF,
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../react-native/React/**",
-					"\"$(SRCROOT)/libpjsip/Headers\"",
+					"\"$(SRCROOT)/VialerPJSIP/Headers\"",
 				);
 				INFOPLIST_PREPROCESSOR_DEFINITIONS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/libpjsip/Libs",
+					"\"$(SRCROOT)/VialerPJSIP\"",
+					"$(PROJECT_DIR)/VialerPJSIP",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/VialerPJSIP.framework/Versions/A",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
@@ -360,15 +295,22 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../react-native/React/**",
-					"\"$(SRCROOT)/libpjsip/Headers\"",
+					"\"$(SRCROOT)/VialerPJSIP/Headers\"",
 				);
 				INFOPLIST_PREPROCESSOR_DEFINITIONS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/libpjsip/Libs",
+					"\"$(SRCROOT)/VialerPJSIP\"",
+					"$(PROJECT_DIR)/VialerPJSIP",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/VialerPJSIP.framework/Versions/A",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";

@@ -3,9 +3,9 @@
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTUtils.h>
+#import <VialerPJSIP/pjsua.h>
 
 #import "PjSipEndpoint.h"
-#import "pjsua.h"
 
 @implementation PjSipEndpoint
 
