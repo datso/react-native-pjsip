@@ -67,7 +67,7 @@ export default class Message {
      * Sender name, or NULL if no name specified in URI.
      * @returns {String}
      */
-    getRemoteName() {
+    getFromName() {
         return this._fromName;
     }
 
@@ -75,7 +75,7 @@ export default class Message {
      * Sender number
      * @returns {String}
      */
-    getRemoteNumber() {
+    getFromNumber() {
         return this._fromNumber;
     }
 

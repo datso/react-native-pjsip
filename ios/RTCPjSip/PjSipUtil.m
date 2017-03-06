@@ -4,11 +4,10 @@
 
 }
 + (NSString *)toString:(pj_str_t *)pjStr {
-
     return [[NSString alloc]
             initWithBytes:pjStr->ptr
                    length:pjStr->slen
-                 encoding:[NSString defaultCStringEncoding]];
+                 encoding:NSUTF8StringEncoding];
 }
 
 +(NSString *) callStateToString: (pjsip_inv_state) state {

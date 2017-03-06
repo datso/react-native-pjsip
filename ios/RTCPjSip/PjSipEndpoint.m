@@ -5,7 +5,9 @@
 #import <React/RCTUtils.h>
 #import <VialerPJSIP/pjsua.h>
 
+#import "PjSipUtil.h"
 #import "PjSipEndpoint.h"
+#import "PjSipMessage.h"
 
 @implementation PjSipEndpoint
 
@@ -43,6 +45,7 @@
         cfg.cb.on_incoming_call = &onCallReceived;
         cfg.cb.on_call_state = &onCallStateChanged;
         cfg.cb.on_call_media_state = &onCallMediaStateChanged;
+        cfg.cb.on_pager2 = &onMessageReceived;
         
 //        cfg.cfg.cb.on_call_media_state = &on_call_media_state;
 //        cfg.cfg.cb.on_incoming_call = &on_incoming_call;
@@ -214,9 +217,14 @@
     [self emmitEvent:@"pjSipCallTerminated" body:[call toJsonDictionary:self.isSpeaker]];
 }
 
+-(void)emmitMessageReceived:(PjSipMessage*) message {
+    [self emmitEvent:@"pjSipMessageReceived" body:[message toJsonDictionary]];
+}
+
 -(void)emmitEvent:(NSString*) name body:(id)body {
     [[self.bridge eventDispatcher] sendAppEventWithName:name body:body];
 }
+
 
 #pragma mark - Callbacks
 
@@ -275,5 +283,24 @@ static void onCallMediaStateChanged(pjsua_call_id callId) {
     [endpoint emmitCallChanged:call];
 }
 
+static void onMessageReceived(pjsua_call_id call_id, const pj_str_t *from,
+                          const pj_str_t *to, const pj_str_t *contact,
+                          const pj_str_t *mime_type, const pj_str_t *body,
+                          pjsip_rx_data *rdata, pjsua_acc_id acc_id) {
+    PjSipEndpoint* endpoint = [PjSipEndpoint instance];
+    NSDictionary* data = [NSDictionary dictionaryWithObjectsAndKeys:
+                          [NSNull null], @"test",
+                          @(call_id), @"callId",
+                          @(acc_id), @"accountId",
+                          [PjSipUtil toString:contact], @"contactUri",
+                          [PjSipUtil toString:from], @"fromUri",
+                          [PjSipUtil toString:to], @"toUri",
+                          [PjSipUtil toString:body], @"body",
+                          [PjSipUtil toString:mime_type], @"contentType",
+                          nil];
+    PjSipMessage* message = [PjSipMessage itemConfig:data];
+    
+    [endpoint emmitMessageReceived:message];
+}
 
 @end
