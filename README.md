@@ -53,6 +53,10 @@ let configuration = {
   "transport": null, // Default TCP
   "regServer": null, // Default wildcard
   "regTimeout": null // Default 3600
+  "regHeaders": {
+    "X-Custom-Header": "Value"
+  },
+  "regContactParams": ";unique-device-token-id=XXXXXXXXX"
 };
 endpoint.createAccount().then((account) => {
   console.log("Account created", account);

@@ -9,8 +9,8 @@ react-native link
 
 ## Step 2
 Open project in xcode.
-1) In the project build settings, make sure you have enabled All settings to be visible.
-2) The Build Options are the 4th section down. Select *No* for the Enable Bitcode option.
+1. In the project build settings, make sure you have enabled All settings to be visible.
+2. The Build Options are the 4th section down. Select *No* for the Enable Bitcode option.
 
 ## Step 3
 Add permissions and capabilities to use microphone and camera by adding following lines to `ios/%PROJECT_NAME%/Info.plist`
@@ -34,12 +34,12 @@ To be able to receive incoming call when app in background you have to use PushK
 This is the only way to receive information and wake up application to perform some action like use CallKit to show incoming call dialog.
 
 ## How it works
-1) Your application registers for receiving VoIP notifications
-2) After a successful registration your application adds *device token* to Contact header when REGISTER.
-3) Your SIP server should parse those headers and when someone calling to those user, server should also send push notification for those device(s).
-4) When iOS application receives this PushNotificaiton it should show incoming call dialog via callkit, and register on server.
-5) Server should send INVITE to new registration from this iOS device.
-6) When user press Answer button via callkit, iOS application answers those SIP call.
+1. Your application registers for receiving VoIP notifications
+2. After a successful registration your application adds *device token* to Contact header when REGISTER.
+3. Your SIP server should parse those headers and when someone calling to those user, server should also send push notification for those device(s).
+4. When iOS application receives this PushNotificaiton it should show incoming call dialog via callkit, and register on server.
+5. Server should send INVITE to new registration from this iOS device.
+6. When user press Answer button via callkit, iOS application answers those SIP call.
 
 ## Client side
 When application starts, it should send REGISTER with additional attributes of `Contact` header and use a long term *registration timeout*.
@@ -62,4 +62,5 @@ For example an working module for freeswitch consider using *mod_apn*.
 
 # CallKit
 
-TODO
+Ensure that the Push Notification Capability is ON
+TODO: Example
