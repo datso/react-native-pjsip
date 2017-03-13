@@ -79,7 +79,11 @@ public class AccountConfiguration {
     }
 
     public String getIdUri() {
-        return name + " <sip:"+ username +"@"+ domain +">";
+        if (name != null) {
+            return name + " <sip:"+ username +"@"+ domain +">";
+        }
+        
+        return "<sip:"+ username +"@"+ domain +">";
     }
 
     public boolean isTransportNotEmpty() {

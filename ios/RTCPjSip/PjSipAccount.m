@@ -28,9 +28,15 @@
         self.regHeaders = config[@"regHeaders"] == nil ? [NSNull null] : config[@"regHeaders"];
         self.regContactParams = config[@"regContactParams"] == nil ? [NSNull null] : config[@"regContactParams"];
         
-        NSString *cfgId = [NSString stringWithFormat:@"%@ <sip:%@@%@>", self.name, self.username, self.domain];
+        NSString *cfgId;
         NSString *cfgURI = [NSString stringWithFormat:@"sip:%@", self.domain];
-
+        
+        if (![PjSipUtil isEmptyString:self.name]) {
+            cfgId = [NSString stringWithFormat:@"%@ <sip:%@@%@>", self.name, self.username, self.domain];
+        } else {
+            cfgId = [NSString stringWithFormat:@"<sip:%@@%@>", self.username, self.domain];
+        }
+        
         pjsua_acc_config cfg;
         pjsua_acc_config_default(&cfg);
 
