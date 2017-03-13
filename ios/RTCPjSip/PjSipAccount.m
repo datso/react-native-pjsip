@@ -15,7 +15,7 @@
     self = [super init];
 
     if (self) {
-        self.name = config[@"name"];
+        self.name = config[@"name"] == nil ? [NSNull null] : config[@"name"];
         self.username = config[@"username"];
         self.domain = config[@"domain"];
         self.password = config[@"password"];
@@ -125,29 +125,27 @@
     pjsua_acc_get_info(self.id, &info);
 
     // Format registration status
-
     NSDictionary * registration = @{
         @"status": [PjSipUtil toString:(pj_str_t *) pjsip_get_status_text(info.status)],
         @"statusText": [PjSipUtil toString:&info.status_text],
         @"active": @"test",
         @"reason": @"test"
     };
-
-    // Format account info
-    
-    // TODO: BOOL result = value ? YES : NO;
     
     return @{
         @"id": @(self.id),
         @"uri": [PjSipUtil toString:&info.acc_uri],
-        @"name": [NSNull null], // self.name,
+        @"name": self.name,
         @"username": self.username,
         @"domain": self.domain,
         @"password": self.password,
         @"proxy": self.proxy,
-        @"transport": [NSNull null], // self.transport,
-        @"regServer": [NSNull null], // self.regServer,
-        @"regTimeout": [NSNull null], // self.regTimeout,
+        @"transport": self.transport,
+        @"regServer": self.regServer,
+        @"regTimeout": self.regTimeout,
+        @"regContactParams": self.regContactParams,
+        @"regHeaders": self.regHeaders,
+        
         @"registration": registration
     };
 }

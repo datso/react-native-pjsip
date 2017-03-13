@@ -7,6 +7,10 @@ import android.util.Log;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 public class PjActions {
 
     public static final String TAG = "PjActions";
@@ -266,6 +270,29 @@ public class PjActions {
                     break;
                 case Boolean:
                     intent.putExtra(key, configuration.getBoolean(key));
+                    break;
+                case Map:
+                    Map<String, String> value = new HashMap<>();
+                    ReadableMap map = configuration.getMap(key);
+                    ReadableMapKeySetIterator mapIt = map.keySetIterator();
+
+                    while (mapIt.hasNextKey()) {
+                        String mapKey = mapIt.nextKey();
+
+                        switch (map.getType(mapKey)) {
+                            case Null:
+                                value.put(mapKey, null);
+                                break;
+                            case String:
+                                value.put(mapKey, map.getString(mapKey));
+                                break;
+                            case Number:
+                                value.put(mapKey, String.valueOf(map.getInt(mapKey)));
+                                break;
+                        }
+                    }
+
+                    intent.putExtra(key, (Serializable) value);
                     break;
                 default:
                     Log.w(TAG, "Unable to put extra information for intent: unknown type \""+ configuration.getType(key) +"\"");

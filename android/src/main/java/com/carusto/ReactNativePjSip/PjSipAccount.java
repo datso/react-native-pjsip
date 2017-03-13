@@ -86,6 +86,9 @@ public class PjSipAccount extends Account {
             json.put("transport", configuration.getTransport());
             json.put("regServer", configuration.getRegServer());
             json.put("regTimeout", configuration.isRegTimeoutNotEmpty() ? String.valueOf(configuration.getRegTimeout()) : "");
+            json.put("regContactParams", configuration.getRegContactParams());
+            json.put("regHeaders", configuration.getRegHeaders());
+
             json.put("registration", registration);
 
             return json;

@@ -2,6 +2,9 @@ package com.carusto.ReactNativePjSip.configuration;
 
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.util.Log;
+
+import java.util.Map;
 
 public class AccountConfiguration {
 
@@ -21,6 +24,10 @@ public class AccountConfiguration {
 
     @Nullable
     public Integer regTimeout;
+
+    public Map<String, String> regHeaders;
+
+    public String regContactParams;
 
     public String getName() {
         return name;
@@ -48,6 +55,14 @@ public class AccountConfiguration {
 
     public String getRegServer() {
         return regServer;
+    }
+
+    public Map<String, String> getRegHeaders() {
+        return regHeaders;
+    }
+
+    public String getRegContactParams() {
+        return regContactParams;
     }
 
     public String getNomalizedRegServer() {
@@ -119,7 +134,7 @@ public class AccountConfiguration {
         c.proxy = intent.getStringExtra("proxy");
         c.transport = intent.getStringExtra("transport");
         c.regServer = intent.getStringExtra("regServer");
-        c.regTimeout = null;
+        c.regTimeout = 600;
 
         if (intent.hasExtra("regTimeout")) {
             String regTimeout = intent.getStringExtra("regTimeout");
@@ -130,6 +145,12 @@ public class AccountConfiguration {
                     c.regTimeout = timeout;
                 }
             }
+        }
+
+        c.regContactParams = intent.getStringExtra("regContactParams");
+
+        if (intent.hasExtra("regHeaders")) {
+            c.regHeaders = (Map<String, String>) intent.getSerializableExtra("regHeaders");
         }
 
         return c;

@@ -607,15 +607,32 @@ public class PjSipService extends Service implements SensorEventListener {
         cfg.getRegConfig().setRegistrarUri(regUri);
         cfg.getSipConfig().getAuthCreds().add(cred);
         cfg.getSipConfig().setTransportId(transportId);
-        cfg.getMediaConfig().getTransportConfig().setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
-        cfg.getRegConfig().setRegisterOnAdd(true);
-        cfg.getVideoConfig().setAutoTransmitOutgoing(true);
-        cfg.getRegConfig().setRegisterOnAdd(false);
 
         if (configuration.isProxyNotEmpty()) {
             StringVector v = new StringVector();
             v.add(configuration.getProxy());
             cfg.getSipConfig().setProxies(v);
+        }
+
+        if (configuration.getRegContactParams() != null) {
+            cfg.getSipConfig().setContactParams(configuration.getRegContactParams());
+        }
+
+        cfg.getMediaConfig().getTransportConfig().setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
+
+        cfg.getRegConfig().setRegisterOnAdd(false);
+
+        if (configuration.getRegHeaders() != null && configuration.getRegHeaders().size() > 0) {
+            SipHeaderVector headers = new SipHeaderVector();
+
+            for (Map.Entry<String, String> entry : configuration.getRegHeaders().entrySet()) {
+                SipHeader hdr = new SipHeader();
+                hdr.setHName(entry.getKey());
+                hdr.setHValue(entry.getValue());
+                headers.add(hdr);
+            }
+
+            cfg.getRegConfig().setHeaders(headers);
         }
 
         PjSipAccount account = new PjSipAccount(this, transportId, configuration);
