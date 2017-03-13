@@ -17,7 +17,6 @@
 		A6F413A31E38CE9600340CC2 /* PjSipEndpoint.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F413991E38CE9600340CC2 /* PjSipEndpoint.m */; };
 		A6F413A41E38CE9600340CC2 /* PjSipModule.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F4139B1E38CE9600340CC2 /* PjSipModule.m */; };
 		A6F413A51E38CE9600340CC2 /* PjSipUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F4139D1E38CE9600340CC2 /* PjSipUtil.m */; };
-		A6F413A61E38CE9600340CC2 /* RTCPjSip.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F4139F1E38CE9600340CC2 /* RTCPjSip.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -49,8 +48,6 @@
 		A6F4139B1E38CE9600340CC2 /* PjSipModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipModule.m; sourceTree = "<group>"; };
 		A6F4139C1E38CE9600340CC2 /* PjSipUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PjSipUtil.h; sourceTree = "<group>"; };
 		A6F4139D1E38CE9600340CC2 /* PjSipUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipUtil.m; sourceTree = "<group>"; };
-		A6F4139E1E38CE9600340CC2 /* RTCPjSip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTCPjSip.h; sourceTree = "<group>"; };
-		A6F4139F1E38CE9600340CC2 /* RTCPjSip.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RTCPjSip.m; sourceTree = "<group>"; };
 		DDFF87521D79D6F50096A8BE /* libRTCPjSip.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRTCPjSip.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -93,8 +90,6 @@
 				A6F4139B1E38CE9600340CC2 /* PjSipModule.m */,
 				A6F4139C1E38CE9600340CC2 /* PjSipUtil.h */,
 				A6F4139D1E38CE9600340CC2 /* PjSipUtil.m */,
-				A6F4139E1E38CE9600340CC2 /* RTCPjSip.h */,
-				A6F4139F1E38CE9600340CC2 /* RTCPjSip.m */,
 				A6259A821E6988470089146B /* PjSipMessage.h */,
 				A6259A851E69889E0089146B /* PjSipMessage.m */,
 			);
@@ -181,7 +176,6 @@
 				A6F413A41E38CE9600340CC2 /* PjSipModule.m in Sources */,
 				A6F413A01E38CE9600340CC2 /* PjSipAccount.m in Sources */,
 				A6F413A51E38CE9600340CC2 /* PjSipUtil.m in Sources */,
-				A6F413A61E38CE9600340CC2 /* RTCPjSip.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

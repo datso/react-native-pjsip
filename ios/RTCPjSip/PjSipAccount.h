@@ -13,14 +13,12 @@
 @property NSString * transport;
 @property NSString * regServer;
 @property NSNumber * regTimeout;
-
-
+@property NSDictionary * regHeaders;
+@property NSString * regContactParams;
 
 + (instancetype)itemConfig:(NSDictionary *)config;
 
 - (id)initWithConfig:(NSDictionary *)config;
-// -(void) change: (NSDictionary *) configuration;
-
 - (int)id;
 
 - (PjSipCall *)makeCall:(NSString *)destination;

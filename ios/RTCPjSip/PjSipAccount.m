@@ -14,19 +14,20 @@
 - (id)initWithConfig:(NSDictionary *)config {
     self = [super init];
 
-    // TODO: Fire registration_changed
-    // TODO: Fire call_received
-
     if (self) {
         self.name = config[@"name"];
         self.username = config[@"username"];
         self.domain = config[@"domain"];
         self.password = config[@"password"];
-        self.proxy = config[@"proxy"];
-        self.transport = config[@"transport"];
-        self.regServer = config[@"regServer"];
-        self.regTimeout = config[@"regTimeout"];
 
+        self.proxy = config[@"proxy"] == nil ? [NSNull null] : config[@"proxy"];
+        self.transport = config[@"transport"] == nil ? [NSNull null] : config[@"transport"];
+        
+        self.regServer = config[@"regServer"] == nil ? [NSNull null] : config[@"regServer"];
+        self.regTimeout = config[@"regTimeout"] == nil ? [NSNumber numberWithInteger:600] : config[@"regTimeout"];
+        self.regHeaders = config[@"regHeaders"] == nil ? [NSNull null] : config[@"regHeaders"];
+        self.regContactParams = config[@"regContactParams"] == nil ? [NSNull null] : config[@"regContactParams"];
+        
         NSString *cfgId = [NSString stringWithFormat:@"%@ <sip:%@@%@>", self.name, self.username, self.domain];
         NSString *cfgURI = [NSString stringWithFormat:@"sip:%@", self.domain];
 
@@ -38,26 +39,37 @@
 
         pjsip_cred_info cred;
         cred.scheme = pj_str("digest");
-        cred.realm = [self.regServer length] > 0 ? pj_str((char *) [self.regServer UTF8String]) : pj_str("*");
+        cred.realm = ![PjSipUtil isEmptyString:self.regServer] ? pj_str((char *) [self.regServer UTF8String]) : pj_str("*");
         cred.username = pj_str((char *) [self.username UTF8String]);
         cred.data = pj_str((char *) [self.password UTF8String]);
         cred.data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
 
         cfg.cred_count = 1;
         cfg.cred_info[0] = cred;
-
-        if ([self.proxy length] > 0) {
-            NSLog(@"proxy %@", self.proxy);
+        
+        if (![self.regHeaders isKindOfClass:[NSNull class]]) {
+            pj_list_init(&cfg.reg_hdr_list);
             
+            for(NSString* key in self.regHeaders) {
+                struct pjsip_generic_string_hdr hdr;
+                pj_str_t name = pj_str((char *) [key UTF8String]);
+                pj_str_t value = pj_str((char *) [[self.regHeaders objectForKey:key] UTF8String]);
+                pjsip_generic_string_hdr_init2(&hdr, &name, &value);
+                pj_list_push_back(&cfg.reg_hdr_list, &hdr);
+            }
+        }
+        
+        if (![PjSipUtil isEmptyString:self.regContactParams]) {
+            cfg.reg_contact_params = pj_str((char *) [self.regContactParams UTF8String]);
+        }
+
+        if (![PjSipUtil isEmptyString:self.proxy]) {
             cfg.proxy_cnt = 1;
-            // cfg.proxy[0] = pj_str((char *) [[NSString stringWithFormat:@"sip:%@", self.proxy] UTF8String]);
             cfg.proxy[0] = pj_str((char *) [[NSString stringWithFormat:@"%@", self.proxy] UTF8String]);
         }
 
-        if (self.regTimeout != nil) {
+        if (self.regTimeout != nil && ![self.regTimeout isKindOfClass:[NSNull class]]) {
             cfg.reg_timeout = (unsigned) [self.regTimeout intValue];
-        } else {
-            cfg.reg_timeout = (unsigned) 600;
         }
 
         // TODO: Create transport depending on configuration

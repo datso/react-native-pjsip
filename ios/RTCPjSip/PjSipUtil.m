@@ -3,11 +3,22 @@
 @implementation PjSipUtil {
 
 }
-+ (NSString *)toString:(pj_str_t *)pjStr {
++ (NSString *) toString : (pj_str_t *)pjStr {
     return [[NSString alloc]
             initWithBytes:pjStr->ptr
                    length:pjStr->slen
                  encoding:NSUTF8StringEncoding];
+}
+
++(BOOL) isEmptyString : (NSString *)string
+{
+    if([string isKindOfClass:[NSNull class]] || [string length] == 0 ||
+       [string isEqualToString:@""]||[string  isEqualToString:NULL]  ||
+       string == nil)
+    {
+        return YES;         //IF String Is An Empty String
+    }
+    return NO;
 }
 
 +(NSString *) callStateToString: (pjsip_inv_state) state {
