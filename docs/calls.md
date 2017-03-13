@@ -2,7 +2,7 @@ TODO: Introduction + links to other sections.
 
 # Events
 
-All interaction from javascript to pjsip module is asynchromius.
+All interaction from javascript to pjsip module is asynchronous.
 So for each action, promise will be returned.
 
 ## call_received
