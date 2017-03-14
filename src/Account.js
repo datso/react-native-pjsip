@@ -4,20 +4,10 @@ import AccountRegistration from './AccountRegistration'
  * This describes account configuration and registration status
  */
 export default class Account {
-    constructor({id, uri, name, username, domain, password, proxy, transport, regServer, regTimeout, regContactParams, regHeaders, registration}) {
-        this._id = id;
-        this._uri = uri;
-        this._name = name;
-        this._username = username;
-        this._domain = domain;
-        this._password = password;
-        this._proxy = proxy;
-        this._transport = transport;
-        this._regServer = regServer;
-        this._regTimeout = regTimeout;
-        this._regContactParams = regContactParams;
-        this._regHeaders = regHeaders;
-        this._registration = new AccountRegistration(registration);
+
+    constructor(data) {
+        this._data = data;
+        this._registration = new AccountRegistration(data['registration']);
     }
 
     /**
@@ -25,7 +15,7 @@ export default class Account {
      * @returns {int}
      */
     getId() {
-        return this._id;
+        return this._data.id;
     }
 
     /**
@@ -33,7 +23,7 @@ export default class Account {
      * @returns {String}
      */
     getURI() {
-        return this._uri;
+        return this._data.uri;
     }
 
     /**
@@ -41,7 +31,7 @@ export default class Account {
      * @returns {String}
      */
     getName() {
-        return this._name;
+        return this._data.name;
     }
 
     /**
@@ -49,7 +39,7 @@ export default class Account {
      * @returns {String}
      */
     getUsername() {
-        return this._username;
+        return this._data.username;
     }
 
     /**
@@ -57,7 +47,7 @@ export default class Account {
      * @returns {int|null}
      */
     getDomain() {
-        return this._domain;
+        return this._data.domain;
     }
 
     /**
@@ -65,7 +55,7 @@ export default class Account {
      * @returns {String}
      */
     getPassword() {
-        return this._password;
+        return this._data.password;
     }
 
     /**
@@ -73,7 +63,7 @@ export default class Account {
      * @returns {String}
      */
     getProxy() {
-        return this._proxy || "";
+        return this._data.proxy;
     }
 
     /**
@@ -81,7 +71,25 @@ export default class Account {
      * @returns {String}
      */
     getTransport() {
-        return this._transport || "";
+        return this._data.transport;
+    }
+
+    /**
+     * Additional parameters that will be appended in the Contact header
+     * for this account.
+     * @returns {String}
+     */
+    getContactParams() {
+        return this._data.contactParams;
+    }
+
+    /**
+     * Additional URI parameters that will be appended in the Contact URI
+     * for this account.
+     * @returns {String}
+     */
+    getContactUriParams() {
+        return this._data.contactUriParams;
     }
 
     /**
@@ -89,7 +97,7 @@ export default class Account {
      * @returns {String}
      */
     getRegServer() {
-        return this._regServer || "";
+        return this._data.regServer || "";
     }
 
     /**
@@ -97,21 +105,21 @@ export default class Account {
      * @returns {String}
      */
     getRegTimeout() {
-        return this._regTimeout;
+        return this._data.regTimeout;
     }
 
     /**
      * @returns {String}
      */
     getRegContactParams() {
-        return this._regContactParams;
+        return this._data.regContactParams;
     }
 
     /**
      * @returns {Object}
      */
     getRegHeaders() {
-        return this._regHeaders;
+        return this._data.regHeaders;
     }
 
     /**

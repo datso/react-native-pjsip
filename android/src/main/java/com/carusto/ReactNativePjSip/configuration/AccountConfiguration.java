@@ -20,6 +20,10 @@ public class AccountConfiguration {
 
     public String transport;
 
+    private String contactParams;
+
+    private String contactUriParams;
+
     public String regServer;
 
     @Nullable
@@ -53,6 +57,14 @@ public class AccountConfiguration {
         return transport;
     }
 
+    public String getContactParams() {
+        return contactParams;
+    }
+
+    public String getContactUriParams() {
+        return contactUriParams;
+    }
+
     public String getRegServer() {
         return regServer;
     }
@@ -82,7 +94,7 @@ public class AccountConfiguration {
         if (name != null) {
             return name + " <sip:"+ username +"@"+ domain +">";
         }
-        
+
         return "<sip:"+ username +"@"+ domain +">";
     }
 
@@ -137,6 +149,9 @@ public class AccountConfiguration {
         c.password = intent.getStringExtra("password");
         c.proxy = intent.getStringExtra("proxy");
         c.transport = intent.getStringExtra("transport");
+        c.contactParams = intent.getStringExtra("contactParams");
+        c.contactUriParams = intent.getStringExtra("contactUriParams");
+
         c.regServer = intent.getStringExtra("regServer");
         c.regTimeout = 600;
 

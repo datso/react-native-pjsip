@@ -608,6 +608,13 @@ public class PjSipService extends Service implements SensorEventListener {
         cfg.getSipConfig().getAuthCreds().add(cred);
         cfg.getSipConfig().setTransportId(transportId);
 
+        if (configuration.getContactParams() != null) {
+            cfg.getSipConfig().setContactParams(configuration.getContactParams());
+        }
+        if (configuration.getContactUriParams() != null) {
+            cfg.getSipConfig().setContactUriParams(configuration.getContactUriParams());
+        }
+
         if (configuration.isProxyNotEmpty()) {
             StringVector v = new StringVector();
             v.add(configuration.getProxy());
@@ -615,7 +622,7 @@ public class PjSipService extends Service implements SensorEventListener {
         }
 
         if (configuration.getRegContactParams() != null) {
-            cfg.getSipConfig().setContactParams(configuration.getRegContactParams());
+            Log.w(TAG, "Property regContactParams are not supported on android, use contactParams instead");
         }
 
         cfg.getMediaConfig().getTransportConfig().setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);

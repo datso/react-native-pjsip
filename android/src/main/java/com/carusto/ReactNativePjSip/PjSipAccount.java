@@ -84,6 +84,10 @@ public class PjSipAccount extends Account {
             json.put("password", configuration.getPassword());
             json.put("proxy", configuration.getProxy());
             json.put("transport", configuration.getTransport());
+
+            json.put("contactParams", configuration.getContactParams());
+            json.put("contactUriParams", configuration.getContactUriParams());
+
             json.put("regServer", configuration.getRegServer());
             json.put("regTimeout", configuration.isRegTimeoutNotEmpty() ? String.valueOf(configuration.getRegTimeout()) : "");
             json.put("regContactParams", configuration.getRegContactParams());
