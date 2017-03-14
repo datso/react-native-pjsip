@@ -11,6 +11,11 @@
 @property NSString * password;
 @property NSString * proxy;
 @property NSString * transport;
+
+@property NSString * contactParams;
+@property NSString * contactUriParams;
+
+
 @property NSString * regServer;
 @property NSNumber * regTimeout;
 @property NSDictionary * regHeaders;

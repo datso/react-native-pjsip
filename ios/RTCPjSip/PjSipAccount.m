@@ -23,6 +23,9 @@
         self.proxy = config[@"proxy"] == nil ? [NSNull null] : config[@"proxy"];
         self.transport = config[@"transport"] == nil ? [NSNull null] : config[@"transport"];
         
+        self.contactParams = config[@"contactParams"] == nil ? [NSNull null] : config[@"contactParams"];
+        self.contactUriParams = config[@"contactUriParams"] == nil ? [NSNull null] : config[@"contactUriParams"];
+        
         self.regServer = config[@"regServer"] == nil ? [NSNull null] : config[@"regServer"];
         self.regTimeout = config[@"regTimeout"] == nil ? [NSNumber numberWithInteger:600] : config[@"regTimeout"];
         self.regHeaders = config[@"regHeaders"] == nil ? [NSNull null] : config[@"regHeaders"];
@@ -53,6 +56,13 @@
         cfg.cred_count = 1;
         cfg.cred_info[0] = cred;
         
+        if (![PjSipUtil isEmptyString:self.contactParams]) {
+            cfg.contact_params = pj_str((char *) [self.contactParams UTF8String]);
+        }
+        if (![PjSipUtil isEmptyString:self.contactUriParams]) {
+            cfg.contact_uri_params = pj_str((char *) [self.contactUriParams UTF8String]);
+        }
+        
         if (![self.regHeaders isKindOfClass:[NSNull class]]) {
             pj_list_init(&cfg.reg_hdr_list);
             
@@ -68,7 +78,7 @@
         if (![PjSipUtil isEmptyString:self.regContactParams]) {
             cfg.reg_contact_params = pj_str((char *) [self.regContactParams UTF8String]);
         }
-
+        
         if (![PjSipUtil isEmptyString:self.proxy]) {
             cfg.proxy_cnt = 1;
             cfg.proxy[0] = pj_str((char *) [[NSString stringWithFormat:@"%@", self.proxy] UTF8String]);
@@ -147,6 +157,8 @@
         @"password": self.password,
         @"proxy": self.proxy,
         @"transport": self.transport,
+        @"contactParams": self.contactParams,
+        @"contactUriParams": self.contactUriParams,
         @"regServer": self.regServer,
         @"regTimeout": self.regTimeout,
         @"regContactParams": self.regContactParams,
