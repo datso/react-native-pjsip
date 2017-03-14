@@ -90,21 +90,46 @@
         // Init transport config structure
         pjsua_transport_config cfg;
         pjsua_transport_config_default(&cfg);
+        pjsua_transport_id id;
 
         // Add TCP transport.
-        status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
-        if (status != PJ_SUCCESS) NSLog(@"Error creating transport");
+        status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &id);
+        
+        if (status != PJ_SUCCESS) {
+            NSLog(@"Error creating UDP transport");
+        } else {
+            self.udpTransportId = id;
+        }
     }
-
+    
     // Add TCP transport.
     {
-        // Init transport config structure
         pjsua_transport_config cfg;
         pjsua_transport_config_default(&cfg);
-
-        // Add TCP transport.
-        status = pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, NULL);
-        if (status != PJ_SUCCESS) NSLog(@"Error creating transport");
+        pjsua_transport_id id;
+        
+        status = pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, &id);
+        
+        if (status != PJ_SUCCESS) {
+            NSLog(@"Error creating TCP transport");
+        } else {
+            self.tcpTransportId = id;
+        }
+    }
+    
+    // Add TLS transport.
+    {
+        pjsua_transport_config cfg;
+        pjsua_transport_config_default(&cfg);
+        pjsua_transport_id id;
+        
+        status = pjsua_transport_create(PJSIP_TRANSPORT_TLS, &cfg, &id);
+        
+        if (status != PJ_SUCCESS) {
+            NSLog(@"Error creating TLS transport");
+        } else {
+            self.tlsTransportId = id;
+        }
     }
 
     // Initialization is done, now start pjsua

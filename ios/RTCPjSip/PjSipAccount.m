@@ -31,68 +31,86 @@
         self.regHeaders = config[@"regHeaders"] == nil ? [NSNull null] : config[@"regHeaders"];
         self.regContactParams = config[@"regContactParams"] == nil ? [NSNull null] : config[@"regContactParams"];
         
-        NSString *cfgId;
-        NSString *cfgURI = [NSString stringWithFormat:@"sip:%@", self.domain];
-        
-        if (![PjSipUtil isEmptyString:self.name]) {
-            cfgId = [NSString stringWithFormat:@"%@ <sip:%@@%@>", self.name, self.username, self.domain];
-        } else {
-            cfgId = [NSString stringWithFormat:@"<sip:%@@%@>", self.username, self.domain];
-        }
-        
+        pj_status_t status;
+
         pjsua_acc_config cfg;
         pjsua_acc_config_default(&cfg);
-
-        cfg.id = pj_str((char *) [cfgId UTF8String]);
-        cfg.reg_uri = pj_str((char *) [cfgURI UTF8String]);
-
-        pjsip_cred_info cred;
-        cred.scheme = pj_str("digest");
-        cred.realm = ![PjSipUtil isEmptyString:self.regServer] ? pj_str((char *) [self.regServer UTF8String]) : pj_str("*");
-        cred.username = pj_str((char *) [self.username UTF8String]);
-        cred.data = pj_str((char *) [self.password UTF8String]);
-        cred.data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-
-        cfg.cred_count = 1;
-        cfg.cred_info[0] = cred;
         
-        if (![PjSipUtil isEmptyString:self.contactParams]) {
-            cfg.contact_params = pj_str((char *) [self.contactParams UTF8String]);
-        }
-        if (![PjSipUtil isEmptyString:self.contactUriParams]) {
-            cfg.contact_uri_params = pj_str((char *) [self.contactUriParams UTF8String]);
-        }
+        // General settings
+        {
+            NSString *cfgId;
+            NSString *cfgURI = [NSString stringWithFormat:@"sip:%@", self.domain];
         
-        if (![self.regHeaders isKindOfClass:[NSNull class]]) {
-            pj_list_init(&cfg.reg_hdr_list);
+            if (![PjSipUtil isEmptyString:self.name]) {
+                cfgId = [NSString stringWithFormat:@"%@ <sip:%@@%@>", self.name, self.username, self.domain];
+            } else {
+                cfgId = [NSString stringWithFormat:@"<sip:%@@%@>", self.username, self.domain];
+            }
+
+            cfg.id = pj_str((char *) [cfgId UTF8String]);
+            cfg.reg_uri = pj_str((char *) [cfgURI UTF8String]);
+
+            pjsip_cred_info cred;
+            cred.scheme = pj_str("digest");
+            cred.realm = ![PjSipUtil isEmptyString:self.regServer] ? pj_str((char *) [self.regServer UTF8String]) : pj_str("*");
+            cred.username = pj_str((char *) [self.username UTF8String]);
+            cred.data = pj_str((char *) [self.password UTF8String]);
+            cred.data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
+
+            cfg.cred_count = 1;
+            cfg.cred_info[0] = cred;
+        
+            if (![PjSipUtil isEmptyString:self.contactParams]) {
+                cfg.contact_params = pj_str((char *) [self.contactParams UTF8String]);
+            }
+            if (![PjSipUtil isEmptyString:self.contactUriParams]) {
+                cfg.contact_uri_params = pj_str((char *) [self.contactUriParams UTF8String]);
+            }
+        }
+    
+        // Registration settings
+        {
+            if (![self.regHeaders isKindOfClass:[NSNull class]]) {
+                pj_list_init(&cfg.reg_hdr_list);
             
-            for(NSString* key in self.regHeaders) {
-                struct pjsip_generic_string_hdr hdr;
-                pj_str_t name = pj_str((char *) [key UTF8String]);
-                pj_str_t value = pj_str((char *) [[self.regHeaders objectForKey:key] UTF8String]);
-                pjsip_generic_string_hdr_init2(&hdr, &name, &value);
-                pj_list_push_back(&cfg.reg_hdr_list, &hdr);
+                for(NSString* key in self.regHeaders) {
+                    struct pjsip_generic_string_hdr hdr;
+                    pj_str_t name = pj_str((char *) [key UTF8String]);
+                    pj_str_t value = pj_str((char *) [[self.regHeaders objectForKey:key] UTF8String]);
+                    pjsip_generic_string_hdr_init2(&hdr, &name, &value);
+                    pj_list_push_back(&cfg.reg_hdr_list, &hdr);
+                }
+            }
+        
+            if (![PjSipUtil isEmptyString:self.regContactParams]) {
+                cfg.reg_contact_params = pj_str((char *) [self.regContactParams UTF8String]);
+            }
+        
+            if (self.regTimeout != nil && ![self.regTimeout isKindOfClass:[NSNull class]]) {
+                cfg.reg_timeout = (unsigned) [self.regTimeout intValue];
             }
         }
         
-        if (![PjSipUtil isEmptyString:self.regContactParams]) {
-            cfg.reg_contact_params = pj_str((char *) [self.regContactParams UTF8String]);
+        // Transport settings
+        {
+            if (![PjSipUtil isEmptyString:self.proxy]) {
+                cfg.proxy_cnt = 1;
+                cfg.proxy[0] = pj_str((char *) [[NSString stringWithFormat:@"%@", self.proxy] UTF8String]);
+            }
+
+            cfg.transport_id = [[PjSipEndpoint instance] tcpTransportId];
+        
+            if (![PjSipUtil isEmptyString:self.transport] && ![self.transport isEqualToString:@"TCP"]) {
+                if ([self.transport isEqualToString:@"UDP"]) {
+                    cfg.transport_id = [[PjSipEndpoint instance] udpTransportId];
+                } else if ([self.transport isEqualToString:@"TLS"]) {
+                    cfg.transport_id = [[PjSipEndpoint instance] tlsTransportId];
+                } else {
+                    NSLog(@"Illegal \"%@\" transport (possible values are UDP, TCP or TLS) use TCP instead", self.transport);
+                }
+            }
         }
         
-        if (![PjSipUtil isEmptyString:self.proxy]) {
-            cfg.proxy_cnt = 1;
-            cfg.proxy[0] = pj_str((char *) [[NSString stringWithFormat:@"%@", self.proxy] UTF8String]);
-        }
-
-        if (self.regTimeout != nil && ![self.regTimeout isKindOfClass:[NSNull class]]) {
-            cfg.reg_timeout = (unsigned) [self.regTimeout intValue];
-        }
-
-        // TODO: Create transport depending on configuration
-        // cfg.transport_id = [self initTransport]; // NSString *transport = config[@"transport"];
-        // NSLog(@"cfg.transport_id %d", cfg.transport_id);
-
-        pj_status_t status;
         pjsua_acc_id account_id;
 
         status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id);

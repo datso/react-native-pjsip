@@ -9,6 +9,11 @@
 @property NSMutableDictionary* accounts;
 @property NSMutableDictionary* calls;
 @property(nonatomic, strong) RCTBridge *bridge;
+
+@property pjsua_transport_id tcpTransportId;
+@property pjsua_transport_id udpTransportId;
+@property pjsua_transport_id tlsTransportId;
+
 @property bool isSpeaker;
 
 +(instancetype)instance;
