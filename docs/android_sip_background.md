@@ -51,7 +51,7 @@ let configuration = {
 let endpoint = new Endpoint();
 let state = await endpoint.start(configuration);
 // ...
-
+```
 
 ### Handle clicks to call notifications
 
