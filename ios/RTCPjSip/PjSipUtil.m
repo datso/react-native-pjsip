@@ -4,6 +4,10 @@
 
 }
 + (NSString *) toString : (pj_str_t *)pjStr {
+    if (pjStr->slen < 0) {
+        return [NSNull null];
+    }
+    
     return [[NSString alloc]
             initWithBytes:pjStr->ptr
                    length:pjStr->slen
