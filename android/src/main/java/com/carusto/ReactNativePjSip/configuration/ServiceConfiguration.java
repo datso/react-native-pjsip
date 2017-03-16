@@ -1,26 +1,20 @@
 package com.carusto.ReactNativePjSip.configuration;
 
 import android.content.Intent;
+import android.util.Log;
 import com.facebook.react.bridge.ReadableMap;
 import org.json.JSONObject;
+
+import java.io.Serializable;
+import java.util.Map;
 
 public class ServiceConfiguration {
 
     public String ua;
 
-    public boolean foreground;
+    public ServiceNotificationConfiguration accountNotification;
 
-    public String foregroundTitle;
-
-    public String foregroundText;
-
-    public String foregroundInfo;
-
-    public String foregroundTicker;
-
-    public String foregroundSmallIcon;
-
-    public String foregroundLargeIcon;
+    public ServiceNotificationConfiguration callNotification;
 
     public String getUserAgent() {
         return ua;
@@ -30,36 +24,12 @@ public class ServiceConfiguration {
         return ua != null && !ua.isEmpty();
     }
 
-    public boolean isForeground() {
-        return foreground;
+    public ServiceNotificationConfiguration getCallNotification() {
+        return callNotification;
     }
 
-    public String getForegroundTitle() {
-        return foregroundTitle;
-    }
-
-    public String getForegroundText() {
-        return foregroundText;
-    }
-
-    public String getForegroundInfo() {
-        return foregroundInfo;
-    }
-
-    public String getForegroundTicker() {
-        return foregroundTicker;
-    }
-
-    public String getForegroundSmallIcon() {
-        return foregroundSmallIcon;
-    }
-
-    public String getForegroundLargeIcon() {
-        return foregroundLargeIcon;
-    }
-
-    public boolean isForegroundNotificationStatic() {
-        return foregroundTitle != null && foregroundText != null && !foregroundTitle.isEmpty() && !foregroundText.isEmpty();
+    public ServiceNotificationConfiguration getAccountNotification() {
+        return accountNotification;
     }
 
     public JSONObject toJson() {
@@ -67,13 +37,11 @@ public class ServiceConfiguration {
 
         try {
             json.put("ua", ua);
-            json.put("foreground", foreground);
-            json.put("foregroundTitle", foregroundTitle);
-            json.put("foregroundText", foregroundText);
-            json.put("foregroundInfo", foregroundInfo);
-            json.put("foregroundTicker", foregroundTicker);
-            json.put("foregroundSmallIcon", foregroundSmallIcon);
-            json.put("foregroundLargeIcon", foregroundLargeIcon);
+
+            JSONObject notifications = new JSONObject();
+            notifications.put("account", accountNotification.toJson());
+            notifications.put("call", accountNotification.toJson());
+            json.put("notifications", notifications);
 
             return json;
         } catch (Exception e) {
@@ -87,26 +55,30 @@ public class ServiceConfiguration {
         if (intent.hasExtra("ua")) {
             c.ua = intent.getStringExtra("ua");
         }
-        if (intent.hasExtra("foreground")) {
-            c.foreground = intent.getBooleanExtra("foreground", false);
+
+        if (intent.hasExtra("notifications")) {
+            try {
+                boolean enabled = intent.getBooleanExtra("notifications", true);
+                c.accountNotification = new ServiceNotificationConfiguration();
+                c.accountNotification.setEnabled(enabled);
+                c.callNotification = new ServiceNotificationConfiguration();
+                c.callNotification.setEnabled(enabled);
+            } catch (Exception e) {
+                Map notifications = (Map) intent.getSerializableExtra("notifications");
+                if (notifications.containsKey("account")) {
+                    c.accountNotification = ServiceNotificationConfiguration.fromMap(notifications.get("account"));
+                }
+                if (notifications.containsKey("call")) {
+                    c.callNotification = ServiceNotificationConfiguration.fromMap(notifications.get("call"));
+                }
+            }
         }
-        if (intent.hasExtra("foregroundTitle")) {
-            c.foregroundTitle = intent.getStringExtra("foregroundTitle");
+
+        if (c.accountNotification == null) {
+            c.accountNotification = new ServiceNotificationConfiguration();
         }
-        if (intent.hasExtra("foregroundText")) {
-            c.foregroundText = intent.getStringExtra("foregroundText");
-        }
-        if (intent.hasExtra("foregroundInfo")) {
-            c.foregroundInfo = intent.getStringExtra("foregroundInfo");
-        }
-        if (intent.hasExtra("foregroundTicker")) {
-            c.foregroundTicker = intent.getStringExtra("foregroundTicker");
-        }
-        if (intent.hasExtra("foregroundSmallIcon")) {
-            c.foregroundSmallIcon = intent.getStringExtra("foregroundSmallIcon");
-        }
-        if (intent.hasExtra("foregroundLargeIcon")) {
-            c.foregroundLargeIcon = intent.getStringExtra("foregroundLargeIcon");
+        if (c.callNotification == null) {
+            c.callNotification = new ServiceNotificationConfiguration();
         }
 
         return c;
@@ -118,26 +90,49 @@ public class ServiceConfiguration {
         if (data.hasKey("ua")) {
             c.ua = data.getString("ua");
         }
-        if (data.hasKey("foreground")) {
-            c.foreground = data.getBoolean("foreground");
+
+        if (data.hasKey("notifications")) {
+            switch (data.getType("notifications")) {
+                case Boolean:
+                    boolean enabled = data.getBoolean("notifications");
+                    c.accountNotification = new ServiceNotificationConfiguration();
+                    c.accountNotification.setEnabled(enabled);
+                    c.callNotification = new ServiceNotificationConfiguration();
+                    c.callNotification.setEnabled(enabled);
+                    break;
+                case Map:
+                    ReadableMap notifications = data.getMap("notifications");
+                    if (notifications.hasKey("account")) {
+                        switch (notifications.getType("account")) {
+                            case Boolean:
+                                c.accountNotification = new ServiceNotificationConfiguration();
+                                c.accountNotification.setEnabled(notifications.getBoolean("account"));
+                                break;
+                            case Map:
+                                c.accountNotification = ServiceNotificationConfiguration.fromReadableMap(notifications.getMap("account"));
+                                break;
+                        }
+                    }
+                    if (notifications.hasKey("call")) {
+                        switch (notifications.getType("call")) {
+                            case Boolean:
+                                c.callNotification = new ServiceNotificationConfiguration();
+                                c.callNotification.setEnabled(notifications.getBoolean("call"));
+                                break;
+                            case Map:
+                                c.callNotification = ServiceNotificationConfiguration.fromReadableMap(notifications.getMap("call"));
+                                break;
+                        }
+                    }
+                    break;
+            }
         }
-        if (data.hasKey("foregroundTitle")) {
-            c.foregroundTitle = data.getString("foregroundTitle");
+
+        if (c.accountNotification == null) {
+            c.accountNotification = new ServiceNotificationConfiguration();
         }
-        if (data.hasKey("foregroundText")) {
-            c.foregroundText = data.getString("foregroundText");
-        }
-        if (data.hasKey("foregroundInfo")) {
-            c.foregroundInfo = data.getString("foregroundInfo");
-        }
-        if (data.hasKey("foregroundTicker")) {
-            c.foregroundTicker = data.getString("foregroundTicker");
-        }
-        if (data.hasKey("foregroundSmallIcon")) {
-            c.foregroundSmallIcon = data.getString("foregroundSmallIcon");
-        }
-        if (data.hasKey("foregroundLargeIcon")) {
-            c.foregroundLargeIcon = data.getString("foregroundLargeIcon");
+        if (c.callNotification == null) {
+            c.callNotification = new ServiceNotificationConfiguration();
         }
 
         return c;
@@ -148,7 +143,8 @@ public class ServiceConfiguration {
      */
     public static ServiceConfiguration defaultConfiguration() {
         ServiceConfiguration c = new ServiceConfiguration();
-        c.foreground = true;
+        c.accountNotification = new ServiceNotificationConfiguration();
+        c.callNotification = new ServiceNotificationConfiguration();
 
         return c;
     }

@@ -1,57 +1,48 @@
 # Android background service
 
-In order to accpet incoming calls while applicaiton in background you should set `foreground` property to `true`.
-When this flag is true, pjsip service will create a `pending notification`.
+In order to accept incoming calls while applicaiton in background you should set `notifications` property to `true` (true by default).
+This will make PJSIP service run in the *foreground*, supplying the ongoing notification to be shown to the user while in this state.
+Without foreground notification, Android could kill PJSIP service to reclaim more memory.
 
 ![Android Pending Intent PjSip](android_notification_example.png)
 
 ```javascript
 let configuration = {
   ua: Platform.select({ios: "Reachify iOS", android: "Reachify Android"}), // Default: React Native PjSip (version)
-  foreground: true, // Enable ability to connect to SIP while in background
-  foregroundTitle: "Reachify", // Default: account name
-  foregroundText: "Online",    // Default: account registration status
-  foregroundInfo: null,
-  foregroundTicker: null,
-  foregroundSmallIcon: null,
-  foregroundLargeIcon: null    // Default: ic_launcher
-};
-let endpoint = new Endpoint();
-let state = await endpoint.start(configuration);
-// ...
-```
 
-### Small and large icons
-
-Copy your icons to `android/app/src/main/res/mipmap-XXXX/` and set thier names into `foregroundSmallIcon` and `foregroundLargeIcon` without extension.
-https://developer.android.com/guide/practices/ui_guidelines/icon_design_status_bar.html
-
-
-# Call notifications
-
-Android service by default creates notification that outgoing or incoming are in progress.
-In order to disable this functionality or customize it use configuration as in example below.
-
-```javascript
-let configuration = {
-  ua: "..."
-  // ....
-  foregroundCallNotifications: true, // True to show notifications for calls
-  foregroundCallNotificationsInfo: (call) => { // Detailed info how to show notification
-    return {
-      title: "Call from John Doe",
-      text: "Ringing",    // Default: account registration status
+  notifications: true,  // Creates peding notification that will allow service work while your app in background
+  notifications: false, // Disables pending notification
+  notifications: {      
+    account: true,
+    call: false         // Disables only call notification
+  },
+  notifications: {
+    account: {
+      title: "My cool react native app", // Default: account name
+      text: "Here we go",    // Default: account registration status
       info: null,
       ticker: null,
-      smallIcon: "icon_call",
-      largeIcon: "avatar_of_user"
+      smallIcon: null,
+      largeIcon: null 
+    },
+    call: {
+      title: "Active call",   // Default: "Call in Progress - %Account Name%"
+      text: "John Doe",       // Default: "%Caller Name% (%Number%)"
+      info: null,
+      ticker: null,           // Default: "Call in Progress"
+      smallIcon: "icon_call", // Default: R.drawable.stat_sys_phone_call
+      largeIcon: null
     }
-  })
+  }
 };
 let endpoint = new Endpoint();
 let state = await endpoint.start(configuration);
 // ...
 ```
+
+### smallIcon & largeIcon
+To use own images for nofitications, copy them into `android/app/src/main/res/mipmap-XXXX/` and set thier names into `smallIcon` and `largeIcon` without extension.
+For more info: [ui_guidelines/icon_design_status_bar](https://developer.android.com/guide/practices/ui_guidelines/icon_design_status_bar.html)
 
 ### Handle clicks to call notifications
 

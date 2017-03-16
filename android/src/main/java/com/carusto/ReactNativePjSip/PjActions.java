@@ -56,7 +56,7 @@ public class PjActions {
         intent.setAction(PjActions.ACTION_START);
         intent.putExtra("callback_id", callbackId);
 
-        overrideIntentProps(intent, configuration);
+        formatIntent(intent, configuration);
 
         return intent;
     }
@@ -66,7 +66,7 @@ public class PjActions {
         intent.setAction(PjActions.ACTION_SET_NETWORK_CONFIGURATION);
         intent.putExtra("callback_id", callbackId);
 
-        overrideIntentProps(intent, configuration);
+        formatIntent(intent, configuration);
 
         return intent;
     }
@@ -76,7 +76,7 @@ public class PjActions {
         intent.setAction(PjActions.ACTION_SET_SERVICE_CONFIGURATION);
         intent.putExtra("callback_id", callbackId);
 
-        overrideIntentProps(intent, configuration);
+        formatIntent(intent, configuration);
 
         return intent;
     }
@@ -86,7 +86,7 @@ public class PjActions {
         intent.setAction(PjActions.ACTION_CREATE_ACCOUNT);
         intent.putExtra("callback_id", callbackId);
 
-        overrideIntentProps(intent, configuration);
+        formatIntent(intent, configuration);
 
         return intent;
     }
@@ -249,7 +249,7 @@ public class PjActions {
         return intent;
     }
 
-    private static void overrideIntentProps(Intent intent, ReadableMap configuration) {
+    private static void formatIntent(Intent intent, ReadableMap configuration) {
         if (configuration == null) {
             return;
         }
@@ -272,27 +272,7 @@ public class PjActions {
                     intent.putExtra(key, configuration.getBoolean(key));
                     break;
                 case Map:
-                    Map<String, String> value = new HashMap<>();
-                    ReadableMap map = configuration.getMap(key);
-                    ReadableMapKeySetIterator mapIt = map.keySetIterator();
-
-                    while (mapIt.hasNextKey()) {
-                        String mapKey = mapIt.nextKey();
-
-                        switch (map.getType(mapKey)) {
-                            case Null:
-                                value.put(mapKey, null);
-                                break;
-                            case String:
-                                value.put(mapKey, map.getString(mapKey));
-                                break;
-                            case Number:
-                                value.put(mapKey, String.valueOf(map.getInt(mapKey)));
-                                break;
-                        }
-                    }
-
-                    intent.putExtra(key, (Serializable) value);
+                    intent.putExtra(key, (Serializable) formatMap(configuration.getMap(key)));
                     break;
                 default:
                     Log.w(TAG, "Unable to put extra information for intent: unknown type \""+ configuration.getType(key) +"\"");
@@ -301,4 +281,35 @@ public class PjActions {
         }
     }
 
+    private static Map<String, Object> formatMap(ReadableMap map) {
+        Map<String, Object> value = new HashMap<>();
+        ReadableMapKeySetIterator mapIt = map.keySetIterator();
+
+        while (mapIt.hasNextKey()) {
+            String mapKey = mapIt.nextKey();
+
+            switch (map.getType(mapKey)) {
+                case Null:
+                    value.put(mapKey, null);
+                    break;
+                case String:
+                    value.put(mapKey, map.getString(mapKey));
+                    break;
+                case Number:
+                    value.put(mapKey, map.getInt(mapKey));
+                    break;
+                case Boolean:
+                    value.put(mapKey, map.getBoolean(mapKey));
+                    break;
+                case Map:
+                    value.put(mapKey, formatMap(map.getMap(mapKey)));
+                    break;
+                default:
+                    Log.w(TAG, "Unable to put extra information for intent: unknown type \""+ map.getType(mapKey) +"\"");
+                    break;
+            }
+        }
+
+        return value;
+    }
 }

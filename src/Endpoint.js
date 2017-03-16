@@ -123,9 +123,6 @@ export default class Endpoint extends EventEmitter {
     createAccount(configuration) {
         return new Promise(function(resolve, reject) {
             NativeModules.PjSipModule.createAccount(configuration, (successful, data) => {
-
-                console.log("createAccount response", successful, data);
-
                 if (successful) {
                     resolve(new Account(data));
                 } else {

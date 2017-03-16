@@ -10,6 +10,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
@@ -24,9 +27,11 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.widget.ImageView;
 import com.carusto.ReactNativePjSip.configuration.AccountConfiguration;
 import com.carusto.ReactNativePjSip.configuration.NetworkConfiguration;
 import com.carusto.ReactNativePjSip.configuration.ServiceConfiguration;
+import com.carusto.ReactNativePjSip.configuration.ServiceNotificationConfiguration;
 import com.carusto.ReactNativePjSip.utils.ArgumentUtils;
 import org.json.JSONObject;
 import org.pjsip.pjsua2.*;
@@ -51,6 +56,12 @@ public class PjSipService extends Service implements SensorEventListener {
 
     private Endpoint mEndpoint;
 
+    private int mUdpTransportId;
+
+    private int mTcpTransportId;
+
+    private int mTlsTransportId;
+
     private PjSipLogWriter mLogWriter;
 
     private PjSipBroadcastEmiter mEmitter;
@@ -59,6 +70,9 @@ public class PjSipService extends Service implements SensorEventListener {
 
     private List<PjSipCall> mCalls = new ArrayList<>();
 
+    // In order to ensure that GC will not destroy objects that are used in PJSIP
+    // Also there is limitation of pjsip that thread should be registered first before working with library
+    // (but we couldn't register GC thread in pjsip)
     private List<Object> mTrash = new LinkedList<>();
 
     private NotificationManager mNotificationManager;
@@ -205,6 +219,26 @@ public class PjSipService extends Service implements SensorEventListener {
             mEndpoint.libInit(epConfig);
 
             mTrash.add(epConfig);
+
+            // Add transports
+            {
+                TransportConfig transportConfig = new TransportConfig();
+                transportConfig.setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
+                mUdpTransportId = mEndpoint.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP, transportConfig);
+                mTrash.add(transportConfig);
+            }
+            {
+                TransportConfig transportConfig = new TransportConfig();
+                transportConfig.setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
+                mTcpTransportId = mEndpoint.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TCP, transportConfig);
+                mTrash.add(transportConfig);
+            }
+            {
+                TransportConfig transportConfig = new TransportConfig();
+                transportConfig.setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
+                mTlsTransportId = mEndpoint.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TLS, transportConfig);
+                mTrash.add(transportConfig);
+            }
 
             mEndpoint.libStart();
         } catch (Exception e) {
@@ -409,7 +443,7 @@ public class PjSipService extends Service implements SensorEventListener {
             ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
 
             // Start foreground
-            if (mConnectivityAvailable && serviceConfiguration.isForeground()) {
+            if (mConnectivityAvailable && serviceConfiguration.getAccountNotification().isEnabled()) {
                 doStartForeground();
             }
         }
@@ -457,7 +491,7 @@ public class PjSipService extends Service implements SensorEventListener {
             PjSipSharedPreferences.saveServiceSettings(getBaseContext(), configuration);
 
             // Add or remove foreground notification
-            if (mConnectivityAvailable && configuration.isForeground()) {
+            if (mConnectivityAvailable && configuration.getAccountNotification().isEnabled()) {
                 doStartForeground();
             } else {
                 doStopForeground();
@@ -517,7 +551,7 @@ public class PjSipService extends Service implements SensorEventListener {
 
         // Start foreground
         ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
-        if (serviceConfiguration.isForeground()) {
+        if (serviceConfiguration.getAccountNotification().isEnabled()) {
             doStartForeground();
         }
     }
@@ -554,7 +588,7 @@ public class PjSipService extends Service implements SensorEventListener {
             mEmitter.fireAccountCreated(intent, account);
 
             // Start foreground
-            if (mConnectivityAvailable && serviceConfiguration.isForeground()) {
+            if (mConnectivityAvailable && serviceConfiguration.getAccountNotification().isEnabled()) {
                 doStartForeground();
             }
 
@@ -568,27 +602,21 @@ public class PjSipService extends Service implements SensorEventListener {
     }
 
     private PjSipAccount doAccountCreate(AccountConfiguration configuration) throws Exception {
-        // Create transport
-        TransportConfig transportConfig = new TransportConfig();
-        transportConfig.setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
-
-        pjsip_transport_type_e transportType = pjsip_transport_type_e.PJSIP_TRANSPORT_UDP;
+        int transportId = mTcpTransportId;
 
         if (configuration.isTransportNotEmpty()) {
             switch (configuration.getTransport()) {
                 case "UDP":
-                    transportType = pjsip_transport_type_e.PJSIP_TRANSPORT_TCP;
+                    transportId = mUdpTransportId;
                     break;
                 case "TLS":
-                    transportType = pjsip_transport_type_e.PJSIP_TRANSPORT_TLS;
+                    transportId = mTlsTransportId;
                     break;
                 default:
                     Log.w(TAG, "Illegal \""+ configuration.getTransport() +"\" transport (possible values are UDP, TCP or TLS) use TCP instead");
                     break;
             }
         }
-
-        int transportId = mEndpoint.transportCreate(transportType, transportConfig);
 
         // Create account
         AuthCredInfo cred = new AuthCredInfo(
@@ -651,7 +679,6 @@ public class PjSipService extends Service implements SensorEventListener {
 
         mTrash.add(cfg);
         mTrash.add(cred);
-        mTrash.add(transportConfig);
 
         mAccounts.add(account);
 
@@ -708,8 +735,11 @@ public class PjSipService extends Service implements SensorEventListener {
             doPauseParallelCalls(call);
 
             // Show call notification
-            Notification notification = buildCallNotification(account, call);
-            mNotificationManager.notify(NOTIFICATION_ACTIVE_CALL, notification);
+            ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+            if (serviceConfiguration.getCallNotification().isEnabled()) {
+                Notification notification = buildCallNotification(serviceConfiguration.getCallNotification(), account, call);
+                mNotificationManager.notify(NOTIFICATION_ACTIVE_CALL, notification);
+            }
 
             mCalls.add(call);
 
@@ -841,7 +871,6 @@ public class PjSipService extends Service implements SensorEventListener {
         }
     }
 
-    // TODO: Log each action for debug proposal
     private void handleCallUseEarpiece(Intent intent) {
         try {
             mAudioManager.setSpeakerphoneOn(false);
@@ -940,23 +969,16 @@ public class PjSipService extends Service implements SensorEventListener {
 
     private void doStartForeground() {
         ServiceConfiguration configuration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+        ServiceNotificationConfiguration notification = configuration.getAccountNotification();
 
-        String title = configuration.getForegroundTitle();
-        String text = configuration.getForegroundText();
-        String info = configuration.getForegroundInfo();
-        String ticker = configuration.getForegroundTicker();
-        String smallIcon = configuration.getForegroundSmallIcon();
-        String largeIcon = configuration.getForegroundLargeIcon();
-
-        if (!configuration.isForegroundNotificationStatic()) {
+        if (!notification.isForegroundNotificationStatic()) {
             if (mAccounts.size() > 0) {
                 PjSipAccount account = mAccounts.get(0);
-                title = account.getConfiguration().getUsername();
-                text = account.getRegistrationStatusText();
+                notification = notification.copy(account.getConfiguration().getUsername(), null);
             }
         }
 
-        startForeground(NOTIFICATION_ACTIVE_REGISTRATION, buildNotification(title, text, info, ticker, smallIcon, largeIcon));
+        startForeground(NOTIFICATION_ACTIVE_REGISTRATION, buildNotification(notification));
     }
 
     private void doStopForeground() {
@@ -967,7 +989,7 @@ public class PjSipService extends Service implements SensorEventListener {
         ServiceConfiguration configuration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
 
         // Update foreground notification
-        if (mConnectivityAvailable && configuration.isForeground()) {
+        if (mConnectivityAvailable && configuration.getAccountNotification().isEnabled()) {
             doStartForeground();
         }
 
@@ -1033,8 +1055,11 @@ public class PjSipService extends Service implements SensorEventListener {
         });
 
         // Show call notification
-        Notification notification = buildCallNotification(account, call);
-        mNotificationManager.notify(NOTIFICATION_ACTIVE_CALL, notification);
+        ServiceConfiguration serviceConfiguration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
+        if (serviceConfiguration.getCallNotification().isEnabled()) {
+            Notification notification = buildCallNotification(serviceConfiguration.getCallNotification(), account, call);
+            mNotificationManager.notify(NOTIFICATION_ACTIVE_CALL, notification);
+        }
 
         // -----
         mCalls.add(call);
@@ -1151,63 +1176,90 @@ public class PjSipService extends Service implements SensorEventListener {
         mEmitter.fireCallChanged(call);
     }
 
-    private Notification buildNotification(String title, String text, String info, String ticker, String smallIcon, String largeIcon) {
+    private Notification buildNotification(ServiceNotificationConfiguration config) {
         Intent foregroundIntent = buildForegroundIntent();
         PendingIntent pendIntent = PendingIntent.getActivity(this, 0, foregroundIntent, 0);
+        NotificationCompat.Builder b = buildNotificationBuilder(config);
 
-        NotificationCompat.Builder b = new NotificationCompat.Builder(this);
+        if (config.getSmallIcon() == null || config.getSmallIcon().length() == 0) {
+            Resources resources = getApplicationContext().getResources();
 
-        if (title != null && title.length() > 0) {
-            b.setContentTitle(title);
+            int smallIconId = resources.getIdentifier("ic_launcher", "mipmap", getApplicationContext().getPackageName());
+            if (smallIconId > 0) {
+                b.setSmallIcon(smallIconId);
+            }
         }
-        if (text != null && text.length() > 0) {
-            b.setContentText(text);
-        }
-        if (info != null && info.length() > 0) {
-            b.setContentInfo(info);
-        }
-        if (ticker != null && ticker.length() > 0) {
-            b.setTicker(ticker);
-        }
-
-        Resources resources = getApplicationContext().getResources();
-
-        if (smallIcon == null) {
-            smallIcon = "ic_launcher";
-        }
-        int smallIconId = resources.getIdentifier(smallIcon, "mipmap", getApplicationContext().getPackageName());
-
-        if (smallIconId > 0) {
-            b.setSmallIcon(smallIconId);
-        }
-
-        // TODO: Add ability to use largeIcon
 
         return b.setContentIntent(pendIntent).setWhen(0).build();
     }
 
-    private Notification buildCallNotification(PjSipAccount account, PjSipCall call) {
+    private Notification buildCallNotification(ServiceNotificationConfiguration config, PjSipAccount account, PjSipCall call) {
+        if (!config.isForegroundNotificationStatic()) {
+            String title = "Call in Progress" + " - " + account.getConfiguration().getName();
+            String text = null;
+            try {
+                text = call.getInfo().getRemoteUri();
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to retrieve Remote URI of call", e);
+            }
+
+            config = config.copy(title, text);
+        }
+
+        return buildCallNotification(config, call);
+    }
+
+    private Notification buildCallNotification(ServiceNotificationConfiguration config, PjSipCall call) {
         Intent intent = buildForegroundIntent();
         intent.putExtra("call", call.getId());
         PendingIntent pendIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-        String title = "Call in Progress" + " - " + account.getConfiguration().getName();
-        String text = null;
-        try {
-            text = call.getInfo().getRemoteUri();
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to retrieve Remote URI of call", e);
-        }
-
-        NotificationCompat.Builder b = new NotificationCompat.Builder(this);
-        b.setContentTitle(title); // Call in Progress - %Account Name%
-        b.setContentText(text); // %Caller Name% (%Number%)
-        b.setTicker("Call in Progress");
+        NotificationCompat.Builder b = buildNotificationBuilder(config);
         b.setOngoing(true);
-        b.setSmallIcon(android.R.drawable.stat_sys_phone_call);
         b.setWhen(System.currentTimeMillis());
 
+        if (config.getSmallIcon() == null || config.getSmallIcon().length() == 0) {
+            b.setSmallIcon(android.R.drawable.stat_sys_phone_call);
+        }
+
         return b.setContentIntent(pendIntent).build();
+    }
+
+    private NotificationCompat.Builder buildNotificationBuilder(ServiceNotificationConfiguration config) {
+        NotificationCompat.Builder b = new NotificationCompat.Builder(this);
+
+        if (config.getTitle() != null && config.getTitle().length() > 0) {
+            b.setContentTitle(config.getTitle());
+        }
+        if (config.getText() != null && config.getText().length() > 0) {
+            b.setContentText(config.getText());
+        }
+        if (config.getInfo() != null && config.getInfo().length() > 0) {
+            b.setContentInfo(config.getInfo());
+        }
+        if (config.getTicker() != null && config.getTicker().length() > 0) {
+            b.setTicker(config.getTicker());
+        }
+
+        Resources resources = getApplicationContext().getResources();
+
+        if (config.getSmallIcon() != null && config.getSmallIcon().length() > 0) {
+            int smallIconId = resources.getIdentifier(config.getSmallIcon(), "mipmap", getApplicationContext().getPackageName());
+            if (smallIconId > 0) {
+                b.setSmallIcon(smallIconId);
+            }
+        }
+
+        if (config.getLargeIcon() != null && config.getLargeIcon().length() > 0) {
+            int largeIconId = resources.getIdentifier(config.getLargeIcon(), "mipmap", getApplicationContext().getPackageName());
+
+            if (largeIconId > 0) {
+                Bitmap largeIconBitmap = BitmapFactory.decodeResource(resources, largeIconId);
+                b.setLargeIcon(largeIconBitmap);
+            }
+        }
+
+        return b;
     }
 
     private Intent buildForegroundIntent() {

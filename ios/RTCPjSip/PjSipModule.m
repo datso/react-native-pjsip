@@ -48,11 +48,16 @@ RCT_EXPORT_METHOD(deleteAccount: (int) accountId callback:(RCTResponseSenderBloc
 #pragma mark - Call Actions
 
 RCT_EXPORT_METHOD(makeCall: (int) accountId destination: (NSString *) destination callback:(RCTResponseSenderBlock) callback) {
-    PjSipEndpoint* endpoint = [PjSipEndpoint instance];
-    PjSipAccount *account = [endpoint findAccount:accountId];
-    PjSipCall *call = [endpoint makeCall:account destination:destination];
+    @try {
+        PjSipEndpoint* endpoint = [PjSipEndpoint instance];
+        PjSipAccount *account = [endpoint findAccount:accountId];
+        PjSipCall *call = [endpoint makeCall:account destination:destination];
 
-    callback(@[@TRUE, [call toJsonDictionary:endpoint.isSpeaker]]);
+        callback(@[@TRUE, [call toJsonDictionary:endpoint.isSpeaker]]);
+    }
+    @catch (NSException * e) {
+        callback(@[@FALSE, e.reason]);
+    }
 }
 
 RCT_EXPORT_METHOD(hangupCall: (int) callId callback:(RCTResponseSenderBlock) callback) {

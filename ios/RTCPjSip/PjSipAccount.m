@@ -124,21 +124,6 @@
     return self;
 }
 
-// TODO: Add configuration parameter for UDP/TLS
-- (pjsua_transport_id)initTransport {
-    pjsua_transport_id id;
-    pjsua_transport_config cfg;
-    pjsua_transport_config_default(&cfg);
-
-    // Add TCP transport.
-    pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, &id);
-    if (status != PJ_SUCCESS) {
-        NSLog(@"Error creating transport");
-    }
-
-    return id;
-}
-
 - (void) dealloc {
     NSLog(@"Called dealloc");
     pjsua_acc_set_registration(self.id, PJ_FALSE);
