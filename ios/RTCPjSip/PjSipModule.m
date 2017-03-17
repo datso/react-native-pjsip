@@ -45,6 +45,20 @@ RCT_EXPORT_METHOD(deleteAccount: (int) accountId callback:(RCTResponseSenderBloc
     callback(@[@TRUE]);
 }
 
+RCT_EXPORT_METHOD(registerAccount: (int) accountId renew:(BOOL) renew callback:(RCTResponseSenderBlock) callback) {
+    @try {
+        PjSipEndpoint* endpoint = [PjSipEndpoint instance];
+        PjSipAccount *account = [endpoint findAccount:accountId];
+        
+        [account register:renew];
+        
+        callback(@[@TRUE]);
+    }
+    @catch (NSException * e) {
+        callback(@[@FALSE, e.reason]);
+    }
+}
+
 #pragma mark - Call Actions
 
 RCT_EXPORT_METHOD(makeCall: (int) accountId destination: (NSString *) destination callback:(RCTResponseSenderBlock) callback) {
@@ -53,6 +67,9 @@ RCT_EXPORT_METHOD(makeCall: (int) accountId destination: (NSString *) destinatio
         PjSipAccount *account = [endpoint findAccount:accountId];
         PjSipCall *call = [endpoint makeCall:account destination:destination];
 
+        // Automatically put other calls on hold.
+        [endpoint pauseParallelCalls:call];
+        
         callback(@[@TRUE, [call toJsonDictionary:endpoint.isSpeaker]]);
     }
     @catch (NSException * e) {
@@ -83,10 +100,15 @@ RCT_EXPORT_METHOD(declineCall: (int) callId callback:(RCTResponseSenderBlock) ca
 }
 
 RCT_EXPORT_METHOD(answerCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
-    PjSipCall *call = [[PjSipEndpoint instance] findCall:callId];
+    PjSipEndpoint* endpoint = [PjSipEndpoint instance];
+    PjSipCall *call = [endpoint findCall:callId];
     
     if (call) {
         [call answer];
+        
+        // Automatically put other calls on hold.
+        [endpoint pauseParallelCalls:call];
+        
         callback(@[@TRUE]);
     } else {
         callback(@[@FALSE, @"Call not found"]);
@@ -100,6 +122,7 @@ RCT_EXPORT_METHOD(holdCall: (int) callId callback:(RCTResponseSenderBlock) callb
     if (call) {
         [call hold];
         [endpoint emmitCallChanged:call];
+        
         callback(@[@TRUE]);
     } else {
         callback(@[@FALSE, @"Call not found"]);
@@ -113,6 +136,10 @@ RCT_EXPORT_METHOD(unholdCall: (int) callId callback:(RCTResponseSenderBlock) cal
     if (call) {
         [call unhold];
         [endpoint emmitCallChanged:call];
+        
+        // Automatically put other calls on hold.
+        [endpoint pauseParallelCalls:call];
+        
         callback(@[@TRUE]);
     } else {
         callback(@[@FALSE, @"Call not found"]);

@@ -30,6 +30,7 @@
         self.regTimeout = config[@"regTimeout"] == nil ? [NSNumber numberWithInteger:600] : config[@"regTimeout"];
         self.regHeaders = config[@"regHeaders"] == nil ? [NSNull null] : config[@"regHeaders"];
         self.regContactParams = config[@"regContactParams"] == nil ? [NSNull null] : config[@"regContactParams"];
+        self.regOnAdd = config[@"regOnAdd"] == @YES || config[@"regOnAdd"] == nil ? true : false;
         
         pj_status_t status;
 
@@ -89,6 +90,8 @@
             if (self.regTimeout != nil && ![self.regTimeout isKindOfClass:[NSNull class]]) {
                 cfg.reg_timeout = (unsigned) [self.regTimeout intValue];
             }
+
+            cfg.register_on_acc_add = self.regOnAdd;
         }
         
         // Transport settings
@@ -128,6 +131,13 @@
     NSLog(@"Called dealloc");
     pjsua_acc_set_registration(self.id, PJ_FALSE);
     pjsua_acc_del(self.id);
+}
+
+- (void) register: (bool) renew {
+    pj_status_t status = pjsua_acc_set_registration((pjsua_acc_id)self.id, renew ? PJ_TRUE : PJ_FALSE);
+    if (status != PJ_SUCCESS) {
+        [NSException raise:@"Failed to register account" format:@"See device logs for more details."];
+    }
 }
 
 #pragma mark EventHandlers

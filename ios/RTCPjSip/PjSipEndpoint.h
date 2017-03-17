@@ -23,12 +23,12 @@
 -(PjSipAccount *)createAccount:(NSDictionary*) config;
 -(void) deleteAccount:(int) accountId;
 -(PjSipAccount *)findAccount:(int)accountId;
--(void)emmitRegistrationChanged:(PjSipAccount*) account;
-
 -(PjSipCall *)makeCall:(PjSipAccount *) account destination:(NSString *)destination;
+-(void)pauseParallelCalls:(PjSipCall*) call;
 -(PjSipCall *)findCall:(int)callId;
 -(void)useSpeaker;
 -(void)useEarpiece;
+-(void)emmitRegistrationChanged:(PjSipAccount*) account;
 -(void)emmitCallReceived:(PjSipCall*) call;
 -(void)emmitCallUpdated:(PjSipCall*) call;
 -(void)emmitCallChanged:(PjSipCall*) call;

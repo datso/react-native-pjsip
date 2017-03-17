@@ -137,6 +137,27 @@ export default class Endpoint extends EventEmitter {
     }
 
     /**
+     * Update registration or perform unregistration. 
+     * If registration is configured for this account, then initial SIP REGISTER will be sent when the account is added.
+     * Application normally only need to call this function if it wants to manually update the registration or to unregister from the server.
+     * 
+     * @param {Account} account
+     * @param bool renew If renew argument is zero, this will start unregistration process.
+     * @returns {Promise}
+     */
+    registerAccount(account, renew = true) {
+        return new Promise(function(resolve, reject) {
+            NativeModules.PjSipModule.registerAccount(account.getId(), renew, (successful, data) => {
+                if (successful) {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            });
+        });
+    }
+
+    /**
      * Delete an account. This will unregister the account from the SIP server, if necessary, and terminate server side presence subscriptions associated with this account.
      *
      * @param {Account} account

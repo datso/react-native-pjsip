@@ -20,13 +20,15 @@
 @property NSNumber * regTimeout;
 @property NSDictionary * regHeaders;
 @property NSString * regContactParams;
+@property bool regOnAdd;
 
 + (instancetype)itemConfig:(NSDictionary *)config;
 
 - (id)initWithConfig:(NSDictionary *)config;
 - (int)id;
 
-- (PjSipCall *)makeCall:(NSString *)destination;
+- (PjSipCall *) makeCall: (NSString *) destination;
+- (void) register: (bool) renew;
 
 - (NSDictionary *)toJsonDictionary;
 

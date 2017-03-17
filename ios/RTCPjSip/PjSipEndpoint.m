@@ -200,6 +200,21 @@
     return self.calls[@(callId)];
 }
 
+-(void) pauseParallelCalls:(PjSipCall*) call {
+    for(id key in self.calls) {
+        if (key != call.id) {
+            for (NSString *key in self.calls) {
+                PjSipCall *parallelCall = self.calls[key];
+                
+                if (call.id != parallelCall.id && !parallelCall.isHeld) {
+                    [parallelCall hold];
+                    [self emmitCallChanged:parallelCall];
+                }
+            }
+        }
+    }
+}
+
 -(void)useSpeaker {
     self.isSpeaker = true;
     
