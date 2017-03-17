@@ -91,6 +91,13 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
     }
 
     @ReactMethod
+    public void registerAccount(int accountId, boolean renew, Callback callback) {
+        int id = receiver.register(callback);
+        Intent intent = PjActions.createAccountRegisterIntent(id, accountId, renew, getReactApplicationContext());
+        getReactApplicationContext().startService(intent);
+    }
+
+    @ReactMethod
     public void deleteAccount(int accountId, Callback callback) {
         int callbackId = receiver.register(callback);
         Intent intent = PjActions.createAccountDeleteIntent(callbackId, accountId, getReactApplicationContext());

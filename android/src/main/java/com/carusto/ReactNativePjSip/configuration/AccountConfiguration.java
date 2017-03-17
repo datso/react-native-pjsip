@@ -33,6 +33,8 @@ public class AccountConfiguration {
 
     public String regContactParams;
 
+    public boolean regOnAdd;
+
     public String getName() {
         return name;
     }
@@ -77,6 +79,10 @@ public class AccountConfiguration {
         return regContactParams;
     }
 
+    public boolean isRegOnAdd() {
+        return regOnAdd;
+    }
+
     public String getNomalizedRegServer() {
         return regServer != null && regServer.length() > 0 ? regServer : "*";
     }
@@ -110,37 +116,6 @@ public class AccountConfiguration {
         return proxy != null && proxy.length() > 0;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        AccountConfiguration that = (AccountConfiguration) o;
-
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (username != null ? !username.equals(that.username) : that.username != null) return false;
-        if (domain != null ? !domain.equals(that.domain) : that.domain != null) return false;
-        if (password != null ? !password.equals(that.password) : that.password != null) return false;
-        if (proxy != null ? !proxy.equals(that.proxy) : that.proxy != null) return false;
-        if (transport != null ? !transport.equals(that.transport) : that.transport != null) return false;
-        if (regServer != null ? !regServer.equals(that.regServer) : that.regServer != null) return false;
-        return regTimeout != null ? regTimeout.equals(that.regTimeout) : that.regTimeout == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (username != null ? username.hashCode() : 0);
-        result = 31 * result + (domain != null ? domain.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (proxy != null ? proxy.hashCode() : 0);
-        result = 31 * result + (transport != null ? transport.hashCode() : 0);
-        result = 31 * result + (regServer != null ? regServer.hashCode() : 0);
-        result = 31 * result + (regTimeout != null ? regTimeout.hashCode() : 0);
-        return result;
-    }
-
     public static AccountConfiguration fromIntent(Intent intent) {
         AccountConfiguration c = new AccountConfiguration();
         c.name = intent.getStringExtra("name");
@@ -154,6 +129,7 @@ public class AccountConfiguration {
 
         c.regServer = intent.getStringExtra("regServer");
         c.regTimeout = 600;
+        c.regOnAdd = intent.getBooleanExtra("regOnAdd", true);
 
         if (intent.hasExtra("regTimeout")) {
             String regTimeout = intent.getStringExtra("regTimeout");

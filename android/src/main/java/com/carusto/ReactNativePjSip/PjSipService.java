@@ -350,6 +350,9 @@ public class PjSipService extends Service implements SensorEventListener {
             case PjActions.ACTION_CREATE_ACCOUNT:
                 handleAccountCreate(intent);
                 break;
+            case PjActions.ACTION_REGISTER_ACCOUNT:
+                handleAccountRegister(intent);
+                break;
             case PjActions.ACTION_DELETE_ACCOUNT:
                 handleAccountDelete(intent);
                 break;
@@ -601,7 +604,82 @@ public class PjSipService extends Service implements SensorEventListener {
         }
     }
 
+    /**
+     * @param intent
+     */
+    private void handleAccountRegister(Intent intent) {
+        try {
+            int accountId = intent.getIntExtra("account_id", -1);
+            boolean renew = intent.getBooleanExtra("renew", false);
+            PjSipAccount account = null;
+
+            for (PjSipAccount a : mAccounts) {
+                if (a.getId() == accountId) {
+                    account = a;
+                    break;
+                }
+            }
+
+            if (account == null) {
+                throw new Exception("Account with \""+ accountId +"\" id not found");
+            }
+
+            account.register(renew);
+
+            // -----
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
     private PjSipAccount doAccountCreate(AccountConfiguration configuration) throws Exception {
+        AccountConfig cfg = new AccountConfig();
+
+        // General settings
+
+        AuthCredInfo cred = new AuthCredInfo(
+            "Digest",
+            configuration.getNomalizedRegServer(),
+            configuration.getUsername(),
+            0,
+            configuration.getPassword()
+        );
+
+        String idUri = configuration.getIdUri();
+        String regUri = configuration.getRegUri();
+
+        cfg.setIdUri(idUri);
+        cfg.getRegConfig().setRegistrarUri(regUri);
+        cfg.getRegConfig().setRegisterOnAdd(mConnectivityAvailable && configuration.isRegOnAdd());
+        cfg.getSipConfig().getAuthCreds().add(cred);
+
+        // Registration settings
+
+        if (configuration.getContactParams() != null) {
+            cfg.getSipConfig().setContactParams(configuration.getContactParams());
+        }
+        if (configuration.getContactUriParams() != null) {
+            cfg.getSipConfig().setContactUriParams(configuration.getContactUriParams());
+        }
+        if (configuration.getRegContactParams() != null) {
+            Log.w(TAG, "Property regContactParams are not supported on android, use contactParams instead");
+        }
+
+        if (configuration.getRegHeaders() != null && configuration.getRegHeaders().size() > 0) {
+            SipHeaderVector headers = new SipHeaderVector();
+
+            for (Map.Entry<String, String> entry : configuration.getRegHeaders().entrySet()) {
+                SipHeader hdr = new SipHeader();
+                hdr.setHName(entry.getKey());
+                hdr.setHValue(entry.getValue());
+                headers.add(hdr);
+            }
+
+            cfg.getRegConfig().setHeaders(headers);
+        }
+
+        // Transport settings
         int transportId = mTcpTransportId;
 
         if (configuration.isTransportNotEmpty()) {
@@ -618,30 +696,7 @@ public class PjSipService extends Service implements SensorEventListener {
             }
         }
 
-        // Create account
-        AuthCredInfo cred = new AuthCredInfo(
-            "Digest",
-            configuration.getNomalizedRegServer(),
-            configuration.getUsername(),
-            0,
-            configuration.getPassword()
-        );
-
-        String idUri = configuration.getIdUri();
-        String regUri = configuration.getRegUri();
-
-        AccountConfig cfg = new AccountConfig();
-        cfg.setIdUri(idUri);
-        cfg.getRegConfig().setRegistrarUri(regUri);
-        cfg.getSipConfig().getAuthCreds().add(cred);
         cfg.getSipConfig().setTransportId(transportId);
-
-        if (configuration.getContactParams() != null) {
-            cfg.getSipConfig().setContactParams(configuration.getContactParams());
-        }
-        if (configuration.getContactUriParams() != null) {
-            cfg.getSipConfig().setContactUriParams(configuration.getContactUriParams());
-        }
 
         if (configuration.isProxyNotEmpty()) {
             StringVector v = new StringVector();
@@ -649,33 +704,12 @@ public class PjSipService extends Service implements SensorEventListener {
             cfg.getSipConfig().setProxies(v);
         }
 
-        if (configuration.getRegContactParams() != null) {
-            Log.w(TAG, "Property regContactParams are not supported on android, use contactParams instead");
-        }
-
         cfg.getMediaConfig().getTransportConfig().setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
 
-        cfg.getRegConfig().setRegisterOnAdd(false);
-
-        if (configuration.getRegHeaders() != null && configuration.getRegHeaders().size() > 0) {
-            SipHeaderVector headers = new SipHeaderVector();
-
-            for (Map.Entry<String, String> entry : configuration.getRegHeaders().entrySet()) {
-                SipHeader hdr = new SipHeader();
-                hdr.setHName(entry.getKey());
-                hdr.setHValue(entry.getValue());
-                headers.add(hdr);
-            }
-
-            cfg.getRegConfig().setHeaders(headers);
-        }
+        // -----
 
         PjSipAccount account = new PjSipAccount(this, transportId, configuration);
         account.create(cfg);
-
-        if (mConnectivityAvailable) {
-            account.setRegistration(true);
-        }
 
         mTrash.add(cfg);
         mTrash.add(cred);

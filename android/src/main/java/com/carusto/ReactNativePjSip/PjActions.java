@@ -17,6 +17,7 @@ public class PjActions {
 
     public static final String ACTION_START = "start";
     public static final String ACTION_CREATE_ACCOUNT = "account_create";
+    public static final String ACTION_REGISTER_ACCOUNT = "account_register";
     public static final String ACTION_DELETE_ACCOUNT = "account_delete";
     public static final String ACTION_MAKE_CALL = "call_make";
     public static final String ACTION_HANGUP_CALL = "call_hangup";
@@ -87,6 +88,16 @@ public class PjActions {
         intent.putExtra("callback_id", callbackId);
 
         formatIntent(intent, configuration);
+
+        return intent;
+    }
+
+    public static Intent createAccountRegisterIntent(int callbackId, int accountId, boolean renew, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_REGISTER_ACCOUNT);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra("account_id", accountId);
+        intent.putExtra("renew", renew);
 
         return intent;
     }

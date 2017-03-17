@@ -28,6 +28,10 @@ public class PjSipAccount extends Account {
         this.configuration = configuration;
     }
 
+    public void register(boolean renew) throws Exception {
+        setRegistration(renew);
+    }
+
     public PjSipService getService() {
         return service;
     }
@@ -92,6 +96,7 @@ public class PjSipAccount extends Account {
             json.put("regTimeout", configuration.isRegTimeoutNotEmpty() ? String.valueOf(configuration.getRegTimeout()) : "");
             json.put("regContactParams", configuration.getRegContactParams());
             json.put("regHeaders", configuration.getRegHeaders());
+            json.put("regOnAdd", configuration.isRegOnAdd());
 
             json.put("registration", registration);
 
