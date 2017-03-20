@@ -33,7 +33,7 @@
     if (status != PJ_SUCCESS) {
         NSLog(@"Error in pjsua_create()");
     }
-
+    
     // Init pjsua
     {
         // Init the config structure
@@ -45,7 +45,11 @@
         cfg.cb.on_incoming_call = &onCallReceived;
         cfg.cb.on_call_state = &onCallStateChanged;
         cfg.cb.on_call_media_state = &onCallMediaStateChanged;
+        cfg.cb.on_call_media_event = &onCallMediaEvent;
+        
         cfg.cb.on_pager2 = &onMessageReceived;
+        
+        // on_call_video_state
         
 //        cfg.cfg.cb.on_call_media_state = &on_call_media_state;
 //        cfg.cfg.cb.on_incoming_call = &on_incoming_call;
@@ -66,6 +70,8 @@
 //        cfg.cfg.cb.on_ice_transport_error = &on_ice_transport_error;
 //        cfg.cfg.cb.on_snd_dev_operation = &on_snd_dev_operation;
 //        cfg.cfg.cb.on_call_media_event = &on_call_media_event;
+        
+        // pjsua_vid_enum_wins(<#pjsua_vid_win_id *wids#>, <#unsigned int *count#>)
 
         // Init the logging config structure
         pjsua_logging_config log_cfg;
@@ -84,7 +90,21 @@
             NSLog(@"Error in pjsua_init()");
         }
     }
+    
+    // TODO: Remove this
+    {
+        pjsua_codec_info c[64];
+        unsigned k, count = PJ_ARRAY_SIZE(c);
+        pjsua_vid_enum_codecs(c, &count);
+        
+        for (NSUInteger i = 0; i < count; i++) {
+            NSLog(@"Codec: %@", [PjSipUtil toString:&c[i].codec_id]);
+        }
+        
+    }
 
+    // TODO: Create transport dynamicly and provide APIs to get a list of available transports.
+    
     // Add UDP transport.
     {
         // Init transport config structure
@@ -184,8 +204,13 @@
     pj_str_t callDest = pj_str((char *) [destination UTF8String]);
     pjsua_msg_data callMsg;
     pjsua_msg_data_init(&callMsg);
+    
+    pjsua_call_setting callSettings;
+    pjsua_call_setting_default(&callSettings);
+    callSettings.aud_cnt = 1;
+    callSettings.vid_cnt = 1;
 
-    pj_status_t status = pjsua_call_make_call(account.id, &callDest, NULL, NULL, &callMsg, &callId);
+    pj_status_t status = pjsua_call_make_call(account.id, &callDest, &callSettings, NULL, &callMsg, &callId);
     if (status != PJ_SUCCESS) {
         [NSException raise:@"Failed to make a call" format:@"See device logs for more details."];
     }
@@ -321,6 +346,36 @@ static void onCallMediaStateChanged(pjsua_call_id callId) {
     }
     
     [endpoint emmitCallChanged:call];
+}
+
+static void onCallMediaEvent(pjsua_call_id call_id,
+                             unsigned med_idx,
+                             pjmedia_event *event) {
+    
+    NSLog(@"onCallMediaEvent: %d / %d", call_id, med_idx);
+    
+    if (event->type == PJMEDIA_EVENT_FMT_CHANGED) {
+        /* Adjust renderer window size to original video size */
+        
+        NSLog(@"onCallMediaEvent: Adjust renderer window size to original video size");
+        
+        pjsua_call_info ci;
+        pjsua_vid_win_id wid;
+        pjmedia_rect_size size;
+        
+        pjsua_call_get_info(call_id, &ci);
+        
+        if ((ci.media[med_idx].type == PJMEDIA_TYPE_VIDEO) &&
+            (ci.media[med_idx].dir & PJMEDIA_DIR_DECODING))
+        {
+            wid = ci.media[med_idx].stream.vid.win_in;
+            size = event->data.fmt_changed.new_fmt.det.vid.size;
+            
+            NSLog(@"onCallMediaEvent: pjsua_vid_win_set_size (%d)", wid);
+            
+            pjsua_vid_win_set_size(wid, &size);
+        }
+    }
 }
 
 static void onMessageReceived(pjsua_call_id call_id, const pj_str_t *from,

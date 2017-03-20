@@ -37,6 +37,9 @@
         pjsua_acc_config cfg;
         pjsua_acc_config_default(&cfg);
         
+        cfg.vid_in_auto_show = PJ_TRUE;
+        cfg.vid_out_auto_transmit = PJ_TRUE;
+        
         // General settings
         {
             NSString *cfgId;
@@ -113,6 +116,12 @@
                 }
             }
         }
+        
+        // TMP
+        
+        // cfg.vid_in_auto_show = PJ_TRUE;
+        
+
         
         pjsua_acc_id account_id;
 

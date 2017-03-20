@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A61DD9FB1E66BE9300278F2D /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A61DD9FA1E66BE9300278F2D /* AVFoundation.framework */; };
 		A6259A861E69889E0089146B /* PjSipMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = A6259A851E69889E0089146B /* PjSipMessage.m */; };
+		A67E17FE1E7C4FAA007D9FDA /* PjSipVideoViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A67E17FD1E7C4FAA007D9FDA /* PjSipVideoViewManager.m */; };
 		A6D3BE1B1E68277400949DCF /* VialerPJSIP.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D3BE1A1E68277400949DCF /* VialerPJSIP.framework */; };
 		A6D3BE311E6845AF00949DCF /* VialerPJSIP in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D3BE301E6845AF00949DCF /* VialerPJSIP */; };
 		A6D8F1201E65E482007D5702 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6D8F11F1E65E482007D5702 /* CallKit.framework */; };
@@ -35,6 +36,8 @@
 		A61DD9FA1E66BE9300278F2D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		A6259A821E6988470089146B /* PjSipMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PjSipMessage.h; sourceTree = "<group>"; };
 		A6259A851E69889E0089146B /* PjSipMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipMessage.m; sourceTree = "<group>"; };
+		A67E17FC1E7C4FAA007D9FDA /* PjSipVideoViewManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PjSipVideoViewManager.h; sourceTree = "<group>"; };
+		A67E17FD1E7C4FAA007D9FDA /* PjSipVideoViewManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipVideoViewManager.m; sourceTree = "<group>"; };
 		A6D3BE1A1E68277400949DCF /* VialerPJSIP.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = VialerPJSIP.framework; sourceTree = "<group>"; };
 		A6D3BE301E6845AF00949DCF /* VialerPJSIP */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = VialerPJSIP; path = VialerPJSIP.framework/VialerPJSIP; sourceTree = "<group>"; };
 		A6D8F11F1E65E482007D5702 /* CallKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CallKit.framework; path = System/Library/Frameworks/CallKit.framework; sourceTree = SDKROOT; };
@@ -83,6 +86,8 @@
 				A6F413921E38CE9600340CC2 /* PjSipAccount.h */,
 				A6F413931E38CE9600340CC2 /* PjSipAccount.m */,
 				A6F413941E38CE9600340CC2 /* PjSipCall.h */,
+				A67E17FC1E7C4FAA007D9FDA /* PjSipVideoViewManager.h */,
+				A67E17FD1E7C4FAA007D9FDA /* PjSipVideoViewManager.m */,
 				A6F413951E38CE9600340CC2 /* PjSipCall.m */,
 				A6F413981E38CE9600340CC2 /* PjSipEndpoint.h */,
 				A6F413991E38CE9600340CC2 /* PjSipEndpoint.m */,
@@ -170,6 +175,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A67E17FE1E7C4FAA007D9FDA /* PjSipVideoViewManager.m in Sources */,
 				A6259A861E69889E0089146B /* PjSipMessage.m in Sources */,
 				A6F413A11E38CE9600340CC2 /* PjSipCall.m in Sources */,
 				A6F413A31E38CE9600340CC2 /* PjSipEndpoint.m in Sources */,

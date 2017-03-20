@@ -125,8 +125,33 @@
     // TODO ?
 }
 
+/**
+ * The action may connect the call to sound device, to file, or
+ * to loop the call.
+ */
 - (void)onMediaStateChanged:(pjsua_call_info)info {
+   
+    for (unsigned mi=0; mi < info.media_cnt; ++mi) {
+        switch (info.media[mi].type) {
+//            case PJMEDIA_TYPE_AUDIO:
+//                on_call_audio_state(&call_info, mi, &has_error);
+//                break;
+            case PJMEDIA_TYPE_VIDEO:
+                
+                NSLog(@"Foudn video device id %d %d", info.media[mi].stream.vid.win_in, info.media[mi].stream.vid.cap_dev);
+
+                // on_call_video_state(&call_info, mi, &has_error);
+                break;
+            default:
+                /* Make gcc happy about enum not handled by switch/case */
+                break;
+        }
+    }
+    
     // TODO: Description why this needed
+    
+    
+    
     pjsua_call_media_status status = info.media_status;
     
     if (status == PJSUA_CALL_MEDIA_ACTIVE || status == PJSUA_CALL_MEDIA_REMOTE_HOLD) {

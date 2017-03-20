@@ -218,7 +218,7 @@
 
 /* SSL socket availability. */
 #ifndef PJ_HAS_SSL_SOCK
-/* #undef PJ_HAS_SSL_SOCK */
+#define PJ_HAS_SSL_SOCK 1
 #endif
 
 

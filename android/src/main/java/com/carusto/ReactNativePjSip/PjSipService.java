@@ -240,6 +240,29 @@ public class PjSipService extends Service implements SensorEventListener {
                 mTrash.add(transportConfig);
             }
 
+            mEndpoint.codecSetPriority("G729/8000/1", (short) 1);
+
+            // TODO: Remove this.
+            CodecInfoVector codecs = mEndpoint.codecEnum();
+            for (int i=0; i < codecs.size(); i++) {
+                CodecInfo info = codecs.get(i);
+                info.getCodecId();
+                info.getDesc();
+                info.getPriority();
+
+                Log.d(TAG, "AudioCodec: " + info.getCodecId() + " - " + info.getDesc() + " - " + info.getPriority());
+            }
+
+            CodecInfoVector videoCodecs = mEndpoint.videoCodecEnum();
+            for (int i=0; i < videoCodecs.size(); i++) {
+                CodecInfo info = videoCodecs.get(i);
+                info.getCodecId();
+                info.getDesc();
+                info.getPriority();
+
+                Log.d(TAG, "VideoCodec: " + info.getCodecId() + " - " + info.getDesc() + " - " + info.getPriority());
+            }
+
             mEndpoint.libStart();
         } catch (Exception e) {
             Log.e(TAG, "Error while starting PJSIP", e);
