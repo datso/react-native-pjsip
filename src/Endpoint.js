@@ -436,6 +436,30 @@ export default class Endpoint extends EventEmitter {
         });
     }
 
+    activateAudioSession() {
+        return new Promise((resolve, reject) => {
+            NativeModules.PjSipModule.activateAudioSession((successful, data) => {
+                if (successful) {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            });
+        });
+    }
+
+    deactivateAudioSession() {
+        return new Promise((resolve, reject) => {
+            NativeModules.PjSipModule.deactivateAudioSession((successful, data) => {
+                if (successful) {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            });
+        });
+    }
+
     /**
      * @fires Endpoint#connectivity_changed
      * @private

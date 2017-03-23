@@ -224,6 +224,19 @@ RCT_EXPORT_METHOD(useEarpiece: (int) callId callback:(RCTResponseSenderBlock) ca
     [[PjSipEndpoint instance] useEarpiece];
 }
 
+RCT_EXPORT_METHOD(activateAudioSession: (RCTResponseSenderBlock) callback) {
+    pjsua_set_no_snd_dev();
+    pj_status_t status;
+    status = pjsua_set_snd_dev(PJMEDIA_AUD_DEFAULT_CAPTURE_DEV, PJMEDIA_AUD_DEFAULT_PLAYBACK_DEV);
+    if (status != PJ_SUCCESS) {
+        NSLog(@"Failed to active audio session");
+    }
+}
+
+RCT_EXPORT_METHOD(deactivateAudioSession: (RCTResponseSenderBlock) callback) {
+    pjsua_set_no_snd_dev();
+}
+
 RCT_EXPORT_MODULE();
 
 @end
