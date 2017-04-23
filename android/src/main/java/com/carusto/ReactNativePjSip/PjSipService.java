@@ -136,22 +136,22 @@ public class PjSipService extends Service implements SensorEventListener {
 
         mEmitter = new PjSipBroadcastEmiter(this);
 
-        mNotificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        mAudioManager = (AudioManager) getApplicationContext().getSystemService(AUDIO_SERVICE);
-        mPowerManager = (PowerManager) getApplicationContext().getSystemService(POWER_SERVICE);
+        mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        mPowerManager = (PowerManager) getSystemService(POWER_SERVICE);
 
-        mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, this.getPackageName()+"-wifi-call-lock");
         mWifiLock.setReferenceCounted(false);
 
-        mConnectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        mConnectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         mConnectivityAvailable = PjSipSharedPreferences.getNetworkSettings(getBaseContext()).isMatches(mConnectivityManager.getActiveNetworkInfo());
 
-        mTelephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        mTelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         mGSMIdle = mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE;
 
-        mSensorManager = (SensorManager) getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
         IntentFilter phoneStateFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
@@ -238,29 +238,6 @@ public class PjSipService extends Service implements SensorEventListener {
                 transportConfig.setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
                 mTlsTransportId = mEndpoint.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TLS, transportConfig);
                 mTrash.add(transportConfig);
-            }
-
-            mEndpoint.codecSetPriority("G729/8000/1", (short) 1);
-
-            // TODO: Remove this.
-            CodecInfoVector codecs = mEndpoint.codecEnum();
-            for (int i=0; i < codecs.size(); i++) {
-                CodecInfo info = codecs.get(i);
-                info.getCodecId();
-                info.getDesc();
-                info.getPriority();
-
-                Log.d(TAG, "AudioCodec: " + info.getCodecId() + " - " + info.getDesc() + " - " + info.getPriority());
-            }
-
-            CodecInfoVector videoCodecs = mEndpoint.videoCodecEnum();
-            for (int i=0; i < videoCodecs.size(); i++) {
-                CodecInfo info = videoCodecs.get(i);
-                info.getCodecId();
-                info.getDesc();
-                info.getPriority();
-
-                Log.d(TAG, "VideoCodec: " + info.getCodecId() + " - " + info.getDesc() + " - " + info.getPriority());
             }
 
             mEndpoint.libStart();

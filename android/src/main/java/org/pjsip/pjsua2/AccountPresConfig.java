@@ -28,7 +28,7 @@ public class AccountPresConfig extends PersistentObject {
     if (swigCPtr != 0) {
       if (swigCMemOwn) {
         swigCMemOwn = false;
-        // pjsua2JNI.delete_AccountPreAccountPresConfigsConfig(swigCPtr);
+        pjsua2JNI.delete_AccountPresConfig(swigCPtr);
       }
       swigCPtr = 0;
     }
