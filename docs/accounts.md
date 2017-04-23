@@ -8,13 +8,20 @@ So for each action, promise will be returned.
 
 ```
 let configuration = {
-	username: '100',
-	password: '****',
-	host: '192.168.1.100' // IP or Domain name.
-	port: 5060,
-	realm: 'my.pbx.com' // Authorization host (see TODO: Link to wiki)
-	transport: 'UDP' // Default TCP
-}
+  "name": "John",
+  "username": "sip_username",
+  "domain": "pbx.carusto.com",
+  "password": "****",
+  "proxy": null,
+  "transport": null, // Default TCP
+  "regServer": null, // Default wildcard
+  "regTimeout": null // Default 3600
+  "regHeaders": {
+    "X-Custom-Header": "Value"
+  },
+  "regContactParams": ";unique-device-token-id=XXXXXXXXX",
+  "regOnAdd": false,  // Default true, use false for manual REGISTRATION
+};
 
 let endpoint = new Endpoint();
 let state = await endpoint.start();
@@ -55,6 +62,18 @@ Example: Forbidden
 Example: Invalid host
 
 
+
+.then((account) => {
+                console.log("Account: ", account);
+
+                setTimeout(() => {
+                    endpoint.registerAccount(account, true);
+                }, 10000);
+
+                setTimeout(() => {
+                    endpoint.registerAccount(account, false);
+                }, 20000);
+            });
 
 
 
