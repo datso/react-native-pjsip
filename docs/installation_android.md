@@ -7,17 +7,29 @@ Add permissions & service to `android/app/src/main/AndroidManifest.xml`
 <uses-feature android:name="android.hardware.camera" />
 <uses-feature android:name="android.hardware.camera.autofocus"/>
 
+<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
-<uses-permission android:name="android.permission.WAKE_LOCK" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.RECORD_AUDIO"/>
+<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+<uses-permission android:name="android.permission.WAKE_LOCK"/>
+<uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"/>
+<uses-permission android:name="android.permission.CALL_PHONE"/>
+<uses-permission android:name="android.permission.READ_PHONE_STATE" />
 ```
 
 ```xml
 <application>
     ...
-    <service android:name="com.carusto.PjSipService" android:enabled="true" android:exported="true"></service>
+    <service
+        android:name="com.carusto.ReactNativePjSip.PjSipService"
+        android:enabled="true"
+        android:exported="true" />
+    <receiver android:name="com.carusto.ReactNativePjSip.PjSipConnectivityReceiver">
+        <intent-filter>
+          <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+        </intent-filter>
+    </receiver>
     ...
 </application>
 ```
