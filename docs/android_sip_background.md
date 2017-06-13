@@ -8,31 +8,41 @@ Without foreground notification, Android could kill PJSIP service to reclaim mor
 
 ```javascript
 let configuration = {
-  ua: Platform.select({ios: "Reachify iOS", android: "Reachify Android"}), // Default: React Native PjSip (version)
-
-  notifications: true,  // Creates peding notification that will allow service work while your app in background
-  notifications: false, // Disables pending notification
-  notifications: {      
-    account: true,
-    call: false         // Disables only call notification
-  },
-  notifications: {
-    account: {
-      title: "My cool react native app", // Default: account name
-      text: "Here we go",    // Default: account registration status
-      info: null,
-      ticker: null,
-      smallIcon: null,
-      largeIcon: null 
+  service: {
+    ua: Platform.select({ios: "Reachify iOS", android: "Reachify Android"}), // Default: React Native PjSip (version)
+    notifications: true,  // Creates peding notification that will allow service work while your app in background
+    notifications: false, // Disables pending notification
+    notifications: {      
+      account: true,
+      call: false         // Disables only call notification
     },
-    call: {
-      title: "Active call",   // Default: "Call in Progress - %Account Name%"
-      text: "John Doe",       // Default: "%Caller Name% (%Number%)"
-      info: null,
-      ticker: null,           // Default: "Call in Progress"
-      smallIcon: "icon_call", // Default: R.drawable.stat_sys_phone_call
-      largeIcon: null
+    notifications: {
+      account: {
+        title: "My cool react native app", // Default: account name
+        text: "Here we go",    // Default: account registration status
+        info: null,
+        ticker: null,
+        smallIcon: null,
+        largeIcon: null 
+      },
+      call: {
+        title: "Active call",   // Default: "Call in Progress - %Account Name%"
+        text: "John Doe",       // Default: "%Caller Name% (%Number%)"
+        info: null,
+        ticker: null,           // Default: "Call in Progress"
+        smallIcon: "icon_call", // Default: R.drawable.stat_sys_phone_call
+        largeIcon: null
+      }
     }
+  },
+  network: {
+    useAnyway: false,           // Default: true
+    useWifi: true,              // Default: true
+    use3g: true,                // Default: false
+    useEdge: false,             // Default: false
+    useGprs: false,             // Default: false
+    useInRoaming: false,        // Default: false
+    useOtherNetworks: true      // Default: false
   }
 };
 let endpoint = new Endpoint();
