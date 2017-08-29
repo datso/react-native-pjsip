@@ -241,7 +241,7 @@ public class PjSipService extends Service implements SensorEventListener {
                 intent.getAction().equals(PjActions.EVENT_APP_HIDDEN) ||
                 intent.getAction().equals(PjActions.EVENT_APP_DESTROY) ||
                 intent.getAction().equals(PjActions.EVENT_CONNECTIVITY_CHANGED)) {
-                return START_STICKY;
+                return START_REDELIVER_INTENT;
             }
 
             if (intent.hasExtra("service")) {
@@ -303,7 +303,7 @@ public class PjSipService extends Service implements SensorEventListener {
             }
         });
 
-        return START_STICKY;
+        return START_REDELIVER_INTENT;
     }
 
     @Override
