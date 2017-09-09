@@ -14,8 +14,6 @@ public class PjSipConnectivityReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String intentAction = intent.getAction();
 
-        List<AccountConfiguration> accounts = PjSipSharedPreferences.getAccounts(context);
-
         //
         // ACTION_DATA_STATE_CHANGED
         // Data state change is used to detect changes in the mobile
@@ -28,7 +26,7 @@ public class PjSipConnectivityReceiver extends BroadcastReceiver {
         // data network status as well as a switch between wifi and mobile
         // networks.
         //
-        if (intentAction.equals(ConnectivityManager.CONNECTIVITY_ACTION) && accounts.size() > 0) {
+        if (intentAction.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
             Intent serviceIntent = PjActions.createConnectivityChangedIntent(context);
             context.startService(serviceIntent);
         }

@@ -7,6 +7,8 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import org.json.JSONObject;
 
+import java.util.Map;
+
 public class NetworkConfiguration {
 
     private static final String TAG = "NetworkConfiguration";
@@ -120,9 +122,7 @@ public class NetworkConfiguration {
      */
     public static NetworkConfiguration defaultConfiguration() {
         NetworkConfiguration c = new NetworkConfiguration();
-        c.useWifi = true;
-        c.use3g = true;
-
+        c.useAnyway = true;
         return c;
     }
 
@@ -137,6 +137,62 @@ public class NetworkConfiguration {
         c.useOtherNetworks = intent.getBooleanExtra("useOtherNetworks", false);
 
         return c;
+    }
+
+    public static NetworkConfiguration fromMap(Map conf) {
+        NetworkConfiguration c = defaultConfiguration();
+        if (conf.containsKey("useAnyway") && conf.get("useAnyway") instanceof Boolean) {
+            c.useAnyway = (Boolean) conf.get("useAnyway");
+        }
+        if (conf.containsKey("useWifi") && conf.get("useWifi") instanceof Boolean) {
+            c.useWifi = (Boolean) conf.get("useWifi");
+        }
+        if (conf.containsKey("use3g") && conf.get("use3g") instanceof Boolean) {
+            c.use3g = (Boolean) conf.get("use3g");
+        }
+        if (conf.containsKey("useEdge") && conf.get("useEdge") instanceof Boolean) {
+            c.useEdge = (Boolean) conf.get("useEdge");
+        }
+        if (conf.containsKey("useGprs") && conf.get("useGprs") instanceof Boolean) {
+            c.useGprs = (Boolean) conf.get("useGprs");
+        }
+        if (conf.containsKey("useInRoaming") && conf.get("useInRoaming") instanceof Boolean) {
+            c.useInRoaming = (Boolean) conf.get("useInRoaming");
+        }
+        if (conf.containsKey("useOtherNetworks") && conf.get("useOtherNetworks") instanceof Boolean) {
+            c.useOtherNetworks = (Boolean) conf.get("useOtherNetworks");
+        }
+
+        return c;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NetworkConfiguration that = (NetworkConfiguration) o;
+
+        if (useAnyway != that.useAnyway) return false;
+        if (useWifi != that.useWifi) return false;
+        if (use3g != that.use3g) return false;
+        if (useEdge != that.useEdge) return false;
+        if (useGprs != that.useGprs) return false;
+        if (useInRoaming != that.useInRoaming) return false;
+        return useOtherNetworks == that.useOtherNetworks;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (useAnyway ? 1 : 0);
+        result = 31 * result + (useWifi ? 1 : 0);
+        result = 31 * result + (use3g ? 1 : 0);
+        result = 31 * result + (useEdge ? 1 : 0);
+        result = 31 * result + (useGprs ? 1 : 0);
+        result = 31 * result + (useInRoaming ? 1 : 0);
+        result = 31 * result + (useOtherNetworks ? 1 : 0);
+        return result;
     }
 
     public JSONObject toJson() {

@@ -40,12 +40,18 @@
 
 
 - (void)answer {
+    // TODO: Add parameters to answer with
     // TODO: Put on hold previous call
     
     pjsua_msg_data msgData;
     pjsua_msg_data_init(&msgData);
     pjsua_call_setting  callOpt;
     pjsua_call_setting_default(&callOpt);
+    
+    // TODO: Audio/Video count configuration!
+    callOpt.aud_cnt = 1;
+    callOpt.vid_cnt = 1;
+    
     pjsua_call_answer2(self.id, &callOpt, 200, NULL, &msgData);
 }
 
@@ -173,6 +179,43 @@
         info.state == PJSIP_INV_STATE_DISCONNECTED) {
         connectDuration = info.connect_duration.sec;
     }
+    
+    // int vid_idx = pjsua_call_get_vid_stream_idx(self.id);
+    // NSLog(@"Call Info window id: %@", @(vid_idx));
+    
+    
+    NSLog(@"Call media_cnt: %@", @(info.media_cnt));
+//    
+    for (int i=0; i < info.media_cnt; i++) {
+        pjsua_call_media_info mediaInfo = info.media[i];
+        
+        NSLog(@"Call media info index: %@", @(i));
+        NSLog(@"Call mediaInfo.dir: %@", @(mediaInfo.dir));
+        NSLog(@"Call mediaInfo.index: %@", @(mediaInfo.index));
+        NSLog(@"Call mediaInfo.status: %@", @(mediaInfo.status));
+        NSLog(@"Call mediaInfo.type: %@", @(mediaInfo.type));
+        NSLog(@"Call mediaInfo.stream.aud.conf_slot: %@", @(mediaInfo.stream.aud.conf_slot));
+        NSLog(@"Call mediaInfo.stream.vid.win_in: %@", @(mediaInfo.stream.vid.win_in));
+        NSLog(@"Call mediaInfo.stream.vid.cap_dev: %@", @(mediaInfo.stream.vid.cap_dev));
+    }
+
+    NSLog(@"Call prov_media_cnt: %@", @(info.prov_media_cnt));
+    
+    for (int i=0; i < info.prov_media_cnt; i++) {
+        pjsua_call_media_info mediaInfo = info.prov_media[i];
+        
+        NSLog(@"Call media info index: %@", @(i));
+        NSLog(@"Call mediaInfo.dir: %@", @(mediaInfo.dir));
+        NSLog(@"Call mediaInfo.index: %@", @(mediaInfo.index));
+        NSLog(@"Call mediaInfo.status: %@", @(mediaInfo.status));
+        NSLog(@"Call mediaInfo.type: %@", @(mediaInfo.type));
+        NSLog(@"Call mediaInfo.stream.aud.conf_slot: %@", @(mediaInfo.stream.aud.conf_slot));
+        NSLog(@"Call mediaInfo.stream.vid.win_in: %@", @(mediaInfo.stream.vid.win_in));
+        NSLog(@"Call mediaInfo.stream.vid.cap_dev: %@", @(mediaInfo.stream.vid.cap_dev));
+    }
+    
+    
+    
 
     return @{
         @"id": @(self.id),
@@ -200,9 +243,36 @@
         @"remoteVideoCount": @(info.rem_vid_cnt),
         
         @"audioCount": @(info.setting.aud_cnt),
-        @"videoCount": @(info.setting.vid_cnt)
+        @"videoCount": @(info.setting.vid_cnt),
+        
+        @"media": [self mediaInfoToJsonArray:info.media count:info.media_cnt],
+        @"provisionalMedia": [self mediaInfoToJsonArray:info.prov_media count:info.prov_media_cnt]
     };
 }
 
+- (NSArray *)mediaInfoToJsonArray: (pjsua_call_media_info[]) info count:(int) count {
+    NSMutableArray * result = [NSMutableArray array];
+    
+    for (int i = 0; i < count; i++) {
+        [result addObject:[self mediaToJsonDictionary:info[i]]];
+    }
+    
+    return result;
+}
+
+- (NSDictionary *)mediaToJsonDictionary:(pjsua_call_media_info) info {
+    return @{
+        @"dir": [PjSipUtil mediaDirToString:info.dir],
+        @"type": [PjSipUtil mediaTypeToString:info.type],
+        @"status": [PjSipUtil mediaStatusToString:info.status],
+        @"audioStream": @{
+            @"confSlot": @(info.stream.aud.conf_slot)
+        },
+        @"videoStream": @{
+            @"captureDevice": @(info.stream.vid.cap_dev),
+            @"windowId": @(info.stream.vid.win_in),
+        }
+    };
+}
 
 @end

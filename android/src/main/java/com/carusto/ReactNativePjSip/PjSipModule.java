@@ -6,11 +6,13 @@ import android.util.Log;
 import com.carusto.ReactNativePjSip.configuration.ServiceConfiguration;
 import com.facebook.react.bridge.*;
 
-public class PjSipModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class PjSipModule extends ReactContextBaseJavaModule /**implements LifecycleEventListener**/ {
 
     private static String TAG = "PjSipModule";
 
     private static PjSipBroadcastReceiver receiver;
+
+
 
     public PjSipModule(ReactApplicationContext context) {
         super(context);
@@ -24,13 +26,13 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
         }
     }
 
-    @Override
-    public void initialize() {
-        getReactApplicationContext().addLifecycleEventListener(this);
-
-        Intent intent = PjActions.createAppVisibleIntent(getReactApplicationContext());
-        getReactApplicationContext().startService(intent);
-    }
+//    @Override
+//    public void initialize() {
+//        getReactApplicationContext().addLifecycleEventListener(this);
+//
+////        Intent intent = PjActions.createAppVisibleIntent(getReactApplicationContext());
+////        getReactApplicationContext().startService(intent);
+//    }
 
     @Override
     public String getName() {
@@ -58,14 +60,7 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
         if (notificationCallId >= 0) {
             intent.putExtra("notificationCallId", notificationCallId);
         }
-
-        // Save service settings before start.
-        // It is necessary because library is initialized before intent are handled.
-        if (configuration != null) {
-            PjSipSharedPreferences.saveServiceSettings(getReactApplicationContext(), ServiceConfiguration.fromConfiguration(configuration));
-        }
-
-
+        
         getReactApplicationContext().startService(intent);
     }
 
@@ -202,20 +197,20 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
         getReactApplicationContext().startService(intent);
     }
 
-    @Override
-    public void onHostResume() {
-        Intent intent = PjActions.createAppVisibleIntent(getReactApplicationContext());
-        getReactApplicationContext().startService(intent);
-    }
-
-    @Override
-    public void onHostPause() {
-        Intent intent = PjActions.createAppHiddenIntent(getReactApplicationContext());
-        getReactApplicationContext().startService(intent);
-    }
-
-    @Override
-    public void onHostDestroy() {
-        // Nothing
-    }
+//    @Override
+//    public void onHostResume() {
+//        Intent intent = PjActions.createAppVisibleIntent(getReactApplicationContext());
+//        getReactApplicationContext().startService(intent);
+//    }
+//
+//    @Override
+//    public void onHostPause() {
+//        Intent intent = PjActions.createAppHiddenIntent(getReactApplicationContext());
+//        getReactApplicationContext().startService(intent);
+//    }
+//
+//    @Override
+//    public void onHostDestroy() {
+//        // Nothing
+//    }
 }

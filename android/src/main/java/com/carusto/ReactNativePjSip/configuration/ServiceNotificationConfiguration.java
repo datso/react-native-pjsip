@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class ServiceNotificationConfiguration {
 
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     private String title;
 
@@ -170,5 +170,35 @@ public class ServiceNotificationConfiguration {
         }
 
         return config;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ServiceNotificationConfiguration that = (ServiceNotificationConfiguration) o;
+
+        if (enabled != that.enabled) return false;
+        if (title != null ? !title.equals(that.title) : that.title != null) return false;
+        if (text != null ? !text.equals(that.text) : that.text != null) return false;
+        if (info != null ? !info.equals(that.info) : that.info != null) return false;
+        if (ticker != null ? !ticker.equals(that.ticker) : that.ticker != null) return false;
+        if (smallIcon != null ? !smallIcon.equals(that.smallIcon) : that.smallIcon != null)
+            return false;
+        return largeIcon != null ? largeIcon.equals(that.largeIcon) : that.largeIcon == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (enabled ? 1 : 0);
+        result = 31 * result + (title != null ? title.hashCode() : 0);
+        result = 31 * result + (text != null ? text.hashCode() : 0);
+        result = 31 * result + (info != null ? info.hashCode() : 0);
+        result = 31 * result + (ticker != null ? ticker.hashCode() : 0);
+        result = 31 * result + (smallIcon != null ? smallIcon.hashCode() : 0);
+        result = 31 * result + (largeIcon != null ? largeIcon.hashCode() : 0);
+        return result;
     }
 }

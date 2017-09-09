@@ -12,6 +12,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.util.HashMap;
 
+import javax.annotation.Nullable;
+
 public class PjSipBroadcastReceiver extends BroadcastReceiver {
 
     private static String TAG = "PjSipBroadcastReceiver";
@@ -95,42 +97,46 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
     private void onRegistrationChanged(Intent intent) {
         String json = intent.getStringExtra("data");
         Object params = ArgumentUtils.fromJson(json);
-        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipRegistrationChanged", params);
+        emit("pjSipRegistrationChanged", params);
     }
 
     private void onMessageReceived(Intent intent) {
         String json = intent.getStringExtra("data");
         Object params = ArgumentUtils.fromJson(json);
 
-        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipMessageReceived", params);
+        emit("pjSipMessageReceived", params);
     }
 
     private void onCallReceived(Intent intent) {
         String json = intent.getStringExtra("data");
         Object params = ArgumentUtils.fromJson(json);
-        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipCallReceived", params);
+        emit("pjSipCallReceived", params);
     }
 
     private void onCallChanged(Intent intent) {
         String json = intent.getStringExtra("data");
         Object params = ArgumentUtils.fromJson(json);
-        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipCallChanged", params);
+        emit("pjSipCallChanged", params);
     }
 
     private void onCallTerminated(Intent intent) {
         String json = intent.getStringExtra("data");
         Object params = ArgumentUtils.fromJson(json);
-        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipCallTerminated", params);
+        emit("pjSipCallTerminated", params);
     }
 
     private void onCallScreenLocked(Intent intent) {
         boolean lock = intent.getBooleanExtra("lock", false);
-        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipCallScreenLocked", lock);
+
+        Log.d(TAG, "onCallScreenLocked context.hasActiveCatalystInstance()" + context.hasActiveCatalystInstance());
+        Log.d(TAG, "onCallScreenLocked context.hasActiveCatalystInstance()" + context.hasActiveCatalystInstance());
+
+        emit("pjSipCallScreenLocked", lock);
     }
 
     private void onConnectivityChanged(Intent intent) {
         boolean available = intent.getBooleanExtra("available", false);
-        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("pjSipConnectivityChanged", available);
+        emit("pjSipConnectivityChanged", available);
     }
 
     private void onCallback(Intent intent) {
@@ -161,4 +167,13 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
             callback.invoke(true, true);
         }
     }
+
+    private void emit(String eventName, @Nullable Object data) {
+        Log.d(TAG, "emit " + eventName + " / " + data);
+        Log.d(TAG, "emit context.hasActiveCatalystInstance()" + context.hasActiveCatalystInstance());
+        Log.d(TAG, "emit context.getCurrentActivity() == null" + (context.getCurrentActivity() == null));
+        Log.d(TAG, "emit context.getLifecycleState()" + (context.getLifecycleState()));
+
+        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, data);
+    } 
 }

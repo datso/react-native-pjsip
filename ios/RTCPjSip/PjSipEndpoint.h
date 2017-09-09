@@ -23,11 +23,14 @@
 -(PjSipAccount *)createAccount:(NSDictionary*) config;
 -(void) deleteAccount:(int) accountId;
 -(PjSipAccount *)findAccount:(int)accountId;
--(PjSipCall *)makeCall:(PjSipAccount *) account destination:(NSString *)destination;
--(void)pauseParallelCalls:(PjSipCall*) call;
+-(PjSipCall *)makeCall:(PjSipAccount *) account destination:(NSString *)destination callSettings: (NSDictionary *)callSettings msgData: (NSDictionary *)msgData;
+-(void)pauseParallelCalls:(PjSipCall*) call; // TODO: Remove this feature.
 -(PjSipCall *)findCall:(int)callId;
 -(void)useSpeaker;
 -(void)useEarpiece;
+
+-(void)changeOrientation: (NSString*) orientation;
+
 -(void)emmitRegistrationChanged:(PjSipAccount*) account;
 -(void)emmitCallReceived:(PjSipCall*) call;
 -(void)emmitCallUpdated:(PjSipCall*) call;

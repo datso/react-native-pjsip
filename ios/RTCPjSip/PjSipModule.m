@@ -61,12 +61,13 @@ RCT_EXPORT_METHOD(registerAccount: (int) accountId renew:(BOOL) renew callback:(
 
 #pragma mark - Call Actions
 
-RCT_EXPORT_METHOD(makeCall: (int) accountId destination: (NSString *) destination callback:(RCTResponseSenderBlock) callback) {
+RCT_EXPORT_METHOD(makeCall: (int) accountId destination: (NSString *) destination callSettings:(NSDictionary*) callSettings msgData:(NSDictionary*) msgData callback:(RCTResponseSenderBlock) callback) {
     @try {
         PjSipEndpoint* endpoint = [PjSipEndpoint instance];
         PjSipAccount *account = [endpoint findAccount:accountId];
-        PjSipCall *call = [endpoint makeCall:account destination:destination];
-
+        PjSipCall *call = [endpoint makeCall:account destination:destination callSettings:callSettings msgData:msgData];
+        
+        // TODO: Remove this function
         // Automatically put other calls on hold.
         [endpoint pauseParallelCalls:call];
         
@@ -235,6 +236,12 @@ RCT_EXPORT_METHOD(activateAudioSession: (RCTResponseSenderBlock) callback) {
 
 RCT_EXPORT_METHOD(deactivateAudioSession: (RCTResponseSenderBlock) callback) {
     pjsua_set_no_snd_dev();
+}
+
+#pragma mark - Settings
+
+RCT_EXPORT_METHOD(changeOrientation: (NSString*) orientation) {
+    [[PjSipEndpoint instance] changeOrientation:orientation];
 }
 
 RCT_EXPORT_MODULE();
