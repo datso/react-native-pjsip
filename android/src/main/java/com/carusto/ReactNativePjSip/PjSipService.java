@@ -1,17 +1,12 @@
 package com.carusto.ReactNativePjSip;
 
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.AssetFileDescriptor;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -29,15 +24,15 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.Vibrator;
-import android.support.v7.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.carusto.ReactNativePjSip.configuration.AccountConfiguration;
+import com.carusto.ReactNativePjSip.configuration.AccountConfigurationDTO;
 import com.carusto.ReactNativePjSip.configuration.ConfigurationUtils;
 import com.carusto.ReactNativePjSip.configuration.NetworkConfiguration;
 import com.carusto.ReactNativePjSip.configuration.ServiceConfiguration;
-import com.carusto.ReactNativePjSip.configuration.ServiceNotificationConfiguration;
+import com.carusto.ReactNativePjSip.dto.CallSettingsDTO;
+import com.carusto.ReactNativePjSip.dto.SipMessageDTO;
 import com.carusto.ReactNativePjSip.utils.ArgumentUtils;
 
 import org.json.JSONObject;
@@ -52,10 +47,9 @@ import org.pjsip.pjsua2.OnCallStateParam;
 import org.pjsip.pjsua2.OnRegStateParam;
 import org.pjsip.pjsua2.SipHeader;
 import org.pjsip.pjsua2.SipHeaderVector;
+import org.pjsip.pjsua2.SipTxOption;
 import org.pjsip.pjsua2.StringVector;
 import org.pjsip.pjsua2.TransportConfig;
-import org.pjsip.pjsua2.VideoDevInfo;
-import org.pjsip.pjsua2.VideoPreview;
 import org.pjsip.pjsua2.pj_qos_type;
 import org.pjsip.pjsua2.pjsip_inv_state;
 import org.pjsip.pjsua2.pjsip_status_code;
@@ -181,8 +175,6 @@ public class PjSipService extends Service implements SensorEventListener {
             Log.e(TAG, "Error while loading PJSIP pjsua2 native library", error);
             throw new RuntimeException(error);
         }
-
-        // ServiceConfiguration configuration = PjSipSharedPreferences.getServiceSettings(getBaseContext());
 
         // Start stack
         try {
@@ -666,7 +658,7 @@ public class PjSipService extends Service implements SensorEventListener {
      */
     private void handleAccountCreate(Intent intent) {
         try {
-            AccountConfiguration accountConfiguration = AccountConfiguration.fromIntent(intent);
+            AccountConfigurationDTO accountConfiguration = AccountConfigurationDTO.fromIntent(intent);
             PjSipAccount account = doAccountCreate(accountConfiguration);
 
             // Emmit response
@@ -710,7 +702,7 @@ public class PjSipService extends Service implements SensorEventListener {
         }
     }
 
-    private PjSipAccount doAccountCreate(AccountConfiguration configuration) throws Exception {
+    private PjSipAccount doAccountCreate(AccountConfigurationDTO configuration) throws Exception {
         AccountConfig cfg = new AccountConfig();
 
         // General settings
@@ -827,34 +819,69 @@ public class PjSipService extends Service implements SensorEventListener {
     }
 
     private void handleCallMake(Intent intent) {
-
         try {
             int accountId = intent.getIntExtra("account_id", -1);
             PjSipAccount account = findAccount(accountId);
             String destination = intent.getStringExtra("destination");
+            String settingsJson = intent.getStringExtra("settings");
+            String messageJson = intent.getStringExtra("message");
 
             // -----
-            CallOpParam prm = new CallOpParam(true);
-            CallSetting setting = new CallSetting();
-            setting.setAudioCount(1);
-            setting.setVideoCount(0);
-            prm.setOpt(setting);
+            CallOpParam callOpParam = new CallOpParam(true);
+
+            if (settingsJson != null) {
+                CallSettingsDTO settingsDTO = CallSettingsDTO.fromJson(settingsJson);
+                CallSetting callSettings = new CallSetting();
+
+                if (settingsDTO.getAudioCount() != null) {
+                    callSettings.setAudioCount(settingsDTO.getAudioCount());
+                }
+                if (settingsDTO.getVideoCount() != null) {
+                    callSettings.setVideoCount(settingsDTO.getVideoCount());
+                }
+                if (settingsDTO.getFlag() != null) {
+                    callSettings.setFlag(settingsDTO.getFlag());
+                }
+                if (settingsDTO.getRequestKeyframeMethod() != null) {
+                    callSettings.setReqKeyframeMethod(settingsDTO.getRequestKeyframeMethod());
+                }
+
+                callOpParam.setOpt(callSettings);
+
+                mTrash.add(callSettings);
+            }
+
+            if (messageJson != null) {
+                SipMessageDTO messageDTO = SipMessageDTO.fromJson(messageJson);
+                SipTxOption callTxOption = new SipTxOption();
+
+                if (messageDTO.getTargetUri() != null) {
+                    callTxOption.setTargetUri(messageDTO.getTargetUri());
+                }
+                if (messageDTO.getContentType() != null) {
+                    callTxOption.setContentType(messageDTO.getContentType());
+                }
+                if (messageDTO.getHeaders() != null) {
+                    callTxOption.setHeaders(PjSipUtils.mapToSipHeaderVector(messageDTO.getHeaders()));
+                }
+                if (messageDTO.getBody() != null) {
+                    callTxOption.setMsgBody(messageDTO.getBody());
+                }
+
+                callOpParam.setTxOption(callTxOption);
+
+                mTrash.add(callTxOption);
+            }
+
             PjSipCall call = new PjSipCall(account);
-            call.makeCall(destination, prm);
-            prm.delete();
+            call.makeCall(destination, callOpParam);
+
+            callOpParam.delete();
 
             // Automatically put other calls on hold.
             doPauseParallelCalls(call);
 
-//            // Show call notification
-//            if (mServiceConfiguration.getCallNotificationConfiguration().isEnabled()) {
-//                Notification notification = buildCallNotification(mServiceConfiguration.getCallNotificationConfiguration(), account, call);
-//                startForeground(NOTIFICATION_ACTIVE_CALL, notification);
-//                // mNotificationManager.notify();
-//            }
-
             mCalls.add(call);
-
             mEmitter.fireIntentHandled(intent, call.toJson());
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);

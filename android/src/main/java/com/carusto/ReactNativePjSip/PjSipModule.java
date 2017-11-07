@@ -100,9 +100,9 @@ public class PjSipModule extends ReactContextBaseJavaModule /**implements Lifecy
     }
 
     @ReactMethod
-    public void makeCall(int accountId, String destination, Callback callback) {
+    public void makeCall(int accountId, String destination, ReadableMap callSettings, ReadableMap msgData,  Callback callback) {
         int callbackId = receiver.register(callback);
-        Intent intent = PjActions.createMakeCallIntent(callbackId, accountId, destination, getReactApplicationContext());
+        Intent intent = PjActions.createMakeCallIntent(callbackId, accountId, destination, callSettings, msgData, getReactApplicationContext());
         getReactApplicationContext().startService(intent);
     }
 

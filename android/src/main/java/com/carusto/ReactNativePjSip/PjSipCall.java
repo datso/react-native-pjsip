@@ -3,6 +3,8 @@ package com.carusto.ReactNativePjSip;
 import android.content.Context;
 import android.media.AudioManager;
 import android.util.Log;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.pjsip.pjsua2.*;
 
@@ -218,10 +220,45 @@ public class PjSipCall extends Call {
             json.put("audioCount", info.getSetting().getAudioCount());
             json.put("videoCount", info.getSetting().getVideoCount());
 
+            json.put("media", mediaInfoToJson(info.getMedia()));
+            json.put("provisionalMedia", mediaInfoToJson(info.getProvMedia()));
+
             return json;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private JSONArray mediaInfoToJson(CallMediaInfoVector media) {
+        JSONArray result = new JSONArray();
+
+        try {
+            long size = media.size();
+            JSONObject json = new JSONObject();
+
+            for (int i=0; i < size; i++) {
+                CallMediaInfo info = media.get(i);
+
+                JSONObject audioStreamJson = new JSONObject();
+                audioStreamJson.put("confSlot", info.getAudioConfSlot());
+
+                JSONObject videoStreamJson = new JSONObject();
+                videoStreamJson.put("captureDevice", info.getVideoCapDev());
+                videoStreamJson.put("windowId", info.getVideoIncomingWindowId());
+
+                json.put("dir", info.getDir().toString());
+                json.put("type", info.getType().toString());
+                json.put("status", info.getStatus().toString());
+                json.put("audioStream", audioStreamJson);
+                json.put("videoStream", videoStreamJson);
+
+                result.put(json);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return result;
     }
 
     public String toJsonString() {

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.util.Log;
+
+import com.carusto.ReactNativePjSip.dto.CallSettingsDTO;
+import com.carusto.ReactNativePjSip.dto.SipMessageDTO;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
@@ -111,12 +114,20 @@ public class PjActions {
         return intent;
     }
 
-    public static Intent createMakeCallIntent(int callbackId, int accountId, String destination, Context context) {
+    public static Intent createMakeCallIntent(int callbackId, int accountId, String destination, ReadableMap settings, ReadableMap message, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.ACTION_MAKE_CALL);
         intent.putExtra("callback_id", callbackId);
         intent.putExtra("account_id", accountId);
         intent.putExtra("destination", destination);
+
+        if (settings != null) {
+            intent.putExtra("settings", CallSettingsDTO.fromReadableMap(settings).toJson());
+        }
+
+        if (message != null) {
+            intent.putExtra("message", SipMessageDTO.fromReadableMap(message).toJson());
+        }
 
         return intent;
     }

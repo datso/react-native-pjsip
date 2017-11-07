@@ -4,9 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
-import com.carusto.ReactNativePjSip.configuration.AccountConfiguration;
-
-import java.util.List;
 
 public class PjSipConnectivityReceiver extends BroadcastReceiver {
 
