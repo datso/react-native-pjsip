@@ -37,7 +37,6 @@ public class PjActions {
     public static final String ACTION_REDIRECT_CALL = "call_redirect";
     public static final String ACTION_DTMF_CALL = "call_dtmf";
 
-    public static final String ACTION_SET_NETWORK_CONFIGURATION = "set_network_configuration";
     public static final String ACTION_SET_SERVICE_CONFIGURATION = "set_service_configuration";
 
     public static final String EVENT_STARTED = "com.carusto.account.started";
@@ -50,24 +49,9 @@ public class PjActions {
     public static final String EVENT_MESSAGE_RECEIVED = "com.carusto.message.received";
     public static final String EVENT_HANDLED = "com.carusto.handled";
 
-    public static final String EVENT_APP_VISIBLE = "com.carusto.app.visible";
-    public static final String EVENT_APP_HIDDEN = "com.carusto.app.hidden";
-    public static final String EVENT_APP_DESTROY = "com.carusto.app.destroy";
-    public static final String EVENT_CONNECTIVITY_CHANGED = "com.carusto.connectivity.changed";
-
     public static Intent createStartIntent(int callbackId, ReadableMap configuration, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.ACTION_START);
-        intent.putExtra("callback_id", callbackId);
-
-        formatIntent(intent, configuration);
-
-        return intent;
-    }
-
-    public static Intent createSetNetworkConfigurationIntent(int callbackId, ReadableMap configuration, Context context) {
-        Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.ACTION_SET_NETWORK_CONFIGURATION);
         intent.putExtra("callback_id", callbackId);
 
         formatIntent(intent, configuration);
@@ -250,24 +234,6 @@ public class PjActions {
         intent.putExtra("call_id", callId);
         intent.putExtra("digits", digits);
 
-        return intent;
-    }
-
-    public static Intent createConnectivityChangedIntent(Context context) {
-        Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.EVENT_CONNECTIVITY_CHANGED);
-        return intent;
-    }
-
-    public static Intent createAppVisibleIntent(Context context) {
-        Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.EVENT_APP_VISIBLE);
-        return intent;
-    }
-
-    public static Intent createAppHiddenIntent(Context context) {
-        Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.EVENT_APP_HIDDEN);
         return intent;
     }
 

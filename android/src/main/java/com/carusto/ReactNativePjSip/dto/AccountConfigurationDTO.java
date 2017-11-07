@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip.configuration;
+package com.carusto.ReactNativePjSip.dto;
 
 import android.content.Intent;
 import android.support.annotation.Nullable;

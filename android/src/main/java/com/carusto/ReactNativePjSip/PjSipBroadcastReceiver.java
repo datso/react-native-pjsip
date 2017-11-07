@@ -47,7 +47,6 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
         filter.addAction(PjActions.EVENT_CALL_CHANGED);
         filter.addAction(PjActions.EVENT_CALL_TERMINATED);
         filter.addAction(PjActions.EVENT_CALL_SCREEN_LOCKED);
-        filter.addAction(PjActions.EVENT_CONNECTIVITY_CHANGED);
         filter.addAction(PjActions.EVENT_MESSAGE_RECEIVED);
         filter.addAction(PjActions.EVENT_HANDLED);
 
@@ -81,12 +80,6 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
                 break;
             case PjActions.EVENT_CALL_TERMINATED:
                 onCallTerminated(intent);
-                break;
-            case PjActions.EVENT_CALL_SCREEN_LOCKED:
-                onCallScreenLocked(intent);
-                break;
-            case PjActions.EVENT_CONNECTIVITY_CHANGED:
-                onConnectivityChanged(intent);
                 break;
             default:
                 onCallback(intent);
@@ -125,20 +118,6 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
         emit("pjSipCallTerminated", params);
     }
 
-    private void onCallScreenLocked(Intent intent) {
-        boolean lock = intent.getBooleanExtra("lock", false);
-
-        Log.d(TAG, "onCallScreenLocked context.hasActiveCatalystInstance()" + context.hasActiveCatalystInstance());
-        Log.d(TAG, "onCallScreenLocked context.hasActiveCatalystInstance()" + context.hasActiveCatalystInstance());
-
-        emit("pjSipCallScreenLocked", lock);
-    }
-
-    private void onConnectivityChanged(Intent intent) {
-        boolean available = intent.getBooleanExtra("available", false);
-        emit("pjSipConnectivityChanged", available);
-    }
-
     private void onCallback(Intent intent) {
         // Define callback
         Callback callback = null;
@@ -175,5 +154,5 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
         Log.d(TAG, "emit context.getLifecycleState()" + (context.getLifecycleState()));
 
         context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, data);
-    } 
+    }
 }

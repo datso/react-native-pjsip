@@ -1,6 +1,6 @@
 package com.carusto.ReactNativePjSip;
 
-import com.carusto.ReactNativePjSip.configuration.AccountConfigurationDTO;
+import com.carusto.ReactNativePjSip.dto.AccountConfigurationDTO;
 import org.json.JSONObject;
 import org.pjsip.pjsua2.Account;
 import org.pjsip.pjsua2.OnIncomingCallParam;
