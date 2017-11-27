@@ -2,13 +2,10 @@ package com.carusto.ReactNativePjSip;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
-import com.carusto.ReactNativePjSip.configuration.ServiceConfiguration;
+
 import com.facebook.react.bridge.*;
 
-public class PjSipModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
-
-    private static String TAG = "PjSipModule";
+public class PjSipModule extends ReactContextBaseJavaModule {
 
     private static PjSipBroadcastReceiver receiver;
 
@@ -25,47 +22,15 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
     }
 
     @Override
-    public void initialize() {
-        getReactApplicationContext().addLifecycleEventListener(this);
-
-        Intent intent = PjActions.createAppVisibleIntent(getReactApplicationContext());
-        getReactApplicationContext().startService(intent);
-    }
-
-    @Override
     public String getName() {
         return "PjSipModule";
     }
 
     @ReactMethod
     public void start(ReadableMap configuration, Callback callback) {
-        boolean notificationForeground = false;
-        int notificationCallId = -1;
-        final Activity activity = getCurrentActivity();
-
-        if (activity != null) {
-            Intent activityIntent = activity.getIntent();
-            if (activityIntent != null) {
-                notificationForeground = activityIntent.getBooleanExtra("foreground", false);
-                notificationCallId = activityIntent.getIntExtra("call", -1);
-            }
-        }
-
         int id = receiver.register(callback);
         Intent intent = PjActions.createStartIntent(id, configuration, getReactApplicationContext());
-        intent.putExtra("notificationIsFromForeground", notificationForeground);
 
-        if (notificationCallId >= 0) {
-            intent.putExtra("notificationCallId", notificationCallId);
-        }
-        
-        getReactApplicationContext().startService(intent);
-    }
-
-    @ReactMethod
-    public void changeNetworkConfiguration(ReadableMap configuration, Callback callback) {
-        int id = receiver.register(callback);
-        Intent intent = PjActions.createSetNetworkConfigurationIntent(id, configuration, getReactApplicationContext());
         getReactApplicationContext().startService(intent);
     }
 
@@ -98,9 +63,9 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
     }
 
     @ReactMethod
-    public void makeCall(int accountId, String destination, Callback callback) {
+    public void makeCall(int accountId, String destination, ReadableMap callSettings, ReadableMap msgData,  Callback callback) {
         int callbackId = receiver.register(callback);
-        Intent intent = PjActions.createMakeCallIntent(callbackId, accountId, destination, getReactApplicationContext());
+        Intent intent = PjActions.createMakeCallIntent(callbackId, accountId, destination, callSettings, msgData, getReactApplicationContext());
         getReactApplicationContext().startService(intent);
     }
 
@@ -193,22 +158,5 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
         int callbackId = receiver.register(callback);
         Intent intent = PjActions.createDtmfCallIntent(callbackId, callId, digits, getReactApplicationContext());
         getReactApplicationContext().startService(intent);
-    }
-
-    @Override
-    public void onHostResume() {
-        Intent intent = PjActions.createAppVisibleIntent(getReactApplicationContext());
-        getReactApplicationContext().startService(intent);
-    }
-
-    @Override
-    public void onHostPause() {
-        Intent intent = PjActions.createAppHiddenIntent(getReactApplicationContext());
-        getReactApplicationContext().startService(intent);
-    }
-
-    @Override
-    public void onHostDestroy() {
-        // Nothing
     }
 }

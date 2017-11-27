@@ -24,28 +24,32 @@
 
 #pragma mark - Actions
 
-- (void)hangup {
+- (void) hangup {
     pj_status_t status = pjsua_call_hangup(self.id, 0, NULL, NULL);
     
     if (status != PJ_SUCCESS) {
         NSLog(@"Failed to hangup a call (%d)", status);
-    } else {
-        NSLog(@"Hangup success");
     }
 }
 
-- (void)decline {
+- (void) decline {
     pjsua_call_hangup(self.id, PJSIP_SC_DECLINE, NULL, NULL);
 }
 
 
 - (void)answer {
+    // TODO: Add parameters to answer with
     // TODO: Put on hold previous call
     
     pjsua_msg_data msgData;
     pjsua_msg_data_init(&msgData);
     pjsua_call_setting  callOpt;
     pjsua_call_setting_default(&callOpt);
+    
+    // TODO: Audio/Video count configuration!
+    callOpt.aud_cnt = 1;
+    callOpt.vid_cnt = 1;
+    
     pjsua_call_answer2(self.id, &callOpt, 200, NULL, &msgData);
 }
 
@@ -122,7 +126,7 @@
 #pragma mark - Callback methods
 
 - (void)onStateChanged:(pjsua_call_info)info {
-    // TODO ?
+    // Ignore
 }
 
 /**
@@ -130,28 +134,6 @@
  * to loop the call.
  */
 - (void)onMediaStateChanged:(pjsua_call_info)info {
-   
-    for (unsigned mi=0; mi < info.media_cnt; ++mi) {
-        switch (info.media[mi].type) {
-//            case PJMEDIA_TYPE_AUDIO:
-//                on_call_audio_state(&call_info, mi, &has_error);
-//                break;
-            case PJMEDIA_TYPE_VIDEO:
-                
-                NSLog(@"Foudn video device id %d %d", info.media[mi].stream.vid.win_in, info.media[mi].stream.vid.cap_dev);
-
-                // on_call_video_state(&call_info, mi, &has_error);
-                break;
-            default:
-                /* Make gcc happy about enum not handled by switch/case */
-                break;
-        }
-    }
-    
-    // TODO: Description why this needed
-    
-    
-    
     pjsua_call_media_status status = info.media_status;
     
     if (status == PJSUA_CALL_MEDIA_ACTIVE || status == PJSUA_CALL_MEDIA_REMOTE_HOLD) {
@@ -200,9 +182,36 @@
         @"remoteVideoCount": @(info.rem_vid_cnt),
         
         @"audioCount": @(info.setting.aud_cnt),
-        @"videoCount": @(info.setting.vid_cnt)
+        @"videoCount": @(info.setting.vid_cnt),
+        
+        @"media": [self mediaInfoToJsonArray:info.media count:info.media_cnt],
+        @"provisionalMedia": [self mediaInfoToJsonArray:info.prov_media count:info.prov_media_cnt]
     };
 }
 
+- (NSArray *)mediaInfoToJsonArray: (pjsua_call_media_info[]) info count:(int) count {
+    NSMutableArray * result = [NSMutableArray array];
+    
+    for (int i = 0; i < count; i++) {
+        [result addObject:[self mediaToJsonDictionary:info[i]]];
+    }
+    
+    return result;
+}
+
+- (NSDictionary *)mediaToJsonDictionary:(pjsua_call_media_info) info {
+    return @{
+        @"dir": [PjSipUtil mediaDirToString:info.dir],
+        @"type": [PjSipUtil mediaTypeToString:info.type],
+        @"status": [PjSipUtil mediaStatusToString:info.status],
+        @"audioStream": @{
+            @"confSlot": @(info.stream.aud.conf_slot)
+        },
+        @"videoStream": @{
+            @"captureDevice": @(info.stream.vid.cap_dev),
+            @"windowId": @(info.stream.vid.win_in),
+        }
+    };
+}
 
 @end

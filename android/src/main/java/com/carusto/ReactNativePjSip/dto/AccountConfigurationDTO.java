@@ -1,12 +1,11 @@
-package com.carusto.ReactNativePjSip.configuration;
+package com.carusto.ReactNativePjSip.dto;
 
 import android.content.Intent;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.util.Map;
 
-public class AccountConfiguration {
+public class AccountConfigurationDTO {
 
     public String name;
 
@@ -116,8 +115,8 @@ public class AccountConfiguration {
         return proxy != null && proxy.length() > 0;
     }
 
-    public static AccountConfiguration fromIntent(Intent intent) {
-        AccountConfiguration c = new AccountConfiguration();
+    public static AccountConfigurationDTO fromIntent(Intent intent) {
+        AccountConfigurationDTO c = new AccountConfigurationDTO();
         c.name = intent.getStringExtra("name");
         c.username = intent.getStringExtra("username");
         c.domain = intent.getStringExtra("domain");

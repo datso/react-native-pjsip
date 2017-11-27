@@ -1,6 +1,6 @@
 package com.carusto.ReactNativePjSip;
 
-import com.carusto.ReactNativePjSip.configuration.AccountConfiguration;
+import com.carusto.ReactNativePjSip.dto.AccountConfigurationDTO;
 import org.json.JSONObject;
 import org.pjsip.pjsua2.Account;
 import org.pjsip.pjsua2.OnIncomingCallParam;
@@ -18,11 +18,11 @@ public class PjSipAccount extends Account {
 
     private PjSipService service;
 
-    private AccountConfiguration configuration;
+    private AccountConfigurationDTO configuration;
 
     private Integer transportId;
 
-    public PjSipAccount(PjSipService service, int transportId, AccountConfiguration configuration) {
+    public PjSipAccount(PjSipService service, int transportId, AccountConfigurationDTO configuration) {
         this.service = service;
         this.transportId = transportId;
         this.configuration = configuration;
@@ -40,7 +40,7 @@ public class PjSipAccount extends Account {
         return transportId;
     }
 
-    public AccountConfiguration getConfiguration() {
+    public AccountConfigurationDTO getConfiguration() {
         return configuration;
     }
 

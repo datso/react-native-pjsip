@@ -90,21 +90,7 @@
             NSLog(@"Error in pjsua_init()");
         }
     }
-    
-    // TODO: Remove this
-    {
-        pjsua_codec_info c[64];
-        unsigned k, count = PJ_ARRAY_SIZE(c);
-        pjsua_vid_enum_codecs(c, &count);
-        
-        for (NSUInteger i = 0; i < count; i++) {
-            NSLog(@"Codec: %@", [PjSipUtil toString:&c[i].codec_id]);
-        }
-        
-    }
 
-    // TODO: Create transport dynamicly and provide APIs to get a list of available transports.
-    
     // Add UDP transport.
     {
         // Init transport config structure
@@ -199,18 +185,17 @@
 
 #pragma mark Calls
 
--(PjSipCall *)makeCall:(PjSipAccount *) account destination:(NSString *)destination {
+-(PjSipCall *) makeCall:(PjSipAccount *) account destination:(NSString *)destination callSettings: (NSDictionary *)callSettingsDict msgData: (NSDictionary *)msgDataDict {
+    pjsua_call_setting callSettings;
+    [PjSipUtil fillCallSettings:&callSettings dict:callSettingsDict];
+
+    pjsua_msg_data msgData;
+    [PjSipUtil fillMsgData:&msgData dict:msgDataDict];
+    
     pjsua_call_id callId;
     pj_str_t callDest = pj_str((char *) [destination UTF8String]);
-    pjsua_msg_data callMsg;
-    pjsua_msg_data_init(&callMsg);
-    
-    pjsua_call_setting callSettings;
-    pjsua_call_setting_default(&callSettings);
-    callSettings.aud_cnt = 1;
-    callSettings.vid_cnt = 1;
-
-    pj_status_t status = pjsua_call_make_call(account.id, &callDest, &callSettings, NULL, &callMsg, &callId);
+   
+    pj_status_t status = pjsua_call_make_call(account.id, &callDest, &callSettings, NULL, &msgData, &callId);
     if (status != PJ_SUCCESS) {
         [NSException raise:@"Failed to make a call" format:@"See device logs for more details."];
     }
@@ -261,6 +246,29 @@
     for (NSString *key in self.calls) {
         PjSipCall *call = self.calls[key];
         [self emmitCallChanged:call];
+    }
+}
+
+#pragma mark - Settings
+
+-(void) changeOrientation: (NSString*) orientation {
+    pjmedia_orient orient = PJMEDIA_ORIENT_ROTATE_90DEG;
+    
+    if ([orientation isEqualToString:@"PJMEDIA_ORIENT_ROTATE_270DEG"]) {
+        orient = PJMEDIA_ORIENT_ROTATE_270DEG;
+    } else if ([orientation isEqualToString:@"PJMEDIA_ORIENT_ROTATE_180DEG"]) {
+        orient = PJMEDIA_ORIENT_ROTATE_180DEG;
+    } else if ([orientation isEqualToString:@"PJMEDIA_ORIENT_NATURAL"]) {
+        orient = PJMEDIA_ORIENT_NATURAL;
+    }
+    
+    /* Here we set the orientation for all video devices.
+     * This may return failure for renderer devices or for
+     * capture devices which do not support orientation setting,
+     * we can simply ignore them.
+    */
+    for (int i = pjsua_vid_dev_count() - 1; i >= 0; i--) {
+        pjsua_vid_dev_set_setting(i, PJMEDIA_VID_DEV_CAP_ORIENTATION, &orient, PJ_TRUE);
     }
 }
 
@@ -346,19 +354,16 @@ static void onCallMediaStateChanged(pjsua_call_id callId) {
     }
     
     [endpoint emmitCallChanged:call];
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"PjSipInvalidateVideo"
+                                                        object:nil];
 }
 
 static void onCallMediaEvent(pjsua_call_id call_id,
                              unsigned med_idx,
                              pjmedia_event *event) {
-    
-    NSLog(@"onCallMediaEvent: %d / %d", call_id, med_idx);
-    
     if (event->type == PJMEDIA_EVENT_FMT_CHANGED) {
         /* Adjust renderer window size to original video size */
-        
-        NSLog(@"onCallMediaEvent: Adjust renderer window size to original video size");
-        
         pjsua_call_info ci;
         pjsua_vid_win_id wid;
         pjmedia_rect_size size;
@@ -370,9 +375,7 @@ static void onCallMediaEvent(pjsua_call_id call_id,
         {
             wid = ci.media[med_idx].stream.vid.win_in;
             size = event->data.fmt_changed.new_fmt.det.vid.size;
-            
-            NSLog(@"onCallMediaEvent: pjsua_vid_win_set_size (%d)", wid);
-            
+
             pjsua_vid_win_set_size(wid, &size);
         }
     }

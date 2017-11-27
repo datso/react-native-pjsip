@@ -27,6 +27,8 @@
 
 +(NSString *) callStateToString: (pjsip_inv_state) state {
     switch (state) {
+        case PJSIP_INV_STATE_NULL:
+            return @"PJSIP_INV_STATE_NULL";
         case PJSIP_INV_STATE_CALLING:
             return @"PJSIP_INV_STATE_CALLING";
         case PJSIP_INV_STATE_INCOMING:
@@ -40,7 +42,7 @@
         case PJSIP_INV_STATE_DISCONNECTED:
             return @"PJSIP_INV_STATE_DISCONNECTED";
         default:
-            return @"PJSIP_INV_STATE_NULL";
+            return [NSNull null];
     }
 }
 
@@ -158,6 +160,117 @@
             return @"PJSIP_SC_NOT_ACCEPTABLE_ANYWHERE";
         default:
             return [NSNull null];
+    }
+}
+
++(NSString *) mediaDirToString: (pjmedia_dir) dir {
+    switch (dir) {
+        case PJMEDIA_DIR_NONE:
+            return @"PJMEDIA_DIR_NONE";
+        case PJMEDIA_DIR_ENCODING:
+            return @"PJMEDIA_DIR_ENCODING";
+        case PJMEDIA_DIR_DECODING:
+            return @"PJMEDIA_DIR_DECODING";
+        case PJMEDIA_DIR_ENCODING_DECODING:
+            return @"PJMEDIA_DIR_ENCODING_DECODING";
+        default:
+            return [NSNull null];
+    }
+}
+
++(NSString *) mediaStatusToString: (pjsua_call_media_status) status {
+    switch (status) {
+        case PJSUA_CALL_MEDIA_NONE:
+            return @"PJSUA_CALL_MEDIA_NONE";
+        case PJSUA_CALL_MEDIA_ACTIVE:
+            return @"PJSUA_CALL_MEDIA_ACTIVE";
+        case PJSUA_CALL_MEDIA_LOCAL_HOLD:
+            return @"PJSUA_CALL_MEDIA_LOCAL_HOLD";
+        case PJSUA_CALL_MEDIA_REMOTE_HOLD:
+            return @"PJSUA_CALL_MEDIA_REMOTE_HOLD";
+        case PJSUA_CALL_MEDIA_ERROR:
+            return @"PJSUA_CALL_MEDIA_ERROR";
+        default:
+            return [NSNull null];
+    }
+}
+
++(NSString *) mediaTypeToString: (pjmedia_type) type {
+    switch (type) {
+        case PJMEDIA_TYPE_NONE:
+            return @"PJMEDIA_TYPE_NONE";
+        case PJMEDIA_TYPE_AUDIO:
+            return @"PJMEDIA_TYPE_AUDIO";
+        case PJMEDIA_TYPE_VIDEO:
+            return @"PJMEDIA_TYPE_VIDEO";
+        case PJMEDIA_TYPE_APPLICATION:
+            return @"PJMEDIA_TYPE_APPLICATION";
+        case PJMEDIA_TYPE_UNKNOWN:
+            return @"PJMEDIA_TYPE_UNKNOWN";
+        default:
+            return [NSNull null];
+    }
+}
+
+
++(void) fillCallSettings: (pjsua_call_setting*) callSettings dict:(NSDictionary*) dict {
+    pjsua_call_setting_default(callSettings);
+    
+    if (dict != NULL) {
+        if (dict[@"audioCount"] != nil) {
+            callSettings->aud_cnt = [dict[@"audioCount"] intValue];
+        }
+        if (dict[@"videoCount"] != nil) {
+            callSettings->vid_cnt = [dict[@"videoCount"] intValue];
+        }
+        if (dict[@"flag"] != nil) {
+            callSettings->flag = [dict[@"flag"] intValue];
+        }
+        if (dict[@"requestKeyframeMethod"] != nil) {
+            callSettings->req_keyframe_method = [dict[@"requestKeyframeMethod"] intValue];
+        }
+    }
+}
+
++(void) fillMsgData: (pjsua_msg_data*) msgData dict:(NSDictionary*) dict {
+    pjsua_msg_data_init(msgData);
+    
+    if (dict != NULL) {
+        if (dict[@"targetURI"] != nil) {
+            msgData->target_uri = pj_str((char *) [dict[@"targetURI"] UTF8String]);
+        }
+        if (dict[@"headers"] != nil) {
+            [self fillHdrList:&msgData->hdr_list dict:dict[@"headers"]];
+        }
+        if (dict[@"contentType"] != nil) {
+            msgData->content_type = pj_str((char *) [dict[@"contentType"] UTF8String]);
+        }
+        if (dict[@"body"] != nil) {
+            msgData->msg_body = pj_str((char *) [dict[@"body"] UTF8String]);
+        }
+    }
+    
+}
+
+// TODO: Avoid memory leak here.
++(void) fillHdrList: (pjsip_hdr* ) hdrList dict:(NSDictionary*) dict {
+    pj_list_init(hdrList);
+    
+    for(NSString* key in dict) {
+        pjsip_generic_string_hdr *hdr = malloc(sizeof(struct pjsip_generic_string_hdr));
+        pj_str_t name = pj_str((char *) [key UTF8String]);
+        pj_str_t value = pj_str((char *) [[dict objectForKey:key] UTF8String]);
+        
+        pj_str_t* nameInMem = malloc(sizeof(struct pj_str_t));
+        nameInMem->ptr = malloc(sizeof(name.slen + 1));
+        pj_str_t* valueInMem = malloc(sizeof(struct pj_str_t));
+        valueInMem->ptr = malloc(sizeof(value.slen + 1));
+        
+        pj_strcpy(nameInMem, &name);
+        pj_strcpy(valueInMem, &value);
+        
+        pjsip_generic_string_hdr_init2(hdr, nameInMem, valueInMem);
+        pj_list_push_back(hdrList, hdr);
     }
 }
 

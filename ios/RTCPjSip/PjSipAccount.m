@@ -117,12 +117,6 @@
             }
         }
         
-        // TMP
-        
-        // cfg.vid_in_auto_show = PJ_TRUE;
-        
-
-        
         pjsua_acc_id account_id;
 
         status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id);
@@ -137,7 +131,6 @@
 }
 
 - (void) dealloc {
-    NSLog(@"Called dealloc");
     pjsua_acc_set_registration(self.id, PJ_FALSE);
     pjsua_acc_del(self.id);
 }

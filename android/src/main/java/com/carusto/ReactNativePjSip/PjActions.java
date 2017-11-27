@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.util.Log;
+
+import com.carusto.ReactNativePjSip.dto.CallSettingsDTO;
+import com.carusto.ReactNativePjSip.dto.SipMessageDTO;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
@@ -34,7 +37,6 @@ public class PjActions {
     public static final String ACTION_REDIRECT_CALL = "call_redirect";
     public static final String ACTION_DTMF_CALL = "call_dtmf";
 
-    public static final String ACTION_SET_NETWORK_CONFIGURATION = "set_network_configuration";
     public static final String ACTION_SET_SERVICE_CONFIGURATION = "set_service_configuration";
 
     public static final String EVENT_STARTED = "com.carusto.account.started";
@@ -47,24 +49,9 @@ public class PjActions {
     public static final String EVENT_MESSAGE_RECEIVED = "com.carusto.message.received";
     public static final String EVENT_HANDLED = "com.carusto.handled";
 
-    public static final String EVENT_APP_VISIBLE = "com.carusto.app.visible";
-    public static final String EVENT_APP_HIDDEN = "com.carusto.app.hidden";
-    public static final String EVENT_APP_DESTROY = "com.carusto.app.destroy";
-    public static final String EVENT_CONNECTIVITY_CHANGED = "com.carusto.connectivity.changed";
-
     public static Intent createStartIntent(int callbackId, ReadableMap configuration, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.ACTION_START);
-        intent.putExtra("callback_id", callbackId);
-
-        formatIntent(intent, configuration);
-
-        return intent;
-    }
-
-    public static Intent createSetNetworkConfigurationIntent(int callbackId, ReadableMap configuration, Context context) {
-        Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.ACTION_SET_NETWORK_CONFIGURATION);
         intent.putExtra("callback_id", callbackId);
 
         formatIntent(intent, configuration);
@@ -111,12 +98,20 @@ public class PjActions {
         return intent;
     }
 
-    public static Intent createMakeCallIntent(int callbackId, int accountId, String destination, Context context) {
+    public static Intent createMakeCallIntent(int callbackId, int accountId, String destination, ReadableMap settings, ReadableMap message, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.ACTION_MAKE_CALL);
         intent.putExtra("callback_id", callbackId);
         intent.putExtra("account_id", accountId);
         intent.putExtra("destination", destination);
+
+        if (settings != null) {
+            intent.putExtra("settings", CallSettingsDTO.fromReadableMap(settings).toJson());
+        }
+
+        if (message != null) {
+            intent.putExtra("message", SipMessageDTO.fromReadableMap(message).toJson());
+        }
 
         return intent;
     }
@@ -239,24 +234,6 @@ public class PjActions {
         intent.putExtra("call_id", callId);
         intent.putExtra("digits", digits);
 
-        return intent;
-    }
-
-    public static Intent createConnectivityChangedIntent(Context context) {
-        Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.EVENT_CONNECTIVITY_CHANGED);
-        return intent;
-    }
-
-    public static Intent createAppVisibleIntent(Context context) {
-        Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.EVENT_APP_VISIBLE);
-        return intent;
-    }
-
-    public static Intent createAppHiddenIntent(Context context) {
-        Intent intent = new Intent(context, PjSipService.class);
-        intent.setAction(PjActions.EVENT_APP_HIDDEN);
         return intent;
     }
 

@@ -8,5 +8,11 @@
 
 +(NSString *) callStateToString: (pjsip_inv_state) state;
 +(NSString *) callStatusToString: (pjsip_status_code) status;
++(NSString *) mediaDirToString: (pjmedia_dir) dir;
++(NSString *) mediaStatusToString: (pjsua_call_media_status) status;
++(NSString *) mediaTypeToString: (pjmedia_type) type;
+
++(void) fillCallSettings: (pjsua_call_setting*) callSettings dict:(NSDictionary*) dict;
++(void) fillMsgData: (pjsua_msg_data*) msgData dict:(NSDictionary*) dict;
 
 @end
