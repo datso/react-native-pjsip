@@ -20,7 +20,6 @@
 		DD8F1BDB1F58910A00714D48 /* PjSipVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = DD8F1BDA1F58910A00714D48 /* PjSipVideo.m */; };
 		DD8F1BDE1F5895D900714D48 /* PjSipRemoteVideoViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DD8F1BDD1F5895D900714D48 /* PjSipRemoteVideoViewManager.m */; };
 		DD8F1BE11F58974C00714D48 /* PjSipPreviewVideoViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DD8F1BE01F58974C00714D48 /* PjSipPreviewVideoViewManager.m */; };
-		DDCCF6491F5369BC008D52D0 /* PjSipLocalVideoViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DDCCF6481F5369BC008D52D0 /* PjSipLocalVideoViewManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -58,8 +57,6 @@
 		DD8F1BDD1F5895D900714D48 /* PjSipRemoteVideoViewManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipRemoteVideoViewManager.m; sourceTree = "<group>"; };
 		DD8F1BDF1F58974100714D48 /* PjSipPreviewVideoViewManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PjSipPreviewVideoViewManager.h; sourceTree = "<group>"; };
 		DD8F1BE01F58974C00714D48 /* PjSipPreviewVideoViewManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipPreviewVideoViewManager.m; sourceTree = "<group>"; };
-		DDCCF6471F5369A4008D52D0 /* PjSipLocalVideoViewManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PjSipLocalVideoViewManager.h; sourceTree = "<group>"; };
-		DDCCF6481F5369BC008D52D0 /* PjSipLocalVideoViewManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PjSipLocalVideoViewManager.m; sourceTree = "<group>"; };
 		DDFF87521D79D6F50096A8BE /* libRTCPjSip.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRTCPjSip.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -104,8 +101,6 @@
 				A6F4139D1E38CE9600340CC2 /* PjSipUtil.m */,
 				A6259A821E6988470089146B /* PjSipMessage.h */,
 				A6259A851E69889E0089146B /* PjSipMessage.m */,
-				DDCCF6471F5369A4008D52D0 /* PjSipLocalVideoViewManager.h */,
-				DDCCF6481F5369BC008D52D0 /* PjSipLocalVideoViewManager.m */,
 				DD8F1BD91F5890FB00714D48 /* PjSipVideo.h */,
 				DD8F1BDA1F58910A00714D48 /* PjSipVideo.m */,
 				DD8F1BDC1F5895CF00714D48 /* PjSipRemoteVideoViewManager.h */,
@@ -195,7 +190,6 @@
 				A6F413A11E38CE9600340CC2 /* PjSipCall.m in Sources */,
 				A6F413A31E38CE9600340CC2 /* PjSipEndpoint.m in Sources */,
 				A6F413A41E38CE9600340CC2 /* PjSipModule.m in Sources */,
-				DDCCF6491F5369BC008D52D0 /* PjSipLocalVideoViewManager.m in Sources */,
 				A6F413A01E38CE9600340CC2 /* PjSipAccount.m in Sources */,
 				DD8F1BDE1F5895D900714D48 /* PjSipRemoteVideoViewManager.m in Sources */,
 				A6F413A51E38CE9600340CC2 /* PjSipUtil.m in Sources */,

@@ -217,17 +217,17 @@
     pjsua_call_setting_default(callSettings);
     
     if (dict != NULL) {
-        if (dict[@"aud_cnt"] != nil) {
-            callSettings->aud_cnt = [dict[@"aud_cnt"] intValue];
+        if (dict[@"audioCount"] != nil) {
+            callSettings->aud_cnt = [dict[@"audioCount"] intValue];
         }
-        if (dict[@"vid_cnt"] != nil) {
-            callSettings->vid_cnt = [dict[@"vid_cnt"] intValue];
+        if (dict[@"videoCount"] != nil) {
+            callSettings->vid_cnt = [dict[@"videoCount"] intValue];
         }
         if (dict[@"flag"] != nil) {
             callSettings->flag = [dict[@"flag"] intValue];
         }
-        if (dict[@"req_keyframe_method"] != nil) {
-            callSettings->req_keyframe_method = [dict[@"req_keyframe_method"] intValue];
+        if (dict[@"requestKeyframeMethod"] != nil) {
+            callSettings->req_keyframe_method = [dict[@"requestKeyframeMethod"] intValue];
         }
     }
 }
@@ -236,17 +236,17 @@
     pjsua_msg_data_init(msgData);
     
     if (dict != NULL) {
-        if (dict[@"target_uri"] != nil) {
-            msgData->target_uri = pj_str((char *) [dict[@"target_uri"] UTF8String]);
+        if (dict[@"targetURI"] != nil) {
+            msgData->target_uri = pj_str((char *) [dict[@"targetURI"] UTF8String]);
         }
-        if (dict[@"hdr_list"] != nil) {
-            [self fillHdrList:&msgData->hdr_list dict:dict[@"hdr_list"]];
+        if (dict[@"headers"] != nil) {
+            [self fillHdrList:&msgData->hdr_list dict:dict[@"headers"]];
         }
-        if (dict[@"content_type"] != nil) {
-            msgData->content_type = pj_str((char *) [dict[@"content_type"] UTF8String]);
+        if (dict[@"contentType"] != nil) {
+            msgData->content_type = pj_str((char *) [dict[@"contentType"] UTF8String]);
         }
-        if (dict[@"msg_body"] != nil) {
-            msgData->msg_body = pj_str((char *) [dict[@"msg_body"] UTF8String]);
+        if (dict[@"body"] != nil) {
+            msgData->msg_body = pj_str((char *) [dict[@"body"] UTF8String]);
         }
     }
     

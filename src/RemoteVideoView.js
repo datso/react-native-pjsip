@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 const RemoteVideoView = {
   name: 'PjSipRemoteVideoView',
   propTypes: {
-  windowId: PropTypes.string.isRequired,
+  	windowId: PropTypes.string.isRequired,
 	objectFit: PropTypes.oneOf(['contain', 'cover'])
   },
 };

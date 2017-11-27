@@ -25,8 +25,6 @@
 }
 
 RCT_EXPORT_METHOD(start: (NSDictionary *) config callback: (RCTResponseSenderBlock) callback) {
-    NSLog(@"start thread%@", [NSThread currentThread]);
-
     [PjSipEndpoint instance].bridge = self.bridge;
 
     NSDictionary *result = [[PjSipEndpoint instance] start];

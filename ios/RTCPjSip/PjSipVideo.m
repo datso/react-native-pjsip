@@ -10,7 +10,17 @@
         self.winFit = cover;
         self.winView = NULL;
     }
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(setNeedsLayout:)
+                                                 name:@"PjSipInvalidateVideo"
+                                               object:nil];
+    
     return self;
+}
+
+-(void) setNeedsLayout:(NSNotification *)notification {
+    [self dispatchAsyncSetNeedsLayout];
 }
 
 - (void) setWindowId:(pjsua_vid_win_id) windowId {
@@ -31,29 +41,6 @@
         
         if (status == PJ_SUCCESS) {
             self.winView = (__bridge UIView *) wi.hwnd.info.ios.window;
-            // self.winView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-            
-            if (wi.size.h > 0 && wi.size.w > 0) {
-                self.winWidth = wi.size.w;
-                self.winHeight = wi.size.h;
-            } else {
-                self.winWidth = self.winView.frame.size.width;
-                self.winHeight = self.winView.frame.size.height;
-            }
-            
-            NSLog(@"winView winView: %@", self.winView);
-            
-            NSLog(@"winView wi.pos.x: %@", @(wi.pos.x));
-            NSLog(@"winView wi.pos.y: %@", @(wi.pos.y));
-            NSLog(@"winView wi.size.h: %@", @(wi.size.h));
-            NSLog(@"winView wi.size.w: %@", @(wi.size.w));
-            NSLog(@"winView wi.is_native: %@", @(wi.is_native));
-
-            NSLog(@"winView self.winView.bounds.size.width: %@", @(self.winView.bounds.size.width));
-            NSLog(@"winView self.winView.bounds.size.height: %@", @(self.winView.bounds.size.height));
-            NSLog(@"winView self.winView.frame.size.width: %@", @(self.winView.frame.size.width));
-            NSLog(@"winView self.winView.frame.size.height: %@", @(self.winView.frame.size.height));
-        
             [self addSubview:self.winView];
         }
     }
@@ -81,32 +68,15 @@
         return;
     }
     
-    NSLog(@"layoutSubviews parent.bounds.size.width : %@", @(self.bounds.size.width));
-    NSLog(@"layoutSubviews parent.bounds.size.height : %@", @(self.bounds.size.height));
+    pjsua_vid_win_info wi;
+    pj_status_t status = pjsua_vid_win_get_info(self.winId, &wi);
     
-    NSLog(@"layoutSubviews subview.bounds.size.width : %@", @(subview.bounds.size.width));
-    NSLog(@"layoutSubviews subview.bounds.size.height : %@", @(subview.bounds.size.height));
+    if (status != PJ_SUCCESS) {
+        return;
+    }
     
-    CGFloat width = self.winWidth, height = self.winHeight;
-    
-    NSLog(@"layoutSubviews self.winWidth : %@", @(self.winWidth));
-    NSLog(@"layoutSubviews self.winHeight : %@", @(self.winHeight));
-    
-    
-//    if (true) {
-//        CGRect newValue = self.bounds;
-//        
-//        newValue.size.width = 352 / 2;
-//        newValue.size.height = 288 / 2;
-////        newValue.origin.x = 100;
-////        newValue.origin.y = 100;
-//        // self.winView.clipsToBounds = true;
-//        self.winView.bounds = newValue;
-//        // self.winView.center = CGPointMake(352 / 2.0, 288 / 2.0);
-//        
-//        return;
-//    }
-    
+    CGFloat width = wi.size.w, height = wi.size.h;
+
     CGRect newValue;
     if (width <= 0 || height <= 0) {
         newValue.origin.x = 0;
@@ -139,11 +109,6 @@
         || newValue.size.height != oldValue.size.height) {
         subview.frame = newValue;
     }
-    
-    NSLog(@"layoutSubviews newValue.origin.x: %@", @(newValue.origin.x));
-    NSLog(@"layoutSubviews newValue.origin.y: %@", @(newValue.origin.y));
-    NSLog(@"layoutSubviews newValue.size.width: %@", @(newValue.size.width));
-    NSLog(@"layoutSubviews newValue.size.height: %@", @(newValue.size.height));
     
     subview.transform = CGAffineTransformIdentity;
 }

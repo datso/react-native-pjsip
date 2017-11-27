@@ -54,17 +54,17 @@ public class CallSettingsDTO {
     public static CallSettingsDTO fromReadableMap(ReadableMap data) {
         CallSettingsDTO result = new CallSettingsDTO();
 
-        if (data.hasKey("aud_cnt")) {
+        if (data.hasKey("audioCount")) {
             result.setAudioCount(data.getInt("aud_cnt"));
         }
-        if (data.hasKey("vid_cnt")) {
+        if (data.hasKey("videoCount")) {
             result.setVideoCount(data.getInt("vid_cnt"));
         }
         if (data.hasKey("flag")) {
             result.setFlag(data.getInt("flag"));
         }
-        if (data.hasKey("req_keyframe_method")) {
-            result.setRequestKeyframeMethod(data.getInt("req_keyframe_method"));
+        if (data.hasKey("requestKeyframeMethod")) {
+            result.setRequestKeyframeMethod(data.getInt("requestKeyframeMethod"));
         }
 
         return result;

@@ -61,11 +61,11 @@ public class SipMessageDTO {
     public static SipMessageDTO fromReadableMap(ReadableMap data) {
         SipMessageDTO result = new SipMessageDTO();
 
-        if (data.hasKey("target_uri")) {
-            result.setTargetUri(data.getString("target_uri"));
+        if (data.hasKey("targetURI")) {
+            result.setTargetUri(data.getString("targetURI"));
         }
-        if (data.hasKey("hdr_list")) {
-            ReadableMap headersData = data.getMap("hdr_list");
+        if (data.hasKey("headers")) {
+            ReadableMap headersData = data.getMap("headers");
             ReadableMapKeySetIterator headersIt = headersData.keySetIterator();
             Map<String, String> headers = new HashMap<>();
 
@@ -76,11 +76,11 @@ public class SipMessageDTO {
 
             result.setHeaders(headers);
         }
-        if (data.hasKey("content_type")) {
-            result.setContentType(data.getString("content_type"));
+        if (data.hasKey("contentType")) {
+            result.setContentType(data.getString("contentType"));
         }
-        if (data.hasKey("msg_body")) {
-            result.setBody(data.getString("msg_body"));
+        if (data.hasKey("body")) {
+            result.setBody(data.getString("body"));
         }
 
         return result;

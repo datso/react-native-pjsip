@@ -90,21 +90,7 @@
             NSLog(@"Error in pjsua_init()");
         }
     }
-    
-    // TODO: Remove this
-    {
-        pjsua_codec_info c[64];
-        unsigned k, count = PJ_ARRAY_SIZE(c);
-        pjsua_vid_enum_codecs(c, &count);
-        
-        for (NSUInteger i = 0; i < count; i++) {
-            NSLog(@"Codec: %@", [PjSipUtil toString:&c[i].codec_id]);
-        }
-        
-    }
 
-    // TODO: Create transport dynamicly and provide APIs to get a list of available transports.
-    
     // Add UDP transport.
     {
         // Init transport config structure
@@ -368,19 +354,16 @@ static void onCallMediaStateChanged(pjsua_call_id callId) {
     }
     
     [endpoint emmitCallChanged:call];
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"PjSipInvalidateVideo"
+                                                        object:nil];
 }
 
 static void onCallMediaEvent(pjsua_call_id call_id,
                              unsigned med_idx,
                              pjmedia_event *event) {
-    
-    NSLog(@"onCallMediaEvent: %d / %d", call_id, med_idx);
-    
     if (event->type == PJMEDIA_EVENT_FMT_CHANGED) {
         /* Adjust renderer window size to original video size */
-        
-        NSLog(@"onCallMediaEvent: Adjust renderer window size to original video size");
-        
         pjsua_call_info ci;
         pjsua_vid_win_id wid;
         pjmedia_rect_size size;
@@ -392,9 +375,7 @@ static void onCallMediaEvent(pjsua_call_id call_id,
         {
             wid = ci.media[med_idx].stream.vid.win_in;
             size = event->data.fmt_changed.new_fmt.det.vid.size;
-            
-            NSLog(@"onCallMediaEvent: pjsua_vid_win_set_size (%d)", wid);
-            
+
             pjsua_vid_win_set_size(wid, &size);
         }
     }

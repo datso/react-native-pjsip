@@ -12,8 +12,6 @@ typedef enum ObjectFit : NSUInteger {
 
 @interface PjSipVideo : UIView
 @property pjsua_vid_win_id winId;
-@property int winWidth;
-@property int winHeight;
 @property UIView* winView;
 @property ObjectFit winFit;
 

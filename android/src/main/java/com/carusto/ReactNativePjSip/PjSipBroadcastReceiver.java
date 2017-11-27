@@ -149,9 +149,6 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
 
     private void emit(String eventName, @Nullable Object data) {
         Log.d(TAG, "emit " + eventName + " / " + data);
-        Log.d(TAG, "emit context.hasActiveCatalystInstance()" + context.hasActiveCatalystInstance());
-        Log.d(TAG, "emit context.getCurrentActivity() == null" + (context.getCurrentActivity() == null));
-        Log.d(TAG, "emit context.getLifecycleState()" + (context.getLifecycleState()));
 
         context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, data);
     }

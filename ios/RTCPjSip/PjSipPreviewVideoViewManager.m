@@ -18,13 +18,10 @@ RCT_EXPORT_MODULE()
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(deviceId, NSNumber, PjSipVideo) {
-    NSLog(@"RCT_CUSTOM_VIEW_PROPERTY deviceId: %@", [RCTConvert NSNumber:json]);
-    
     pjmedia_vid_dev_index device = [[RCTConvert NSNumber:json] intValue];
     pjsua_vid_preview_param param;
     pjsua_vid_preview_param_default(&param);
     
-    // TODO: Do not start preview once it already started and also remove previous preview
     pj_status_t status = pjsua_vid_preview_start(device, &param);
     
     if (status == PJ_SUCCESS) {

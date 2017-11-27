@@ -24,17 +24,15 @@
 
 #pragma mark - Actions
 
-- (void)hangup {
+- (void) hangup {
     pj_status_t status = pjsua_call_hangup(self.id, 0, NULL, NULL);
     
     if (status != PJ_SUCCESS) {
         NSLog(@"Failed to hangup a call (%d)", status);
-    } else {
-        NSLog(@"Hangup success");
     }
 }
 
-- (void)decline {
+- (void) decline {
     pjsua_call_hangup(self.id, PJSIP_SC_DECLINE, NULL, NULL);
 }
 
@@ -128,7 +126,7 @@
 #pragma mark - Callback methods
 
 - (void)onStateChanged:(pjsua_call_info)info {
-    // TODO ?
+    // Ignore
 }
 
 /**
@@ -136,28 +134,6 @@
  * to loop the call.
  */
 - (void)onMediaStateChanged:(pjsua_call_info)info {
-   
-    for (unsigned mi=0; mi < info.media_cnt; ++mi) {
-        switch (info.media[mi].type) {
-//            case PJMEDIA_TYPE_AUDIO:
-//                on_call_audio_state(&call_info, mi, &has_error);
-//                break;
-            case PJMEDIA_TYPE_VIDEO:
-                
-                NSLog(@"Foudn video device id %d %d", info.media[mi].stream.vid.win_in, info.media[mi].stream.vid.cap_dev);
-
-                // on_call_video_state(&call_info, mi, &has_error);
-                break;
-            default:
-                /* Make gcc happy about enum not handled by switch/case */
-                break;
-        }
-    }
-    
-    // TODO: Description why this needed
-    
-    
-    
     pjsua_call_media_status status = info.media_status;
     
     if (status == PJSUA_CALL_MEDIA_ACTIVE || status == PJSUA_CALL_MEDIA_REMOTE_HOLD) {
@@ -179,43 +155,6 @@
         info.state == PJSIP_INV_STATE_DISCONNECTED) {
         connectDuration = info.connect_duration.sec;
     }
-    
-    // int vid_idx = pjsua_call_get_vid_stream_idx(self.id);
-    // NSLog(@"Call Info window id: %@", @(vid_idx));
-    
-    
-    NSLog(@"Call media_cnt: %@", @(info.media_cnt));
-//    
-    for (int i=0; i < info.media_cnt; i++) {
-        pjsua_call_media_info mediaInfo = info.media[i];
-        
-        NSLog(@"Call media info index: %@", @(i));
-        NSLog(@"Call mediaInfo.dir: %@", @(mediaInfo.dir));
-        NSLog(@"Call mediaInfo.index: %@", @(mediaInfo.index));
-        NSLog(@"Call mediaInfo.status: %@", @(mediaInfo.status));
-        NSLog(@"Call mediaInfo.type: %@", @(mediaInfo.type));
-        NSLog(@"Call mediaInfo.stream.aud.conf_slot: %@", @(mediaInfo.stream.aud.conf_slot));
-        NSLog(@"Call mediaInfo.stream.vid.win_in: %@", @(mediaInfo.stream.vid.win_in));
-        NSLog(@"Call mediaInfo.stream.vid.cap_dev: %@", @(mediaInfo.stream.vid.cap_dev));
-    }
-
-    NSLog(@"Call prov_media_cnt: %@", @(info.prov_media_cnt));
-    
-    for (int i=0; i < info.prov_media_cnt; i++) {
-        pjsua_call_media_info mediaInfo = info.prov_media[i];
-        
-        NSLog(@"Call media info index: %@", @(i));
-        NSLog(@"Call mediaInfo.dir: %@", @(mediaInfo.dir));
-        NSLog(@"Call mediaInfo.index: %@", @(mediaInfo.index));
-        NSLog(@"Call mediaInfo.status: %@", @(mediaInfo.status));
-        NSLog(@"Call mediaInfo.type: %@", @(mediaInfo.type));
-        NSLog(@"Call mediaInfo.stream.aud.conf_slot: %@", @(mediaInfo.stream.aud.conf_slot));
-        NSLog(@"Call mediaInfo.stream.vid.win_in: %@", @(mediaInfo.stream.vid.win_in));
-        NSLog(@"Call mediaInfo.stream.vid.cap_dev: %@", @(mediaInfo.stream.vid.cap_dev));
-    }
-    
-    
-    
 
     return @{
         @"id": @(self.id),

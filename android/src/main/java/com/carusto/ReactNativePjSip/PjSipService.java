@@ -37,7 +37,9 @@ import org.pjsip.pjsua2.SipHeaderVector;
 import org.pjsip.pjsua2.SipTxOption;
 import org.pjsip.pjsua2.StringVector;
 import org.pjsip.pjsua2.TransportConfig;
+import org.pjsip.pjsua2.VideoDevInfo;
 import org.pjsip.pjsua2.pj_qos_type;
+import org.pjsip.pjsua2.pjmedia_orient;
 import org.pjsip.pjsua2.pjsip_inv_state;
 import org.pjsip.pjsua2.pjsip_status_code;
 import org.pjsip.pjsua2.pjsip_transport_type_e;
@@ -153,8 +155,8 @@ public class PjSipService extends Service {
             // Configure endpoint
             EpConfig epConfig = new EpConfig();
 
-            epConfig.getLogConfig().setLevel(4);
-            epConfig.getLogConfig().setConsoleLevel(4);
+            epConfig.getLogConfig().setLevel(10);
+            epConfig.getLogConfig().setConsoleLevel(10);
 
             mLogWriter = new PjSipLogWriter();
             epConfig.getLogConfig().setWriter(mLogWriter);
@@ -244,13 +246,11 @@ public class PjSipService extends Service {
             });
         }
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "onDestroy");
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             mWorkerThread.quitSafely();
         }
@@ -476,6 +476,8 @@ public class PjSipService extends Service {
         cfg.getRegConfig().setRegisterOnAdd(configuration.isRegOnAdd());
         cfg.getSipConfig().getAuthCreds().add(cred);
 
+        cfg.getVideoConfig().getRateControlBandwidth();
+
         // Registration settings
 
         if (configuration.getContactParams() != null) {
@@ -527,6 +529,12 @@ public class PjSipService extends Service {
         }
 
         cfg.getMediaConfig().getTransportConfig().setQosType(pj_qos_type.PJ_QOS_TYPE_VOICE);
+
+        cfg.getVideoConfig().setAutoShowIncoming(true);
+        cfg.getVideoConfig().setAutoTransmitOutgoing(true);
+
+        int cap_dev = cfg.getVideoConfig().getDefaultCaptureDevice();
+        mEndpoint.vidDevManager().setCaptureOrient(cap_dev, pjmedia_orient.PJMEDIA_ORIENT_ROTATE_270DEG, true);
 
         // -----
 
@@ -639,8 +647,9 @@ public class PjSipService extends Service {
     private void handleCallHangup(Intent intent) {
         try {
             int callId = intent.getIntExtra("call_id", -1);
-            PjSipCall call = findCall(callId);
-            call.hangup(new CallOpParam(true));
+//            PjSipCall call = findCall(callId);
+//            call.hangup(new CallOpParam(true));
+            mEndpoint.hangupAllCalls();
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {
