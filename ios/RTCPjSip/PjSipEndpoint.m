@@ -1,6 +1,7 @@
 @import AVFoundation;
 
 #import <React/RCTBridge.h>
+#import <React/RCTConvert.h>
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTUtils.h>
 #import <VialerPJSIP/pjsua.h>
@@ -194,6 +195,8 @@
     
     pjsua_call_id callId;
     pj_str_t callDest = pj_str((char *) [destination UTF8String]);
+
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
    
     pj_status_t status = pjsua_call_make_call(account.id, &callDest, &callSettings, NULL, &msgData, &callId);
     if (status != PJ_SUCCESS) {
@@ -272,6 +275,15 @@
     }
 }
 
+-(void) changeCodecSettings: (NSDictionary*) codecSettings {
+    
+    for (NSString * key in codecSettings) {
+        pj_str_t codec_id = pj_str((char *) [key UTF8String]);
+        NSNumber * priority = codecSettings[key];
+        pjsua_codec_set_priority(&codec_id, priority);
+    }
+    
+}
 #pragma mark - Events
 
 -(void)emmitRegistrationChanged:(PjSipAccount*) account {
