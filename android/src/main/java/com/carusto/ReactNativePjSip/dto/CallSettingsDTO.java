@@ -55,10 +55,10 @@ public class CallSettingsDTO {
         CallSettingsDTO result = new CallSettingsDTO();
 
         if (data.hasKey("audioCount")) {
-            result.setAudioCount(data.getInt("aud_cnt"));
+            result.setAudioCount(data.getInt("audioCount"));
         }
         if (data.hasKey("videoCount")) {
-            result.setVideoCount(data.getInt("vid_cnt"));
+            result.setVideoCount(data.getInt("videoCount"));
         }
         if (data.hasKey("flag")) {
             result.setFlag(data.getInt("flag"));
