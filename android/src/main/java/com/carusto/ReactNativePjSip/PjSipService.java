@@ -23,14 +23,11 @@ import com.carusto.ReactNativePjSip.dto.ServiceConfigurationDTO;
 import com.carusto.ReactNativePjSip.dto.SipMessageDTO;
 import com.carusto.ReactNativePjSip.utils.ArgumentUtils;
 
-<<<<<<< Updated upstream
-=======
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
 import org.json.JSONObject;
 
->>>>>>> Stashed changes
 import org.pjsip.pjsua2.AccountConfig;
 import org.pjsip.pjsua2.AudDevManager;
 import org.pjsip.pjsua2.AuthCredInfo;
