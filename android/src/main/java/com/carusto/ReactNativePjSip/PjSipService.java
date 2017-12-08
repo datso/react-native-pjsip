@@ -23,6 +23,14 @@ import com.carusto.ReactNativePjSip.dto.ServiceConfigurationDTO;
 import com.carusto.ReactNativePjSip.dto.SipMessageDTO;
 import com.carusto.ReactNativePjSip.utils.ArgumentUtils;
 
+<<<<<<< Updated upstream
+=======
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
+
+import org.json.JSONObject;
+
+>>>>>>> Stashed changes
 import org.pjsip.pjsua2.AccountConfig;
 import org.pjsip.pjsua2.AudDevManager;
 import org.pjsip.pjsua2.AuthCredInfo;
@@ -37,6 +45,8 @@ import org.pjsip.pjsua2.SipHeaderVector;
 import org.pjsip.pjsua2.SipTxOption;
 import org.pjsip.pjsua2.StringVector;
 import org.pjsip.pjsua2.TransportConfig;
+import org.pjsip.pjsua2.CodecInfoVector;
+import org.pjsip.pjsua2.CodecInfo;
 import org.pjsip.pjsua2.VideoDevInfo;
 import org.pjsip.pjsua2.pj_qos_type;
 import org.pjsip.pjsua2.pjmedia_orient;
@@ -392,15 +402,34 @@ public class PjSipService extends Service {
     }
 
     private void handleStart(Intent intent) {
-        // Modify existing configuration if it changes during application reload.
-        if (intent.hasExtra("service")) {
-            ServiceConfigurationDTO newServiceConfiguration = ServiceConfigurationDTO.fromMap((Map) intent.getSerializableExtra("service"));
-            if (!newServiceConfiguration.equals(mServiceConfiguration)) {
-                updateServiceConfiguration(newServiceConfiguration);
+        try {
+            // Modify existing configuration if it changes during application reload.
+            if (intent.hasExtra("service")) {
+                ServiceConfigurationDTO newServiceConfiguration = ServiceConfigurationDTO.fromMap((Map) intent.getSerializableExtra("service"));
+                if (!newServiceConfiguration.equals(mServiceConfiguration)) {
+                    updateServiceConfiguration(newServiceConfiguration);
+                }
             }
-        }
 
-        mEmitter.fireStarted(intent, mAccounts, mCalls, mServiceConfiguration.toJson());
+            CodecInfoVector codVect = mEndpoint.codecEnum();
+            JSONObject codecs = new JSONObject();
+
+            for(int i=0;i<codVect.size();i++){
+                CodecInfo codInfo = codVect.get(i);
+                String codId = codInfo.getCodecId();
+                short priority = codInfo.getPriority();
+                codecs.put(codId, priority);
+                codInfo.delete();
+            }
+
+            JSONObject settings = mServiceConfiguration.toJson();
+            settings.put("codecs", codecs);
+
+            mEmitter.fireStarted(intent, mAccounts, mCalls, settings);
+        } catch (Exception error) {
+            Log.e(TAG, "Error while building codecs list", error);
+            throw new RuntimeException(error);
+        }
     }
 
     private void handleSetServiceConfiguration(Intent intent) {
