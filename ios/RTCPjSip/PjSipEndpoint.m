@@ -194,6 +194,8 @@
     
     pjsua_call_id callId;
     pj_str_t callDest = pj_str((char *) [destination UTF8String]);
+
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
    
     pj_status_t status = pjsua_call_make_call(account.id, &callDest, &callSettings, NULL, &msgData, &callId);
     if (status != PJ_SUCCESS) {
