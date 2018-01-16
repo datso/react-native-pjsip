@@ -25,11 +25,6 @@ Add permissions & service to `android/app/src/main/AndroidManifest.xml`
         android:name="com.carusto.ReactNativePjSip.PjSipService"
         android:enabled="true"
         android:exported="true" />
-    <receiver android:name="com.carusto.ReactNativePjSip.PjSipConnectivityReceiver">
-        <intent-filter>
-          <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-        </intent-filter>
-    </receiver>
     ...
 </application>
 ```
