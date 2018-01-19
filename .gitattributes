@@ -1,0 +1,2 @@
+*.so filter=lfs diff=lfs merge=lfs -text
+ios/VialerPJSIP.framework/VialerPJSIP filter=lfs diff=lfs merge=lfs -text

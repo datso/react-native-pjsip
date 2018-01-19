@@ -119,13 +119,6 @@ public class PjSipService extends Service {
         }
 
         try {
-            System.loadLibrary("yuv");
-        } catch (UnsatisfiedLinkError error) {
-            Log.e(TAG, "Error while loading libyuv native library", error);
-            throw new RuntimeException(error);
-        }
-
-        try {
             System.loadLibrary("pjsua2");
         } catch (UnsatisfiedLinkError error) {
             Log.e(TAG, "Error while loading PJSIP pjsua2 native library", error);
