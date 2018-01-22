@@ -242,6 +242,11 @@ RCT_EXPORT_METHOD(changeOrientation: (NSString*) orientation) {
     [[PjSipEndpoint instance] changeOrientation:orientation];
 }
 
+RCT_EXPORT_METHOD(changeCodecSettings: (NSDictionary*) codecSettings callback:(RCTResponseSenderBlock) callback) {
+    [[PjSipEndpoint instance] changeCodecSettings:codecSettings];
+    callback(@[@TRUE]);
+}
+
 RCT_EXPORT_MODULE();
 
 @end

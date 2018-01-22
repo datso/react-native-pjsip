@@ -30,6 +30,7 @@
 -(void)useEarpiece;
 
 -(void)changeOrientation: (NSString*) orientation;
+-(void)changeCodecSettings: (NSDictionary*) codecSettings;
 
 -(void)emmitRegistrationChanged:(PjSipAccount*) account;
 -(void)emmitCallReceived:(PjSipCall*) call;

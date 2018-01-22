@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.Process;
+import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -23,8 +24,10 @@ import com.carusto.ReactNativePjSip.dto.ServiceConfigurationDTO;
 import com.carusto.ReactNativePjSip.dto.SipMessageDTO;
 import com.carusto.ReactNativePjSip.utils.ArgumentUtils;
 
-import org.json.JSONObject;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
+import org.json.JSONObject;
 import org.pjsip.pjsua2.AccountConfig;
 import org.pjsip.pjsua2.AudDevManager;
 import org.pjsip.pjsua2.AuthCredInfo;
@@ -379,6 +382,8 @@ public class PjSipService extends Service {
                 break;
             case PjActions.ACTION_DTMF_CALL:
                 handleCallDtmf(intent);
+            case PjActions.ACTION_CHANGE_CODEC_SETTINGS:
+                handleChangeCodecSettings(intent);
                 break;
 
             // Configuration actions
@@ -852,6 +857,31 @@ public class PjSipService extends Service {
             // -----
             PjSipCall call = findCall(callId);
             call.dialDtmf(digits);
+
+            mEmitter.fireIntentHandled(intent);
+        } catch (Exception e) {
+            mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleChangeCodecSettings(Intent intent) {
+        try {
+            Bundle codecSettings = intent.getExtras();
+            
+            // -----
+            if (codecSettings != null) {
+                for (String key : codecSettings.keySet()) {
+
+                    if (!key.equals("callback_id")) {
+
+                        short priority = (short) codecSettings.getInt(key);
+
+                        mEndpoint.codecSetPriority(key, priority);
+
+                    }
+
+                }
+            }
 
             mEmitter.fireIntentHandled(intent);
         } catch (Exception e) {

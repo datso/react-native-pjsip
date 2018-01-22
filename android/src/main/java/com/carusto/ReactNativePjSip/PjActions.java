@@ -3,6 +3,8 @@ package com.carusto.ReactNativePjSip;
 import android.content.Context;
 import android.content.Intent;
 
+import android.os.Bundle;
+
 import android.util.Log;
 
 import com.carusto.ReactNativePjSip.dto.CallSettingsDTO;
@@ -20,6 +22,7 @@ public class PjActions {
 
     public static final String ACTION_START = "start";
     public static final String ACTION_CREATE_ACCOUNT = "account_create";
+    public static final String ACTION_CHANGE_CODEC_SETTINGS= "change_codec_settings'";
     public static final String ACTION_REGISTER_ACCOUNT = "account_register";
     public static final String ACTION_DELETE_ACCOUNT = "account_delete";
     public static final String ACTION_MAKE_CALL = "call_make";
@@ -233,6 +236,16 @@ public class PjActions {
         intent.putExtra("callback_id", callbackId);
         intent.putExtra("call_id", callId);
         intent.putExtra("digits", digits);
+
+        return intent;
+    }
+
+    public static Intent createChangeCodecSettingsIntent(int callbackId, ReadableMap codecSettings, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_CHANGE_CODEC_SETTINGS);
+        intent.putExtra("callback_id", callbackId);
+
+        formatIntent(intent, codecSettings);
 
         return intent;
     }

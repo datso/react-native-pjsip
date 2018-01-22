@@ -521,6 +521,18 @@ export default class Endpoint extends EventEmitter {
       NativeModules.PjSipModule.changeOrientation(orientation)
     }
 
+    changeCodecSettings(codecSettings) {
+        return new Promise(function(resolve, reject) {
+        NativeModules.PjSipModule.changeCodecSettings(codecSettings, (successful, data) => {
+                if (successful) {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            });
+        });
+    }
+
     /**
      * @fires Endpoint#connectivity_changed
      * @private
