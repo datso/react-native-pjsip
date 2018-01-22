@@ -70,7 +70,7 @@
 
 # ifndef OPENSSL_NO_SCTP
 #  ifndef OPENSSL_SYS_VMS
-#   include <VialerPJSIP/stdint.h>
+#   include <stdint.h>
 #  else
 #   include <inttypes.h>
 #  endif
