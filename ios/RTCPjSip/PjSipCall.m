@@ -80,7 +80,7 @@
     pjsua_call_get_info(self.id, &info);
     
     @try {
-        if( pjsipConfAudioId != 0 ) {
+        if( info.conf_slot != 0 ) {
             NSLog(@"WC_SIPServer microphone disconnected from call");
             pjsua_conf_disconnect(0, info.conf_slot);
             
@@ -97,7 +97,7 @@
     pjsua_call_get_info(self.id, &info);
     
     @try {
-        if( pjsipConfAudioId != 0 ) {
+        if( info.conf_slot != 0 ) {
             NSLog(@"WC_SIPServer microphone reconnected to call");
             pjsua_conf_connect(0, info.conf_slot);
             
