@@ -100,19 +100,32 @@ public class PjSipCall extends Call {
     }
 
     private void doMute(boolean mute) throws Exception {
-        CallInfo info = getInfo();
+        CallInfo info;
+        try {
+            info = getInfo();
+        } catch (Exception exc) {
+            return;
+        }
 
         for (int i = 0; i < info.getMedia().size(); i++) {
             Media media = getMedia(i);
             CallMediaInfo mediaInfo = info.getMedia().get(i);
 
-            if (media != null &&
-                    mediaInfo.getType() == pjmedia_type.PJMEDIA_TYPE_AUDIO  &&
-                    mediaInfo.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE) {
+            if (mediaInfo.getType() == pjmedia_type.PJMEDIA_TYPE_AUDIO
+                    && media != null
+                    && mediaInfo.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE) {
                 AudioMedia audioMedia = AudioMedia.typecastFromMedia(media);
 
+                // connect or disconnect the captured audio
                 try {
-                    audioMedia.adjustRxLevel((float) (mute ? 0 : 1));
+                    AudDevManager mgr = account.getService().getAudDevManager();
+
+                    if (mute) {
+                        mgr.getCaptureDevMedia().stopTransmit(audioMedia);
+                    } else {
+                        mgr.getCaptureDevMedia().startTransmit(audioMedia);
+                    }
+
                 } catch (Exception exc) {
                     Log.e(TAG, "An error occurs while adjusting audio levels", exc);
                 }

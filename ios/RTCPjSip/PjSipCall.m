@@ -79,18 +79,34 @@
     pjsua_call_info info;
     pjsua_call_get_info(self.id, &info);
     
-    pjsua_conf_adjust_rx_level(info.conf_slot, 0);
-    
-    self.isMuted = true;
+    @try {
+        if( info.conf_slot != 0 ) {
+            NSLog(@"WC_SIPServer microphone disconnected from call");
+            pjsua_conf_disconnect(0, info.conf_slot);
+            
+            self.isMuted = true;
+        }
+    }
+    @catch (NSException *exception) {
+        NSLog(@"Unable to mute microphone: %@", exception);
+    }
 }
 
 - (void)unmute {
     pjsua_call_info info;
     pjsua_call_get_info(self.id, &info);
     
-    pjsua_conf_adjust_rx_level(info.conf_slot, 1);
-    
-    self.isMuted = false;
+    @try {
+        if( info.conf_slot != 0 ) {
+            NSLog(@"WC_SIPServer microphone reconnected to call");
+            pjsua_conf_connect(0, info.conf_slot);
+            
+            self.isMuted = false;
+        }
+    }
+    @catch (NSException *exception) {
+        NSLog(@"Unable to un-mute microphone: %@", exception);
+    }
 }
 
 - (void)xfer:(NSString*) destination {
