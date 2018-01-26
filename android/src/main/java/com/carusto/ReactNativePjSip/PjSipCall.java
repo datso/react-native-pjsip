@@ -127,6 +127,7 @@ public class PjSipCall extends Call {
                     }
 
                 } catch (Exception exc) {
+                    Log.e(TAG, "An error occurs while adjusting audio levels", exc);
                 }
             }
         }
