@@ -1,58 +1,7 @@
 {
-  "_args": [
-    [
-      {
-        "raw": "react-native-pjsip@git+https://github.com/datso/react-native-pjsip.git",
-        "scope": null,
-        "escapedName": "react-native-pjsip",
-        "name": "react-native-pjsip",
-        "rawSpec": "git+https://github.com/datso/react-native-pjsip.git",
-        "spec": "git+https://github.com/datso/react-native-pjsip.git",
-        "type": "hosted",
-        "hosted": {
-          "type": "github",
-          "ssh": "git@github.com:datso/react-native-pjsip.git",
-          "sshUrl": "git+ssh://git@github.com/datso/react-native-pjsip.git",
-          "httpsUrl": "git+https://github.com/datso/react-native-pjsip.git",
-          "gitUrl": "git://github.com/datso/react-native-pjsip.git",
-          "shortcut": "github:datso/react-native-pjsip",
-          "directUrl": "https://raw.githubusercontent.com/datso/react-native-pjsip/master/package.json"
-        }
-      },
-      "/Users/vadim/Projects/carusto-mobile"
-    ]
-  ],
-  "_from": "git+https://github.com/datso/react-native-pjsip.git",
-  "_id": "react-native-pjsip@0.1.1",
-  "_inCache": true,
-  "_location": "/react-native-pjsip",
-  "_phantomChildren": {},
-  "_requested": {
-    "raw": "react-native-pjsip@git+https://github.com/datso/react-native-pjsip.git",
-    "scope": null,
-    "escapedName": "react-native-pjsip",
-    "name": "react-native-pjsip",
-    "rawSpec": "git+https://github.com/datso/react-native-pjsip.git",
-    "spec": "git+https://github.com/datso/react-native-pjsip.git",
-    "type": "hosted",
-    "hosted": {
-      "type": "github",
-      "ssh": "git@github.com:datso/react-native-pjsip.git",
-      "sshUrl": "git+ssh://git@github.com/datso/react-native-pjsip.git",
-      "httpsUrl": "git+https://github.com/datso/react-native-pjsip.git",
-      "gitUrl": "git://github.com/datso/react-native-pjsip.git",
-      "shortcut": "github:datso/react-native-pjsip",
-      "directUrl": "https://raw.githubusercontent.com/datso/react-native-pjsip/master/package.json"
-    }
+  "scripts": {
+    "postinstall": "bash libs.sh"
   },
-  "_requiredBy": [
-    "/"
-  ],
-  "_resolved": "git+https://github.com/datso/react-native-pjsip.git#754bd49447e2611afc76fac0928408701fb8a2f0",
-  "_shasum": "626d6d1503e187321036e91687ba3488dffc4606",
-  "_shrinkwrap": null,
-  "_spec": "react-native-pjsip@git+https://github.com/datso/react-native-pjsip.git",
-  "_where": "/Users/vadim/Projects/carusto-mobile",
   "author": {
     "name": "Vadim Ruban",
     "email": "vadim.ruban@carusto.com"
@@ -87,5 +36,5 @@
     "type": "git",
     "url": "git+https://github.com/datso/react-native-pjsip.git"
   },
-  "version": "2.7.1"
+  "version": "2.7.3"
 }
