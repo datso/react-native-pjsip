@@ -15,6 +15,7 @@ import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Arrays;
 
 public class PjActions {
 
@@ -301,6 +302,9 @@ public class PjActions {
                     break;
                 case Boolean:
                     value.put(mapKey, map.getBoolean(mapKey));
+                    break;
+                case Array:
+                    value.put(mapKey, map.getArray(mapKey).toArrayList());
                     break;
                 case Map:
                     value.put(mapKey, formatMap(map.getMap(mapKey)));
