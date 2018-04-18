@@ -90,12 +90,6 @@ endpoint.addListener("call_terminated", (newCall) => {
 }
 ```
 
-### If Android targetSdk >= 23
-
-If your Android targetSdk is 23 or above you should grant `android.permission.RECORD_AUDIO` at runtime before making/receiving an audio call.
-
-To check and request Android permissions, please check out [react-native-android-permissions](https://github.com/lucasferreira/react-native-android-permissions).
-
 ## API
 
 1. [Startup](https://github.com/datso/react-native-pjsip/blob/master/docs/startup.md)
