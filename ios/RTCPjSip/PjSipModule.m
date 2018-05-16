@@ -27,8 +27,13 @@
 RCT_EXPORT_METHOD(start: (NSDictionary *) config callback: (RCTResponseSenderBlock) callback) {
     [PjSipEndpoint instance].bridge = self.bridge;
 
-    NSDictionary *result = [[PjSipEndpoint instance] start];
+    NSDictionary *result = [[PjSipEndpoint instance] start: config];
     callback(@[@TRUE, result]);
+}
+
+RCT_EXPORT_METHOD(updateStunServers: (int) accountId stunServerList:(NSArray *) stunServerList callback:(RCTResponseSenderBlock) callback) {
+    [[PjSipEndpoint instance] updateStunServers:accountId stunServerList:stunServerList];
+    callback(@[@TRUE]);
 }
 
 #pragma mark - Account Actions
