@@ -280,7 +280,8 @@
     for (NSString * key in codecSettings) {
         pj_str_t codec_id = pj_str((char *) [key UTF8String]);
         NSNumber * priority = codecSettings[key];
-        pjsua_codec_set_priority(&codec_id, priority);
+        pj_uint8_t convertedPriority = [priority integerValue];
+        pjsua_codec_set_priority(&codec_id, convertedPriority);
     }
     
 }
