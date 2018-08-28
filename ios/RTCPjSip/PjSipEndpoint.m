@@ -138,17 +138,18 @@
             self.tlsTransportId = id;
         }
     }
-
+    
     // Initialization is done, now start pjsua
     status = pjsua_start();
     if (status != PJ_SUCCESS) NSLog(@"Error starting pjsua");
-
+    
     return self;
 }
 
 - (NSDictionary *) start {
     NSMutableArray *accountsResult = [[NSMutableArray alloc] initWithCapacity:[@([self.accounts count]) unsignedIntegerValue]];
     NSMutableArray *callsResult = [[NSMutableArray alloc] initWithCapacity:[@([self.calls count]) unsignedIntegerValue]];
+    NSDictionary *settingsResult = @{ @"codecs": [self getCodecs] };
 
     for (NSString *key in self.accounts) {
         PjSipAccount *acc = self.accounts[key];
@@ -160,13 +161,13 @@
         [callsResult addObject:[call toJsonDictionary:self.isSpeaker]];
     }
     
-    return @{@"accounts": accountsResult, @"calls": callsResult, @"connectivity": @YES};
+    return @{@"accounts": accountsResult, @"calls": callsResult, @"settings": settingsResult, @"connectivity": @YES};
 }
 
 - (PjSipAccount *)createAccount:(NSDictionary *)config {
     PjSipAccount *account = [PjSipAccount itemConfig:config];
     self.accounts[@(account.id)] = account;
-
+    
     return account;
 }
 
@@ -283,8 +284,24 @@
         pj_uint8_t convertedPriority = [priority integerValue];
         pjsua_codec_set_priority(&codec_id, convertedPriority);
     }
-    
 }
+
+- (NSMutableDictionary *) getCodecs {
+    //32 max possible codecs
+    pjsua_codec_info codec[32];
+    NSMutableDictionary *codecs = [[NSMutableDictionary alloc] initWithCapacity:32];
+    unsigned uCount = 32;
+    
+    if (pjsua_enum_codecs(codec, &uCount) == PJ_SUCCESS) {
+        for (unsigned i = 0; i < uCount; ++i) {
+            NSString * codecName = [NSString stringWithFormat:@"%s", codec[i].codec_id.ptr];
+            [codecs setObject:[NSNumber numberWithInt: codec[i].priority] forKey: codecName];
+        }
+    }
+    return codecs;
+}
+
+
 #pragma mark - Events
 
 -(void)emmitRegistrationChanged:(PjSipAccount*) account {
