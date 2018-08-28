@@ -146,10 +146,10 @@
     return self;
 }
 
-- (NSDictionary *) start {
+- (NSDictionary *)start: (NSDictionary *)config {
     NSMutableArray *accountsResult = [[NSMutableArray alloc] initWithCapacity:[@([self.accounts count]) unsignedIntegerValue]];
     NSMutableArray *callsResult = [[NSMutableArray alloc] initWithCapacity:[@([self.calls count]) unsignedIntegerValue]];
-
+    
     for (NSString *key in self.accounts) {
         PjSipAccount *acc = self.accounts[key];
         [accountsResult addObject:[acc toJsonDictionary]];
@@ -160,7 +160,33 @@
         [callsResult addObject:[call toJsonDictionary:self.isSpeaker]];
     }
     
+    if ([accountsResult count] > 0 && config[@"service"] && config[@"service"][@"stun"]) {
+        for (NSDictionary *account in accountsResult) {
+            int accountId = account[@"_data"][@"id"];
+            [[PjSipEndpoint instance] updateStunServers:accountId stunServerList:config[@"service"][@"stun"]];
+        }
+    }
+    
     return @{@"accounts": accountsResult, @"calls": callsResult, @"connectivity": @YES};
+}
+
+- (void)updateStunServers:(int)accountId stunServerList:(NSArray *)stunServerList {
+    int size = [stunServerList count];
+    int count = 0;
+    pj_str_t srv[size];
+    for (NSString *stunServer in stunServerList) {
+        srv[count] = pj_str([stunServer UTF8String]);
+        count++;
+    }
+    
+    pjsua_acc_config cfg_update;
+    pj_pool_t *pool = pjsua_pool_create("tmp-pjsua", 1000, 1000);
+    pjsua_acc_config_default(&cfg_update);
+    pjsua_acc_get_config(accountId, pool, &cfg_update);
+    NSLog([NSString stringWithFormat: @"I AM ACC ID: %d", accountId]);
+    pjsua_update_stun_servers(size, srv, false);
+    
+    pjsua_acc_modify(accountId, &cfg_update);
 }
 
 - (PjSipAccount *)createAccount:(NSDictionary *)config {
