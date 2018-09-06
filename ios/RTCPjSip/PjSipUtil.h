@@ -13,6 +13,6 @@
 +(NSString *) mediaTypeToString: (pjmedia_type) type;
 
 +(void) fillCallSettings: (pjsua_call_setting*) callSettings dict:(NSDictionary*) dict;
-+(void) fillMsgData: (pjsua_msg_data*) msgData dict:(NSDictionary*) dict;
++(void) fillMsgData: (pjsua_msg_data*) msgData dict:(NSDictionary*) dict pool:(pj_pool_t*) pool;
 
 @end

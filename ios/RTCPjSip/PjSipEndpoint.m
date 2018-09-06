@@ -216,19 +216,29 @@
 -(PjSipCall *) makeCall:(PjSipAccount *) account destination:(NSString *)destination callSettings: (NSDictionary *)callSettingsDict msgData: (NSDictionary *)msgDataDict {
     pjsua_call_setting callSettings;
     [PjSipUtil fillCallSettings:&callSettings dict:callSettingsDict];
-
+    
+    pj_caching_pool cp;
+    pj_pool_t *pool;
+    
+    pj_caching_pool_init(&cp, &pj_pool_factory_default_policy, 0);
+    pool = pj_pool_create(&cp.factory, "header", 1000, 1000, NULL);
+    
     pjsua_msg_data msgData;
-    [PjSipUtil fillMsgData:&msgData dict:msgDataDict];
+    pjsua_msg_data_init(&msgData);
+    [PjSipUtil fillMsgData:&msgData dict:msgDataDict pool:pool];
+    
     
     pjsua_call_id callId;
     pj_str_t callDest = pj_str((char *) [destination UTF8String]);
-
+    
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
-   
+    
     pj_status_t status = pjsua_call_make_call(account.id, &callDest, &callSettings, NULL, &msgData, &callId);
+    
     if (status != PJ_SUCCESS) {
         [NSException raise:@"Failed to make a call" format:@"See device logs for more details."];
     }
+    pj_pool_release(pool);
     
     PjSipCall *call = [PjSipCall itemConfig:callId];
     self.calls[@(callId)] = call;
