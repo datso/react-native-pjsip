@@ -122,7 +122,7 @@ export default class Call {
      * @returns {string}
      */
     getFormattedTotalDuration() {
-        return this._formatTime(this.getDuration());
+        return this._formatTime(this.getTotalDuration());
     };
 
     /**
@@ -343,7 +343,7 @@ export default class Call {
      * - PJSIP_SC_NOT_ACCEPTABLE_ANYWHERE / 606
      * - PJSIP_SC_TSX_TIMEOUT / PJSIP_SC_REQUEST_TIMEOUT
      * - PJSIP_SC_TSX_TRANSPORT_ERROR / PJSIP_SC_SERVICE_UNAVAILABLE
-     * 
+     *
      * @returns {string}
      */
     getLastStatusCode() {
