@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "postinstall": "bash libs.sh"
+    "postinstall": "bash libs.sh",
+    "lint": "eslint ./src",
+    "generate-docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose"
   },
   "author": {
     "name": "Vadim Ruban",
@@ -12,9 +14,20 @@
   "dependencies": {
     "events": "1.1.0"
   },
+  "devDependencies": {
+    "babel-eslint": "^10.0.0",
+    "eslint": "^5.6.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.1",
+    "eslint-plugin-react": "^7.11.1",
+    "eslint-plugin-react-native": "^3.3.0",
+    "gh-pages": "^2.0.0",
+    "jsdoc": "^3.5.5",
+    "minami": "^1.2.3"
+  },
+  "name": "react-native-pjsip",
   "description": "PJSIP module for React Native",
-  "devDependencies": {},
-  "gitHead": "754bd49447e2611afc76fac0928408701fb8a2f0",
   "homepage": "https://github.com/datso/react-native-pjsip",
   "keywords": [
     "react-component",
@@ -24,17 +37,14 @@
     "pjsip",
     "sip"
   ],
-  "name": "react-native-pjsip",
   "nativePackage": true,
   "optionalDependencies": {},
   "peerDependencies": {
     "react-native": ">=0.40.0"
   },
-  "readme": "# react-native-pjsip\n\nA [PJSIP](http://www.pjsip.org/) module for React Native.\n\n## Support\n- Currently support for iOS and Android.  \n- Support ~~video~~ and audio communication.\n- Ability to use Callkit and PushNotifications.\n- Ability to [work while application in background on Android](https://github.com/datso/react-native-pjsip/blob/master/docs/android_sip_background.md) (e.g. foreground).\n- You can use it to build an iOS/Android app that can communicate with SIP server.\n- Android version is based on [pjsip-android-builder](https://github.com/VoiSmart/pjsip-android-builder) (minimal Android API verion is 21)\n- iOS version is based on [Vialer-pjsip-iOS](https://github.com/VoIPGRID/Vialer-pjsip-iOS)\n\n## Installation\n\n- [iOS](https://github.com/datso/react-native-pjsip/blob/master/docs/installation_ios.md)\n- [Android](https://github.com/datso/react-native-pjsip/blob/master/docs/installation_android.md)\n\n## Usage\n\nFirst of all you have to initialize module to be able to work with it.\n\nThere are some interesting moment in initialization.\nWhen application goes to background, PJSIP module is still working and able to receive calls, but your javascipt is totally suspended.\nWhen User open your application, javascript start to work and now your js application need to know what status have your account or may be you have pending incoming call.\n\nSo thats why first step should call start method for pjsip module.\n\n```javascript\nimport {Endpoint} from 'react-native-pjsip'\n\nlet endpoint = new Endpoint();\nlet state = await endpoint.start(); // List of available accounts and calls when RN context is started, could not be empty because Background service is working on Android\nlet {accounts, calls, settings, connectivity} = state;\n\n// Subscribe to endpoint events\nendpoint.on(\"registration_changed\", (account) => {});\nendpoint.on(\"connectivity_changed\", (online) => {});\nendpoint.on(\"call_received\", (call) => {});\nendpoint.on(\"call_changed\", (call) => {});\nendpoint.on(\"call_terminated\", (call) => {});\nendpoint.on(\"call_screen_locked\", (call) => {}); // Android only\n```\n\nAccount creating is pretty strainghforward.\n\n```javascript\nlet configuration = {\n  \"name\": \"John\",\n  \"username\": \"sip_username\",\n  \"domain\": \"pbx.carusto.com\",\n  \"password\": \"****\",\n  \"proxy\": null,\n  \"transport\": null, // Default TCP\n  \"regServer\": null, // Default wildcard\n  \"regTimeout\": null // Default 3600\n  \"regHeaders\": {\n    \"X-Custom-Header\": \"Value\"\n  },\n  \"regContactParams\": \";unique-device-token-id=XXXXXXXXX\"\n};\nendpoint.createAccount().then((account) => {\n  console.log(\"Account created\", account);\n});\n\n```\n\nTo be able to make a call first of all you should createAccount, and pass account instance into Endpoint.makeCall function.\nThis function will return a promise that will be resolved when PjSIP initializes the call.\n\n```javascript\nlet options = {\n  headers: {\n    \"P-Assserted-Identity\": \"Header example\",\n    \"X-UA\": \"React native\"\n  }\n}\n\nlet call = await endpoint.makeCall(account, destination, options);\ncall.getId() // Use this id to detect changes and make actions\n\nendpoint.addListener(\"call_changed\", (newCall) => {\n  if (call.getId() === newCall.getId()) {\n     // Our call changed, do smth.\n  }\n}\nendpoint.addListener(\"call_terminated\", (newCall) => {\n  if (call.getId() === newCall.getId()) {\n     // Our call terminated\n  }\n}\n```\n\n## API\n\n1. [Startup](https://github.com/datso/react-native-pjsip/blob/master/docs/startup.md)\n2. [Accounts](https://github.com/datso/react-native-pjsip/blob/master/docs/accounts.md)\n3. [Calls](https://github.com/datso/react-native-pjsip/blob/master/docs/calls.md)\n4. [Settings](https://github.com/datso/react-native-pjsip/blob/master/docs/settings.md)\n\n## Demo\nThe demo project is https://github.com/datso/react-native-pjsip-app. And you will need a SIP server.",
-  "readmeFilename": "README.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/datso/react-native-pjsip.git"
   },
-  "version": "2.7.4"
+  "version": "2.8.0"
 }

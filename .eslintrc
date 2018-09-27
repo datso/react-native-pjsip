@@ -1,0 +1,10 @@
+{
+  "extends": "airbnb",
+  "parser": "babel-eslint",
+  "plugins": [
+    "react-native"
+  ],
+  "rules": {
+    "semi": ["error", "never"]
+  }
+}
