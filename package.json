@@ -44,7 +44,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/datso/react-native-pjsip.git"
+    "url": "git+https://github.com/koniake/react-native-pjsip.git"
   },
   "version": "2.8.0"
 }
