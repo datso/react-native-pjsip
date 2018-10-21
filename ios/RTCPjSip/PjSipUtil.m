@@ -232,15 +232,14 @@
     }
 }
 
-+(void) fillMsgData: (pjsua_msg_data*) msgData dict:(NSDictionary*) dict {
-    pjsua_msg_data_init(msgData);
++(void) fillMsgData: (pjsua_msg_data*) msgData dict:(NSDictionary*) dict pool:(pj_pool_t*) pool{
     
     if (dict != NULL) {
         if (dict[@"targetURI"] != nil) {
             msgData->target_uri = pj_str((char *) [dict[@"targetURI"] UTF8String]);
         }
         if (dict[@"headers"] != nil) {
-            [self fillHdrList:&msgData->hdr_list dict:dict[@"headers"]];
+            [self fillHdrList:&msgData->hdr_list dict:dict[@"headers"] pool:pool];
         }
         if (dict[@"contentType"] != nil) {
             msgData->content_type = pj_str((char *) [dict[@"contentType"] UTF8String]);
@@ -252,26 +251,16 @@
     
 }
 
-// TODO: Avoid memory leak here.
-+(void) fillHdrList: (pjsip_hdr* ) hdrList dict:(NSDictionary*) dict {
-    pj_list_init(hdrList);
++(void) fillHdrList: (pjsip_hdr* ) hdrList dict:(NSDictionary*) dict pool:(pj_pool_t*) pool {
     
-    for(NSString* key in dict) {
-        pjsip_generic_string_hdr *hdr = malloc(sizeof(struct pjsip_generic_string_hdr));
-        pj_str_t name = pj_str((char *) [key UTF8String]);
-        pj_str_t value = pj_str((char *) [[dict objectForKey:key] UTF8String]);
-        
-        pj_str_t* nameInMem = malloc(sizeof(struct pj_str_t));
-        nameInMem->ptr = malloc(sizeof(name.slen + 1));
-        pj_str_t* valueInMem = malloc(sizeof(struct pj_str_t));
-        valueInMem->ptr = malloc(sizeof(value.slen + 1));
-        
-        pj_strcpy(nameInMem, &name);
-        pj_strcpy(valueInMem, &value);
-        
-        pjsip_generic_string_hdr_init2(hdr, nameInMem, valueInMem);
-        pj_list_push_back(hdrList, hdr);
+    for(NSString *key in [dict allKeys]){
+        pj_str_t hname = pj_str((char *)[key UTF8String]);
+        char * headerValue = (char *)[(NSString *)[dict objectForKey:key] UTF8String];
+        pj_str_t hvalue = pj_str(headerValue);
+        pjsip_generic_string_hdr* add_hdr = pjsip_generic_string_hdr_create(pool, &hname, &hvalue);
+        pj_list_push_back(hdrList, add_hdr);
     }
+    
 }
 
 @end
