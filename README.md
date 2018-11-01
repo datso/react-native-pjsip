@@ -12,8 +12,8 @@ A [PJSIP](http://www.pjsip.org/) module for React Native.
 
 ## Installation
 
-- [iOS](https://github.com/datso/react-native-pjsip/blob/master/docs/installation_ios.md)
-- [Android](https://github.com/datso/react-native-pjsip/blob/master/docs/installation_android.md)
+- [iOS](/wiki/installation_ios.md)
+- [Android](/wiki/installation_android.md)
 
 ## Usage
 
@@ -92,10 +92,10 @@ endpoint.addListener("call_terminated", (newCall) => {
 
 ## API
 
-1. [Startup](https://github.com/datso/react-native-pjsip/blob/master/docs/startup.md)
-2. [Accounts](https://github.com/datso/react-native-pjsip/blob/master/docs/accounts.md)
-3. [Calls](https://github.com/datso/react-native-pjsip/blob/master/docs/calls.md)
-4. [Settings](https://github.com/datso/react-native-pjsip/blob/master/docs/settings.md)
+1. [Startup](/wiki/startup.md)
+2. [Accounts](/wiki/accounts.md)
+3. [Calls](/wiki/calls.md)
+4. [Settings](/wiki/settings.md)
 
 ## Demo
 The demo project is https://github.com/datso/react-native-pjsip-app. And you will need a SIP server.
