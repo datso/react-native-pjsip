@@ -116,7 +116,7 @@
                 }
             }
         }
-        cfg.use_rfc5636 = 0;
+        cfg.use_rfc5626 = 0;
         pjsua_acc_id account_id;
 
         status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id);
