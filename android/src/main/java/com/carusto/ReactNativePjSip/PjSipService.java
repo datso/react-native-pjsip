@@ -527,7 +527,7 @@ public class PjSipService extends Service {
 
             cfg.getRegConfig().setHeaders(headers);
         }
-
+        cfg.getNatConfig().setSipOutboundUse(0);
         // Transport settings
         int transportId = mTcpTransportId;
 
@@ -590,7 +590,10 @@ public class PjSipService extends Service {
                 throw new Exception("Account with \""+ accountId +"\" id not found");
             }
 
-            evict(account);
+                evict(account);
+          mEndpoint.libDestroy();
+          mEndpoint.delete();
+          load();
 
             // -----
             mEmitter.fireIntentHandled(intent);
