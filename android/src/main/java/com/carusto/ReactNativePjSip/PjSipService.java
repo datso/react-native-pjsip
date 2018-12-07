@@ -27,6 +27,12 @@ import com.carusto.ReactNativePjSip.utils.ArgumentUtils;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
+import org.pjsip.pjsua2.ToneDesc;
+import org.pjsip.pjsua2.ToneDescVector;
+
+
+
+
 import org.json.JSONObject;
 import org.pjsip.pjsua2.AccountConfig;
 import org.pjsip.pjsua2.AudDevManager;
@@ -106,7 +112,9 @@ public class PjSipService extends Service {
     private boolean mGSMIdle;
 
     private BroadcastReceiver mPhoneStateChangedReceiver = new PhoneStateChangedReceiver();
-
+private ToneDesc toneDesc;
+private org.pjsip.pjsua2.ToneGenerator toneGenerator;
+private ToneDescVector toneDescVector;
     public PjSipBroadcastEmiter getEmitter() {
         return mEmitter;
     }
@@ -987,9 +995,46 @@ public class PjSipService extends Service {
         }
     }
 
+ void startRingbackTone() {
+     int kSPRingbackFrequency1 = 440,
+       kSPRingbackFrequency2 = 480,
+       kSPRingbackOnDuration = 1000,
+       kSPRingbackOffDuration = 4000,
+       kSPRingbackCount = 1,
+       kSPRingbackInterval = 4000;
+    toneDesc = new ToneDesc();
+    toneGenerator = new org.pjsip.pjsua2.ToneGenerator();
+    toneDescVector = new ToneDescVector();
+
+    toneDesc.setFreq1((short) kSPRingbackFrequency1);
+    toneDesc.setFreq2((short) kSPRingbackFrequency2);
+    toneDesc.setOn_msec((short) kSPRingbackOnDuration);
+    toneDesc.setOff_msec((short) kSPRingbackOffDuration);
+
+    toneDescVector.add(toneDesc);
+
+    try {
+      toneGenerator.createToneGenerator();
+      toneGenerator.play(toneDescVector, true);
+      toneGenerator.startTransmit(mEndpoint.audDevManager().getPlaybackDevMedia());
+
+    } catch (Exception ex) { }
+  }
+
+  void stopRingbackTone() {
+
+    try {
+      if (toneGenerator != null)
+        toneGenerator.stop();
+      toneGenerator = null;
+
+    } catch (Exception ex) { }
+
+  }
     void emmitCallChanged(PjSipCall call, OnCallStateParam prm) {
         try {
             final int callId = call.getId();
+            final PjSipCall calls = call;
             final pjsip_inv_state callState = call.getInfo().getState();
 
             job(new Runnable() {
@@ -1014,6 +1059,19 @@ public class PjSipService extends Service {
                     if (callState == pjsip_inv_state.PJSIP_INV_STATE_EARLY || callState == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
                         mAudioManager.setMode(AudioManager.MODE_IN_CALL);
                     }
+                  CallInfo ci = null;
+                  try {
+                    ci = calls.getInfo();
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  }
+                  if (ci.getState() == pjsip_inv_state.PJSIP_INV_STATE_EARLY
+                    && ci.getRole() == pjsip_role_e.PJSIP_ROLE_UAC
+                    && ci.getLastReason().equals("Ringing")) {
+                    startRingbackTone();
+                  } else {
+                    stopRingbackTone();
+                  }
                 }
             });
         } catch (Exception e) {
