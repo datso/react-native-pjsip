@@ -54,6 +54,7 @@ import org.pjsip.pjsua2.VideoDevInfo;
 import org.pjsip.pjsua2.pj_qos_type;
 import org.pjsip.pjsua2.pjmedia_orient;
 import org.pjsip.pjsua2.pjsip_inv_state;
+import org.pjsip.pjsua2.pjsip_role_e;
 import org.pjsip.pjsua2.pjsip_status_code;
 import org.pjsip.pjsua2.pjsip_transport_type_e;
 
@@ -1059,19 +1060,18 @@ private ToneDescVector toneDescVector;
                     if (callState == pjsip_inv_state.PJSIP_INV_STATE_EARLY || callState == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
                         mAudioManager.setMode(AudioManager.MODE_IN_CALL);
                     }
-                  CallInfo ci = null;
-                  try {
-                    ci = calls.getInfo();
-                  } catch (Exception e) {
-                    e.printStackTrace();
-                  }
-                  if (ci.getState() == pjsip_inv_state.PJSIP_INV_STATE_EARLY
-                    && ci.getRole() == pjsip_role_e.PJSIP_ROLE_UAC
-                    && ci.getLastReason().equals("Ringing")) {
+
+
+                  try{
+                  if (calls.getInfo().getState() == pjsip_inv_state.PJSIP_INV_STATE_EARLY
+                    && calls.getInfo().getRole() == pjsip_role_e.PJSIP_ROLE_UAC
+                    && calls.getInfo().getLastReason().equals("Ringing")) {
                     startRingbackTone();
                   } else {
                     stopRingbackTone();
-                  }
+                  }  } catch(Exception e){
+                    Log.w(TAG, "Failed to ring ring", e);
+              }
                 }
             });
         } catch (Exception e) {
