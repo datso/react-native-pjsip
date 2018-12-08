@@ -1,4 +1,5 @@
 #import <React/RCTBridgeModule.h>
+#import <VialerPJSIP/pjsua.h>
 
 #import "PjSipAccount.h"
 #import "PjSipCall.h"

@@ -383,6 +383,7 @@ static void onCallReceived(pjsua_acc_id accId, pjsua_call_id callId, pjsip_rx_da
     endpoint.calls[@(callId)] = call;
     
     [endpoint emmitCallReceived:call];
+    pjsua_call_answer(callId, 180, NULL, NULL);
 }
 
 static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
