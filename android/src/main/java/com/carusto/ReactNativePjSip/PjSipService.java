@@ -17,7 +17,7 @@ import android.os.Process;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-
+import android.media.ToneGenerator;
 import com.carusto.ReactNativePjSip.dto.AccountConfigurationDTO;
 import com.carusto.ReactNativePjSip.dto.CallSettingsDTO;
 import com.carusto.ReactNativePjSip.dto.ServiceConfigurationDTO;
@@ -111,10 +111,9 @@ public class PjSipService extends Service {
     private WifiManager.WifiLock mWifiLock;
 
     private boolean mGSMIdle;
-
+  private ToneGenerator toneGenerator;
     private BroadcastReceiver mPhoneStateChangedReceiver = new PhoneStateChangedReceiver();
 private ToneDesc toneDesc;
-private org.pjsip.pjsua2.ToneGenerator toneGenerator;
 private ToneDescVector toneDescVector;
     public PjSipBroadcastEmiter getEmitter() {
         return mEmitter;
@@ -987,6 +986,7 @@ private ToneDescVector toneDescVector;
     void emmitCallStateChanged(PjSipCall call, OnCallStateParam prm) {
         try {
             if (call.getInfo().getState() == pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
+
                 emmitCallTerminated(call, prm);
             } else {
                 emmitCallChanged(call, prm);
@@ -996,47 +996,12 @@ private ToneDescVector toneDescVector;
         }
     }
 
- void startRingbackTone() {
-     int kSPRingbackFrequency1 = 440,
-       kSPRingbackFrequency2 = 480,
-       kSPRingbackOnDuration = 1000,
-       kSPRingbackOffDuration = 4000,
-       kSPRingbackCount = 1,
-       kSPRingbackInterval = 4000;
-    toneDesc = new ToneDesc();
-    toneGenerator = new org.pjsip.pjsua2.ToneGenerator();
-    toneDescVector = new ToneDescVector();
-
-    toneDesc.setFreq1((short) kSPRingbackFrequency1);
-    toneDesc.setFreq2((short) kSPRingbackFrequency2);
-    toneDesc.setOn_msec((short) kSPRingbackOnDuration);
-    toneDesc.setOff_msec((short) kSPRingbackOffDuration);
-
-    toneDescVector.add(toneDesc);
-
-    try {
-      toneGenerator.createToneGenerator();
-      toneGenerator.play(toneDescVector, true);
-      toneGenerator.startTransmit(mEndpoint.audDevManager().getPlaybackDevMedia());
-
-    } catch (Exception ex) { }
-  }
-
-  void stopRingbackTone() {
-
-    try {
-      if (toneGenerator != null)
-        toneGenerator.stop();
-      toneGenerator = null;
-
-    } catch (Exception ex) { }
-
-  }
     void emmitCallChanged(PjSipCall call, OnCallStateParam prm) {
         try {
             final int callId = call.getId();
             final PjSipCall calls = call;
             final pjsip_inv_state callState = call.getInfo().getState();
+          Log.w(TAG, "callState"+callState);
 
             job(new Runnable() {
                 @Override
@@ -1061,17 +1026,41 @@ private ToneDescVector toneDescVector;
                         mAudioManager.setMode(AudioManager.MODE_IN_CALL);
                     }
 
+                  if (callState == pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
+                    Log.w(TAG, "PJSIP_INV_STATE_DISCONNECTED");
+                    checkAndStopLocalRingBackTone();
+                  }
+                  else if (callState == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
+                    Log.w(TAG, "PJSIP_INV_STATE_CONFIRMED");
+                    checkAndStopLocalRingBackTone();
 
-                  try{
-                  if (calls.getInfo().getState() == pjsip_inv_state.PJSIP_INV_STATE_EARLY
-                    && calls.getInfo().getRole() == pjsip_role_e.PJSIP_ROLE_UAC
-                    && calls.getInfo().getLastReason().equals("Ringing")) {
-                    startRingbackTone();
-                  } else {
-                    stopRingbackTone();
-                  }  } catch(Exception e){
-                    Log.w(TAG, "Failed to ring ring", e);
-              }
+                  }
+
+                  if (callState == pjsip_inv_state.PJSIP_INV_STATE_EARLY){
+                    pjsip_status_code statusCode = null;
+                    Log.w(TAG, "PJSIP_INV_STATE_EARLY");
+                    try {
+                      statusCode = calls.getInfo().getLastStatusCode();
+                    } catch (Exception e) {
+                      e.printStackTrace();
+                    }
+                    // check if 180 && call is outgoing (ROLE UAC)
+                    try {
+                      if (statusCode == pjsip_status_code.PJSIP_SC_RINGING && calls.getInfo().getRole() == pjsip_role_e.PJSIP_ROLE_UAC){
+                        Log.w(TAG, "PJSIP_SC_RINGING && PJSIP_ROLE_UAC");
+                        checkAndStopLocalRingBackTone();
+                        toneGenerator = new ToneGenerator(AudioManager.STREAM_VOICE_CALL, 100);
+                        toneGenerator.startTone(ToneGenerator.TONE_SUP_RINGTONE);
+                        Log.w(TAG, "TONE_SUP_RINGTONE");
+                        // check if 183
+                      } else if (statusCode == pjsip_status_code.PJSIP_SC_PROGRESS){
+                        Log.w(TAG, "PJSIP_SC_PROGRESS");
+                        checkAndStopLocalRingBackTone();
+                      }
+                    } catch (Exception e) {
+                      e.printStackTrace();
+                    }
+                  }
                 }
             });
         } catch (Exception e) {
@@ -1080,13 +1069,23 @@ private ToneDescVector toneDescVector;
 
         mEmitter.fireCallChanged(call);
     }
-
+  private void checkAndStopLocalRingBackTone(){
+    Log.w(TAG, "checkAndStopLocalRingBackTone");
+    if (toneGenerator != null){
+      Log.w(TAG, "toneGenerator");
+      toneGenerator.stopTone();
+      toneGenerator.release();
+      toneGenerator = null;
+    }
+  }
     void emmitCallTerminated(PjSipCall call, OnCallStateParam prm) {
         final int callId = call.getId();
 
         job(new Runnable() {
             @Override
             public void run() {
+              Log.w(TAG, "emmitCallTerminated");
+              checkAndStopLocalRingBackTone();
                 // Release wake lock
                 if (mCalls.size() == 1) {
                     if (mIncallWakeLock != null && mIncallWakeLock.isHeld()) {
