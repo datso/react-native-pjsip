@@ -242,7 +242,10 @@
     
     PjSipCall *call = [PjSipCall itemConfig:callId];
     self.calls[@(callId)] = call;
-    
+
+    UIDevice *device = [UIDevice currentDevice];
+    if(device.proximityMonitoringEnabled == NO) [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
+
     return call;
 }
 
@@ -382,6 +385,9 @@ static void onCallReceived(pjsua_acc_id accId, pjsua_call_id callId, pjsip_rx_da
     PjSipCall *call = [PjSipCall itemConfig:callId];
     endpoint.calls[@(callId)] = call;
     
+    UIDevice *device = [UIDevice currentDevice];
+    if(device.proximityMonitoringEnabled == NO) [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
+
     [endpoint emmitCallReceived:call];
 }
 
@@ -402,6 +408,9 @@ static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
     if (callInfo.state == PJSIP_INV_STATE_DISCONNECTED) {
         [endpoint.calls removeObjectForKey:@(callId)];
         [endpoint emmitCallTerminated:call];
+        
+        UIDevice *device = [UIDevice currentDevice];
+        if(device.proximityMonitoringEnabled == YES) [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
     } else {
         [endpoint emmitCallChanged:call];
     }
