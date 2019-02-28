@@ -161,10 +161,25 @@
         [callsResult addObject:[call toJsonDictionary:self.isSpeaker]];
     }
     
-    if ([accountsResult count] > 0 && config[@"service"] && config[@"service"][@"stun"]) {
-        for (NSDictionary *account in accountsResult) {
-            int accountId = account[@"_data"][@"id"];
-            [[PjSipEndpoint instance] updateStunServers:accountId stunServerList:config[@"service"][@"stun"]];
+    NSArray *stunServerList = config[@"service"][@"stun"];
+    if (stunServerList) {
+        self.stunServerList = stunServerList;
+        if ([accountsResult count] > 0) {
+            for (NSDictionary *account in accountsResult) {
+                int accountId = (int)account[@"_data"][@"id"];
+                [[PjSipEndpoint instance] updateStunServers:accountId stunServerList:stunServerList];
+                
+            }
+        }
+    }
+    NSDictionary *turnServerConfiguration = config[@"service"][@"turn"];
+    if (turnServerConfiguration) {
+        self.turnServerConfig = turnServerConfiguration;
+        if ([accountsResult count] > 0) {
+            for (NSDictionary *account in accountsResult) {
+                int accountId = (int)account[@"_data"][@"id"];
+                [[PjSipEndpoint instance] updateTurnSever: accountId configuration: turnServerConfiguration];
+            }
         }
     }
     
@@ -190,10 +205,50 @@
     pjsua_acc_modify(accountId, &cfg_update);
 }
 
+-(void) updateTurnSever: (int) accountId configuration: (NSDictionary*) turnConfiguration {
+    pjsua_acc_config cfg_update;
+    pj_pool_t *pool = pjsua_pool_create("tmp-pjsua", 1000, 1000);
+    pjsua_acc_config_default(&cfg_update);
+    pjsua_acc_get_config(accountId, pool, &cfg_update);
+    
+    pjsua_acc_modify(accountId, &cfg_update);
+    NSString *turnServer = turnConfiguration[@"server"];
+    NSString *transportType = turnConfiguration[@"tp_type"];
+    NSString *realm = turnConfiguration[@"realm"];
+    NSString *username = turnConfiguration[@"username"];
+    NSString *passwordDataType = turnConfiguration[@"password_data_type"];
+    NSString *passwordData = turnConfiguration[@"data"];
+    
+    pjsua_turn_config turnConfig;
+    turnConfig.enable_turn = PJ_TRUE;
+    NSAssert(turnServer, @"TURN server is required");
+    turnConfig.turn_server = pj_str((char *)turnServer.UTF8String);
+    
+    if (transportType != nil && [transportType isEqualToString:@"TP_TCP"]) {
+        turnConfig.turn_conn_type = PJ_TURN_TP_TCP;
+    }
+    NSAssert(realm, @"realm is required");
+    turnConfig.turn_auth_cred.data.static_cred.realm = pj_str((char *)realm.UTF8String);
+    NSAssert(username, @"username is required");
+    turnConfig.turn_auth_cred.data.static_cred.username = pj_str((char *)username.UTF8String);
+    NSAssert(passwordData, @"passwordData is required");
+    turnConfig.turn_auth_cred.data.static_cred.data = pj_str((char *)passwordData.UTF8String);
+    bool isHashed = passwordDataType != nil && [passwordDataType isEqualToString:@"HASHED"];
+    turnConfig.turn_auth_cred.data.static_cred.data_type = isHashed ? PJ_STUN_PASSWD_HASHED : PJ_STUN_PASSWD_PLAIN;
+    cfg_update.turn_cfg = turnConfig;
+    pjsua_acc_modify(accountId, &cfg_update);
+    pj_pool_release(pool);
+}
+
 - (PjSipAccount *)createAccount:(NSDictionary *)config {
     PjSipAccount *account = [PjSipAccount itemConfig:config];
     self.accounts[@(account.id)] = account;
-    
+    if (self.stunServerList) {
+        [[PjSipEndpoint instance] updateStunServers:account.id stunServerList:self.stunServerList];
+    }
+    if (self.turnServerConfig) {
+        [[PjSipEndpoint instance] updateTurnSever:account.id configuration:self.turnServerConfig];
+    }
     return account;
 }
 
