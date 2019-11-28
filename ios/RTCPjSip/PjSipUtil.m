@@ -221,7 +221,7 @@
             callSettings->aud_cnt = [dict[@"audioCount"] intValue];
         }
         if (dict[@"videoCount"] != nil) {
-            callSettings->vid_cnt = [dict[@"videoCount"] intValue];
+            callSettings->vid_cnt = 0;// Assac - changed from [dict[@"videoCount"] intValue]
         }
         if (dict[@"flag"] != nil) {
             callSettings->flag = [dict[@"flag"] intValue];

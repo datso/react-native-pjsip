@@ -48,7 +48,7 @@
     
     // TODO: Audio/Video count configuration!
     callOpt.aud_cnt = 1;
-    callOpt.vid_cnt = 1;
+    callOpt.vid_cnt = 0;// Assac - changed from 1
     
     pjsua_call_answer2(self.id, &callOpt, 200, NULL, &msgData);
 }
@@ -129,6 +129,7 @@
 
     pjsua_call_setting callOpt;
     pjsua_call_setting_default(&callOpt);
+    callOpt.vid_cnt = 0;// Assac - added
     pjsua_call_answer2(self.id, &callOpt, PJSIP_SC_MOVED_TEMPORARILY, NULL, &msgData);
 }
 
@@ -195,10 +196,10 @@
         
         @"remoteOfferer": @(info.rem_offerer),
         @"remoteAudioCount": @(info.rem_aud_cnt),
-        @"remoteVideoCount": @(info.rem_vid_cnt),
+        @"remoteVideoCount": @(0),// Assac - changed from @(info.rem_vid_cnt)
         
         @"audioCount": @(info.setting.aud_cnt),
-        @"videoCount": @(info.setting.vid_cnt),
+        @"videoCount": @(0),// Assac - changed from @(info.setting.vid_cnt)
         
         @"media": [self mediaInfoToJsonArray:info.media count:info.media_cnt],
         @"provisionalMedia": [self mediaInfoToJsonArray:info.prov_media count:info.prov_media_cnt]
