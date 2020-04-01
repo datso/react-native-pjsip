@@ -17,3 +17,4 @@ Pod::Spec.new do |s|
 
   s.dependency 'React'
   s.vendored_frameworks = 'ios/VialerPJSIP.framework'
+end
