@@ -8,6 +8,7 @@
     "name": "Vadim Ruban",
     "email": "vadim.ruban@carusto.com"
   },
+  "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/datso/react-native-pjsip/issues"
   },
