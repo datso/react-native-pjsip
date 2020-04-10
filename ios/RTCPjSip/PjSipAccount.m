@@ -116,6 +116,36 @@
                 }
             }
         }
+        // TURN settings
+        NSDictionary *turnConfiguration = config[@"turn"];
+        if (turnConfiguration) {
+            NSString *turnServer = turnConfiguration[@"server"];
+            NSString *transportType = turnConfiguration[@"tp_type"];
+            NSString *realm = turnConfiguration[@"realm"];
+            NSString *username = turnConfiguration[@"username"];
+            NSString *passwordDataType = turnConfiguration[@"password_data_type"];
+            NSString *passwordData = turnConfiguration[@"data"];
+            
+            pjsua_turn_config turnConfig;
+            turnConfig.enable_turn = PJ_TRUE;
+            NSAssert(turnServer, @"TURN server is required");
+            turnConfig.turn_server = pj_str((char *)turnServer.UTF8String);
+            
+            if (transportType != nil && [transportType isEqualToString:@"TP_TCP"]) {
+                turnConfig.turn_conn_type = PJ_TURN_TP_TCP;
+            }
+            NSAssert(realm, @"realm is required");
+            turnConfig.turn_auth_cred.data.static_cred.realm = pj_str((char *)realm.UTF8String);
+            NSAssert(username, @"username is required");
+            turnConfig.turn_auth_cred.data.static_cred.username = pj_str((char *)username.UTF8String);
+            NSAssert(passwordData, @"passwordData is required");
+            turnConfig.turn_auth_cred.data.static_cred.data = pj_str((char *)passwordData.UTF8String);
+            
+            bool isHashed = passwordDataType != nil && [passwordDataType isEqualToString:@"HASHED"];
+            turnConfig.turn_auth_cred.data.static_cred.data_type = isHashed ? PJ_STUN_PASSWD_HASHED : PJ_STUN_PASSWD_PLAIN;
+            cfg.turn_cfg = turnConfig;
+            cfg.turn_cfg_use = PJSUA_TURN_CONFIG_USE_CUSTOM;
+        }
         
         pjsua_acc_id account_id;
 
