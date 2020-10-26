@@ -239,6 +239,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				USE_HEADERMAP = NO;
 			};
 			name = Debug;
 		};
@@ -275,6 +276,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
+				USE_HEADERMAP = NO;
 			};
 			name = Release;
 		};
@@ -288,7 +290,7 @@
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
-					PJ_AUTOCONF,
+					"PJ_AUTOCONF=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../react-native/React/**",
@@ -314,7 +316,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = PJ_AUTOCONF;
+				GCC_PREPROCESSOR_DEFINITIONS = "PJ_AUTOCONF=1";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../react-native/React/**",
 					"\"$(SRCROOT)/VialerPJSIP/Headers\"",
