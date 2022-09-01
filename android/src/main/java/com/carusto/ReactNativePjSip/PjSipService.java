@@ -251,10 +251,7 @@ public class PjSipService extends Service {
         }
     }
 
-    @ReactMethod
-    public void checkModule(Callback callback) {
-        callback.invoke("Native Module works fine!");
-    }
+    
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 

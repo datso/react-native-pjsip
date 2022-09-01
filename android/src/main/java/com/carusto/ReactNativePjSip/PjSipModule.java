@@ -29,6 +29,11 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
     }
 
     @ReactMethod
+    public void checkModule(Callback callback) {
+        callback.invoke("Native Module works fine!");
+    }
+    
+    @ReactMethod
     public void start(ReadableMap configuration, Callback callback) {
         int id = receiver.register(callback);
         Intent intent = PjActions.createStartIntent(id, configuration, getReactApplicationContext());
