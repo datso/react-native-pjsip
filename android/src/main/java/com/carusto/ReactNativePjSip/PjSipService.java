@@ -254,6 +254,8 @@ public class PjSipService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
+
+        Log.e( "PJSIPModule: ", "open service");
         if (!mInitialized) {
             if (intent != null && intent.hasExtra("service")) {
                 mServiceConfiguration = ServiceConfigurationDTO.fromMap((Map) intent.getSerializableExtra("service"));

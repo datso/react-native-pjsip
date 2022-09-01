@@ -32,7 +32,7 @@ public class PjSipModule extends ReactContextBaseJavaModule implements Lifecycle
     public void start(ReadableMap configuration, Callback callback) {
         int id = receiver.register(callback);
         Intent intent = PjActions.createStartIntent(id, configuration, getReactApplicationContext());
-
+        Log.e( "PJSIPModule: ", "start");
         getReactApplicationContext().startService(intent);
     }
 
