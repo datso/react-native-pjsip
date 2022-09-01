@@ -28,6 +28,7 @@ public class PjActions {
     public static final String ACTION_DELETE_ACCOUNT = "account_delete";
     public static final String ACTION_MAKE_CALL = "call_make";
     public static final String ACTION_HANGUP_CALL = "call_hangup";
+    public static final String ACTION_HANGUP_ALL_CALL = "all_call_hangup";
     public static final String ACTION_DECLINE_CALL = "call_decline";
     public static final String ACTION_ANSWER_CALL = "call_answer";
     public static final String ACTION_HOLD_CALL = "call_hold";
@@ -126,6 +127,12 @@ public class PjActions {
         intent.putExtra("callback_id", callbackId);
         intent.putExtra("call_id", callId);
 
+        return intent;
+    }
+
+    public static Intent createHangupAllCallIntent(Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_HANGUP_ALL_CALL);
         return intent;
     }
 

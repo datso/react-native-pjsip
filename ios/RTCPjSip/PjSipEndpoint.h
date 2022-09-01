@@ -18,9 +18,7 @@
 
 +(instancetype)instance;
 
--(NSDictionary *)start: (NSDictionary *) config;
-
--(void) updateStunServers: (int) accountId stunServerList:(NSArray *)stunServerList;
+-(NSDictionary *)start;
 
 -(PjSipAccount *)createAccount:(NSDictionary*) config;
 -(void) deleteAccount:(int) accountId;

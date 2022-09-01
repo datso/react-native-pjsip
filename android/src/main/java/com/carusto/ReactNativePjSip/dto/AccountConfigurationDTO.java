@@ -1,7 +1,8 @@
 package com.carusto.ReactNativePjSip.dto;
 
 import android.content.Intent;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import java.util.Map;
 

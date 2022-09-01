@@ -3,7 +3,8 @@
 A [PJSIP](http://www.pjsip.org/) module for React Native.
 
 ## Support
-- Currently support for iOS and Android.  
+
+- Currently support for iOS and Android.
 - Support video and audio communication.
 - Ability to use Callkit and PushNotifications.
 - You can use it to build an iOS/Android app that can communicate with SIP server.
@@ -26,19 +27,19 @@ When User open your application, javascript start to work and now your js applic
 So thats why first step should call start method for pjsip module.
 
 ```javascript
-import {Endpoint} from 'react-native-pjsip'
+import {Endpoint} from 'react-native-pjsip';
 
 let endpoint = new Endpoint();
 let state = await endpoint.start(); // List of available accounts and calls when RN context is started, could not be empty because Background service is working on Android
 let {accounts, calls, settings, connectivity} = state;
 
 // Subscribe to endpoint events
-endpoint.on("registration_changed", (account) => {});
-endpoint.on("connectivity_changed", (online) => {});
-endpoint.on("call_received", (call) => {});
-endpoint.on("call_changed", (call) => {});
-endpoint.on("call_terminated", (call) => {});
-endpoint.on("call_screen_locked", (call) => {}); // Android only
+endpoint.on('registration_changed', account => {});
+endpoint.on('connectivity_changed', online => {});
+endpoint.on('call_received', call => {});
+endpoint.on('call_changed', call => {});
+endpoint.on('call_terminated', call => {});
+endpoint.on('call_screen_locked', call => {}); // Android only
 ```
 
 Account creating is pretty strainghforward.
@@ -59,7 +60,7 @@ let configuration = {
   "regContactParams": ";unique-device-token-id=XXXXXXXXX"
 };
 endpoint.createAccount().then((account) => {
-  console.log("Account created", account);
+
 });
 
 ```
@@ -98,4 +99,5 @@ endpoint.addListener("call_terminated", (newCall) => {
 4. [Settings](https://github.com/datso/react-native-pjsip/blob/master/docs/settings.md)
 
 ## Demo
+
 The demo project is https://github.com/datso/react-native-pjsip-app. And you will need a SIP server.

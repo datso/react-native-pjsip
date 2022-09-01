@@ -12,9 +12,9 @@ Pod::Spec.new do |s|
   s.homepage     = package['homepage']
   s.platform     = :ios, "9.0"
 
-  s.source       = { :git => "https://github.com/datso/react-native-pjsip.git" }
-  s.source_files  = "ios/**/*.{h,m}"
+  s.source       = { :git => "https://github.com/datso/react-native-pjsip.git", :tag => "v#{s.version}" }
+  s.source_files = "ios/**/*.{h,m}"
 
+  s.vendored_frameworks='ios/VialerPJSIP.framework'
   s.dependency 'React'
-  s.vendored_frameworks = 'ios/VialerPJSIP.framework'
 end

@@ -71,7 +71,7 @@
                 cfg.contact_uri_params = pj_str((char *) [self.contactUriParams UTF8String]);
             }
         }
-    
+
         // Registration settings
         {
             if (![self.regHeaders isKindOfClass:[NSNull class]]) {

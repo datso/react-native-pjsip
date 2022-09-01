@@ -1,34 +1,43 @@
 {
-  "scripts": {
-    "postinstall": "bash libs.sh",
-    "lint": "eslint ./src",
-    "generate-docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose"
+  "_from": "react-native-pjsip",
+  "_id": "react-native-pjsip@2.7.4",
+  "_inBundle": false,
+  "_integrity": "sha512-d5/Wh2l/ID+guqk1LwZ5m2Jf94/XYRrEKvESTBY55qDQ0lRoZ2G3+TDZzGHBAD//sFsTemzUgaSi9FjUETmA1g==",
+  "_location": "/react-native-pjsip",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "react-native-pjsip",
+    "name": "react-native-pjsip",
+    "escapedName": "react-native-pjsip",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
   },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-native-pjsip/-/react-native-pjsip-2.7.4.tgz",
+  "_shasum": "f60664a274285458f127935ada8c0d6fc2f24e18",
+  "_spec": "react-native-pjsip",
+  "_where": "/Users/apple/Project/Ghost Caller",
   "author": {
     "name": "Vadim Ruban",
     "email": "vadim.ruban@carusto.com"
   },
-  "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/datso/react-native-pjsip/issues"
   },
+  "bundleDependencies": false,
   "dependencies": {
     "events": "1.1.0"
   },
-  "devDependencies": {
-    "babel-eslint": "^10.0.0",
-    "eslint": "^5.6.0",
-    "eslint-config-airbnb": "^17.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jsx-a11y": "^6.1.1",
-    "eslint-plugin-react": "^7.11.1",
-    "eslint-plugin-react-native": "^3.3.0",
-    "gh-pages": "^2.0.0",
-    "jsdoc": "^3.5.5",
-    "minami": "^1.2.3"
-  },
-  "name": "react-native-pjsip",
+  "deprecated": false,
   "description": "PJSIP module for React Native",
+  "devDependencies": {},
+  "gitHead": "754bd49447e2611afc76fac0928408701fb8a2f0",
   "homepage": "https://github.com/datso/react-native-pjsip",
   "keywords": [
     "react-component",
@@ -38,6 +47,7 @@
     "pjsip",
     "sip"
   ],
+  "name": "react-native-pjsip",
   "nativePackage": true,
   "optionalDependencies": {},
   "peerDependencies": {
@@ -47,5 +57,8 @@
     "type": "git",
     "url": "git+https://github.com/datso/react-native-pjsip.git"
   },
-  "version": "2.8.0"
+  "scripts": {
+    "postinstall": "bash libs.sh"
+  },
+  "version": "2.7.4"
 }

@@ -1,10 +1,14 @@
 package com.carusto.ReactNativePjSip;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -17,6 +21,9 @@ import android.os.Process;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 
 import com.carusto.ReactNativePjSip.dto.AccountConfigurationDTO;
 import com.carusto.ReactNativePjSip.dto.CallSettingsDTO;
@@ -111,6 +118,43 @@ public class PjSipService extends Service {
         return mEmitter;
     }
 
+    public void createNotification(String destination) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            String NOTIFICATION_CHANNEL_ID = "calling_pjsip";
+            String channelName = "Background Service";
+            NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
+            chan.setLightColor(Color.BLUE);
+            chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            assert manager != null;
+            manager.createNotificationChannel(chan);
+
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+            Notification notification = notificationBuilder.setOngoing(true)
+                    .setContentTitle("Calling...")
+                    .setContentText(destination)
+                    .setPriority(NotificationManager.IMPORTANCE_DEFAULT)
+                    .setCategory(Notification.CATEGORY_CALL)
+                    .setSmallIcon(android.R.drawable.sym_call_outgoing)
+                    .build();
+
+            startForeground(2, notification);
+        } else {
+            startForeground(1, new Notification());
+        }
+    }
+
+    public void clearNotification() {
+        Log.e(TAG, "clearNotification: ");
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            stopForeground(true);
+        } else {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.cancel(1);
+        }
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -164,7 +208,7 @@ public class PjSipService extends Service {
             if (mServiceConfiguration.isUserAgentNotEmpty()) {
                 epConfig.getUaConfig().setUserAgent(mServiceConfiguration.getUserAgent());
             } else {
-                epConfig.getUaConfig().setUserAgent("React Native PjSip ("+ mEndpoint.libVersion().getFull() +")");
+                epConfig.getUaConfig().setUserAgent("React Native PjSip (" + mEndpoint.libVersion().getFull() + ")");
             }
 
             if (mServiceConfiguration.isStunServersNotEmpty()) {
@@ -223,11 +267,14 @@ public class PjSipService extends Service {
             mAudioManager = (AudioManager) getApplicationContext().getSystemService(AUDIO_SERVICE);
             mPowerManager = (PowerManager) getApplicationContext().getSystemService(POWER_SERVICE);
             mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, this.getPackageName()+"-wifi-call-lock");
+            mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, this.getPackageName() + "-wifi-call-lock");
             mWifiLock.setReferenceCounted(false);
-            mTelephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-            mGSMIdle = mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE;
-
+            try{
+                mTelephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+                mGSMIdle = mTelephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE;
+            } catch (Exception e){
+                Log.e(TAG, "onStartCommand: " );
+            }
             IntentFilter phoneStateFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
             registerReceiver(mPhoneStateChangedReceiver, phoneStateFilter);
 
@@ -255,22 +302,33 @@ public class PjSipService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.e(TAG, "onDestroy: ");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             mWorkerThread.quitSafely();
         }
-
+        for (PjSipAccount mAccount : mAccounts) {
+            mAccount.delete();
+        }
         try {
             if (mEndpoint != null) {
                 mEndpoint.libDestroy();
+                mEndpoint.delete(); // Add this line
             }
         } catch (Exception e) {
             Log.w(TAG, "Failed to destroy PjSip library", e);
         }
-
-        unregisterReceiver(mPhoneStateChangedReceiver);
-
-        super.onDestroy();
+        try{
+            unregisterReceiver(mPhoneStateChangedReceiver);
+        } catch (Exception e){
+            Log.e(TAG, "unregisterReceiver: "+e + " ---" );
+        }
+        try{
+            super.onDestroy();
+        } catch (Exception e){
+            Log.e(TAG, "super.onDestroy: "+e + " ---" );
+        }
     }
+
 
     private void job(Runnable job) {
         mHandler.post(job);
@@ -327,7 +385,7 @@ public class PjSipService extends Service {
             return;
         }
 
-        Log.d(TAG, "Handle \""+ intent.getAction() +"\" action ("+ ArgumentUtils.dumpIntentExtraParameters(intent) +")");
+        Log.d(TAG, "Handle \"" + intent.getAction() + "\" action (" + ArgumentUtils.dumpIntentExtraParameters(intent) + ")");
 
         switch (intent.getAction()) {
             // General actions
@@ -352,6 +410,9 @@ public class PjSipService extends Service {
                 break;
             case PjActions.ACTION_HANGUP_CALL:
                 handleCallHangup(intent);
+                break;
+            case PjActions.ACTION_HANGUP_ALL_CALL:
+                handleAllCallHangup();
                 break;
             case PjActions.ACTION_DECLINE_CALL:
                 handleCallDecline(intent);
@@ -392,6 +453,7 @@ public class PjSipService extends Service {
                 handleChangeCodecSettings(intent);
                 break;
 
+
             // Configuration actions
             case PjActions.ACTION_SET_SERVICE_CONFIGURATION:
                 handleSetServiceConfiguration(intent);
@@ -412,7 +474,7 @@ public class PjSipService extends Service {
             CodecInfoVector codVect = mEndpoint.codecEnum();
             JSONObject codecs = new JSONObject();
 
-            for(int i=0;i<codVect.size();i++){
+            for (int i = 0; i < codVect.size(); i++) {
                 CodecInfo codInfo = codVect.get(i);
                 String codId = codInfo.getCodecId();
                 short priority = codInfo.getPriority();
@@ -471,7 +533,7 @@ public class PjSipService extends Service {
             }
 
             if (account == null) {
-                throw new Exception("Account with \""+ accountId +"\" id not found");
+                throw new Exception("Account with \"" + accountId + "\" id not found");
             }
 
             account.register(renew);
@@ -488,11 +550,11 @@ public class PjSipService extends Service {
 
         // General settings
         AuthCredInfo cred = new AuthCredInfo(
-            "Digest",
-            configuration.getNomalizedRegServer(),
-            configuration.getUsername(),
-            0,
-            configuration.getPassword()
+                "Digest",
+                configuration.getNomalizedRegServer(),
+                configuration.getUsername(),
+                0,
+                configuration.getPassword()
         );
 
         String idUri = configuration.getIdUri();
@@ -542,7 +604,7 @@ public class PjSipService extends Service {
                     transportId = mTlsTransportId;
                     break;
                 default:
-                    Log.w(TAG, "Illegal \""+ configuration.getTransport() +"\" transport (possible values are UDP, TCP or TLS) use TCP instead");
+                    Log.w(TAG, "Illegal \"" + configuration.getTransport() + "\" transport (possible values are UDP, TCP or TLS) use TCP instead");
                     break;
             }
         }
@@ -589,7 +651,7 @@ public class PjSipService extends Service {
             }
 
             if (account == null) {
-                throw new Exception("Account with \""+ accountId +"\" id not found");
+                throw new Exception("Account with \"" + accountId + "\" id not found");
             }
 
             evict(account);
@@ -666,10 +728,12 @@ public class PjSipService extends Service {
 
             mCalls.add(call);
             mEmitter.fireIntentHandled(intent, call.toJson());
+            createNotification("Call in Progress via Ghost Caller");
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
     }
+
 
     private void handleCallHangup(Intent intent) {
         try {
@@ -678,8 +742,25 @@ public class PjSipService extends Service {
             call.hangup(new CallOpParam(true));
 
             mEmitter.fireIntentHandled(intent);
+            clearNotification();
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
+        }
+    }
+
+    private void handleAllCallHangup() {
+        try {
+            try {
+                if (mEndpoint != null) {
+                    mEndpoint.hangupAllCalls();
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to destroy PjSip library", e);
+            }
+//            mEmitter.fireIntentHandled(intent);
+            clearNotification();
+        } catch (Exception e) {
+//            mEmitter.fireIntentHandled(intent, e);
         }
     }
 
@@ -780,7 +861,9 @@ public class PjSipService extends Service {
 
     private void handleCallUseSpeaker(Intent intent) {
         try {
+            mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
             mAudioManager.setSpeakerphoneOn(true);
+//            mAudioManager.
             mUseSpeaker = true;
 
             for (PjSipCall call : mCalls) {
@@ -901,7 +984,7 @@ public class PjSipService extends Service {
             }
         }
 
-        throw new Exception("Account with specified \""+ id +"\" id not found");
+        throw new Exception("Account with specified \"" + id + "\" id not found");
     }
 
     private PjSipCall findCall(int id) throws Exception {
@@ -911,7 +994,7 @@ public class PjSipService extends Service {
             }
         }
 
-        throw new Exception("Call with specified \""+ id +"\" id not found");
+        throw new Exception("Call with specified \"" + id + "\" id not found");
     }
 
     void emmitRegistrationChanged(PjSipAccount account, OnRegStateParam prm) {
@@ -935,39 +1018,38 @@ public class PjSipService extends Service {
         }
 
         /**
-        // Automatically start application when incoming call received.
-        if (mAppHidden) {
-            try {
-                String ns = getApplicationContext().getPackageName();
-                String cls = ns + ".MainActivity";
+         // Automatically start application when incoming call received.
+         if (mAppHidden) {
+         try {
+         String ns = getApplicationContext().getPackageName();
+         String cls = ns + ".MainActivity";
 
-                Intent intent = new Intent(getApplicationContext(), Class.forName(cls));
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
-                intent.addCategory(Intent.CATEGORY_LAUNCHER);
-                intent.putExtra("foreground", true);
+         Intent intent = new Intent(getApplicationContext(), Class.forName(cls));
+         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.EXTRA_DOCK_STATE_CAR);
+         intent.addCategory(Intent.CATEGORY_LAUNCHER);
+         intent.putExtra("foreground", true);
 
-                startActivity(intent);
-            } catch (Exception e) {
-                Log.w(TAG, "Failed to open application on received call", e);
-            }
+         startActivity(intent);
+         } catch (Exception e) {
+         Log.w(TAG, "Failed to open application on received call", e);
+         }
+         }
+
+         job(new Runnable() {
+        @Override public void run() {
+        // Brighten screen at least 10 seconds
+        PowerManager.WakeLock wl = mPowerManager.newWakeLock(
+        PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE | PowerManager.FULL_WAKE_LOCK,
+        "incoming_call"
+        );
+        wl.acquire(10000);
+
+        if (mCalls.size() == 0) {
+        mAudioManager.setSpeakerphoneOn(true);
         }
-
-        job(new Runnable() {
-            @Override
-            public void run() {
-                // Brighten screen at least 10 seconds
-                PowerManager.WakeLock wl = mPowerManager.newWakeLock(
-                    PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE | PowerManager.FULL_WAKE_LOCK,
-                    "incoming_call"
-                );
-                wl.acquire(10000);
-
-                if (mCalls.size() == 0) {
-                    mAudioManager.setSpeakerphoneOn(true);
-                }
-            }
+        }
         });
-        **/
+         **/
 
         // -----
         mCalls.add(call);
@@ -1011,7 +1093,7 @@ public class PjSipService extends Service {
                     mWifiLock.acquire();
 
                     if (callState == pjsip_inv_state.PJSIP_INV_STATE_EARLY || callState == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
-                        mAudioManager.setMode(AudioManager.MODE_IN_CALL);
+                        mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
                     }
                 }
             });
@@ -1044,12 +1126,14 @@ public class PjSipService extends Service {
                 if (mCalls.size() == 1) {
                     mAudioManager.setSpeakerphoneOn(false);
                     mAudioManager.setMode(AudioManager.MODE_NORMAL);
+
                 }
             }
         });
 
         mEmitter.fireCallTerminated(call);
         evict(call);
+        clearNotification();
     }
 
     void emmitCallUpdated(PjSipCall call) {

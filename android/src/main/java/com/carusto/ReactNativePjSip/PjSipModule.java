@@ -2,10 +2,11 @@ package com.carusto.ReactNativePjSip;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 
 import com.facebook.react.bridge.*;
 
-public class PjSipModule extends ReactContextBaseJavaModule {
+public class PjSipModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
 
     private static PjSipBroadcastReceiver receiver;
 
@@ -19,6 +20,7 @@ public class PjSipModule extends ReactContextBaseJavaModule {
         } else {
             receiver.setContext(context);
         }
+        context.addLifecycleEventListener(this);
     }
 
     @Override
@@ -165,5 +167,26 @@ public class PjSipModule extends ReactContextBaseJavaModule {
         int callbackId = receiver.register(callback);
         Intent intent = PjActions.createChangeCodecSettingsIntent(callbackId, codecSettings, getReactApplicationContext());
         getReactApplicationContext().startService(intent);
+    }
+
+    @Override
+    public void onHostResume() {
+
+    }
+
+    @Override
+    public void onHostPause() {
+
+    }
+
+    @Override
+    public void onHostDestroy() {
+        Log.e( "onHostDestroy: ", "call");
+        try {
+            Intent intent = PjActions.createHangupAllCallIntent(getReactApplicationContext());
+            getReactApplicationContext().startService(intent);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

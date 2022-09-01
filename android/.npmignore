@@ -1,8 +1,0 @@
-gradle.properties
-gradle/
-gradlew
-gradlew.bat
-local.properties
-.gradle
-.idea
-DS_Store
