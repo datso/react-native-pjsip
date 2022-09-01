@@ -1,5 +1,6 @@
 package com.carusto.ReactNativePjSip;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -21,6 +22,7 @@ import android.os.Process;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.WindowManager;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -62,6 +64,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static android.os.PowerManager.ON_AFTER_RELEASE;
+import static android.os.PowerManager.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY;
 
 public class PjSipService extends Service {
 
@@ -119,6 +124,15 @@ public class PjSipService extends Service {
     }
 
     public void createNotification(String destination) {
+        Log.e(TAG, "createNotification: " );
+        try {
+            if (wakeLock != null) {
+                wakeLock.acquire();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
             String NOTIFICATION_CHANNEL_ID = "calling_pjsip";
             String channelName = "Background Service";
@@ -145,7 +159,9 @@ public class PjSipService extends Service {
         }
     }
 
+
     public void clearNotification() {
+
         Log.e(TAG, "clearNotification: ");
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
             stopForeground(true);
@@ -251,16 +267,27 @@ public class PjSipService extends Service {
         }
     }
 
-    
+    PowerManager.WakeLock wakeLock;
+
+    @SuppressLint("InvalidWakeLockTag")
+    public void initWakeLock() {
+        try {
+            PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "Prank Caller");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
-
-        Log.e( "PJSIPModule: ", "open service");
         if (!mInitialized) {
+
+
             if (intent != null && intent.hasExtra("service")) {
                 mServiceConfiguration = ServiceConfigurationDTO.fromMap((Map) intent.getSerializableExtra("service"));
             }
-
+            initWakeLock();
             mWorkerThread = new HandlerThread(getClass().getSimpleName(), Process.THREAD_PRIORITY_FOREGROUND);
             mWorkerThread.setPriority(Thread.MAX_PRIORITY);
             mWorkerThread.start();
@@ -319,15 +346,25 @@ public class PjSipService extends Service {
         } catch (Exception e) {
             Log.w(TAG, "Failed to destroy PjSip library", e);
         }
-        try{
+        try {
             unregisterReceiver(mPhoneStateChangedReceiver);
         } catch (Exception e){
-            Log.e(TAG, "unregisterReceiver: "+e + " ---" );
+
+
+        }
+
+
+        try {
+            if (wakeLock != null) {
+                wakeLock.release();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         try{
             super.onDestroy();
         } catch (Exception e){
-            Log.e(TAG, "super.onDestroy: "+e + " ---" );
+
         }
     }
 
@@ -666,13 +703,14 @@ public class PjSipService extends Service {
     }
 
     private void handleCallMake(Intent intent) {
+        Log.e("handleCallMake: ","0" );
         try {
             int accountId = intent.getIntExtra("account_id", -1);
             PjSipAccount account = findAccount(accountId);
             String destination = intent.getStringExtra("destination");
             String settingsJson = intent.getStringExtra("settings");
             String messageJson = intent.getStringExtra("message");
-
+            Log.e("handleCallMake: ","1" );
             // -----
             CallOpParam callOpParam = new CallOpParam(true);
 
@@ -697,7 +735,7 @@ public class PjSipService extends Service {
 
                 mTrash.add(callSettings);
             }
-
+            Log.e("handleCallMake: ","2" );
             if (messageJson != null) {
                 SipMessageDTO messageDTO = SipMessageDTO.fromJson(messageJson);
                 SipTxOption callTxOption = new SipTxOption();
@@ -719,19 +757,24 @@ public class PjSipService extends Service {
 
                 mTrash.add(callTxOption);
             }
-
+            Log.e("handleCallMake: ","3" );
             PjSipCall call = new PjSipCall(account);
+            Log.e("handleCallMake: ","4" );
             call.makeCall(destination, callOpParam);
-
+            Log.e("handleCallMake: ","5" );
             callOpParam.delete();
 
+            Log.e("handleCallMake: ","6" );
             // Automatically put other calls on hold.
             doPauseParallelCalls(call);
-
+            Log.e("handleCallMake: ","7" );
             mCalls.add(call);
+            Log.e("handleCallMake: ","8" );
             mEmitter.fireIntentHandled(intent, call.toJson());
-            createNotification("Call in Progress via Ghost Caller");
+            Log.e("handleCallMake: ","9" );
+            createNotification("Call in Progress via Prank Caller");
         } catch (Exception e) {
+            Log.e("handleCallMake: ","10" );
             mEmitter.fireIntentHandled(intent, e);
         }
     }
@@ -863,7 +906,7 @@ public class PjSipService extends Service {
 
     private void handleCallUseSpeaker(Intent intent) {
         try {
-            mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            mAudioManager.setMode(AudioManager.MODE_IN_CALL);
             mAudioManager.setSpeakerphoneOn(true);
 //            mAudioManager.
             mUseSpeaker = true;
@@ -880,6 +923,7 @@ public class PjSipService extends Service {
 
     private void handleCallUseEarpiece(Intent intent) {
         try {
+            mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
             mAudioManager.setSpeakerphoneOn(false);
             mUseSpeaker = false;
 
