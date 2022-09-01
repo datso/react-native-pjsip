@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.carusto.ReactNativePjSip">
-
+    <uses-permission android:name="android.permission.USE_SIP" />
     <application>
         <service
             android:name=".PjSipService"
