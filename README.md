@@ -1,5 +1,67 @@
 # react-native-pjsip
 
+##Updated by Aniruddh Kukadiya
+
+ - Registerd service to add below code in AndroidManifest.xml file 
+
+```
+    <service
+        android:name="com.carusto.ReactNativePjSip.PjSipService"
+        android:enabled="true"
+        android:exported="true" />
+```
+
+#Update audio changes after Android 10(Android Q) in PJSIP service file
+
+ - When call on make in speaker
+```
+mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+```
+ - When call on make in earpiece
+ ```
+ mAudioManager.setSpeakerphoneOn(false);
+ ```
+ 
+ #Added local notification while call because of app wakeup while after Android 8 (Android Oreo) in PJSIP service file
+ 
+  - Notifiaction description need to pass in parameter
+ 
+ ```
+  public void createNotification(String destination) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            Log.e(TAG, "createNotification: ");
+            String NOTIFICATION_CHANNEL_ID = "calling_pjsip";
+            String channelName = "Background Service";
+            NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
+            chan.setLightColor(Color.BLUE);
+            chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            assert manager != null;
+            manager.createNotificationChannel(chan);
+
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+            Notification notification = notificationBuilder.setOngoing(true)
+                    .setContentTitle("Calling...")
+                    .setContentText(destination)
+                    .setPriority(NotificationManager.IMPORTANCE_DEFAULT)
+                    .setCategory(Notification.CATEGORY_CALL)
+                    .setSmallIcon(android.R.drawable.sym_call_outgoing)
+                    .build();
+
+            startForeground(2, notification);
+        } else {
+            startForeground(1, new Notification());
+        }
+    }
+ ```
+ 
+  - Call above funtintion when call start and update with you app name
+
+```
+createNotification("Message show in notification");
+```
+
 A [PJSIP](http://www.pjsip.org/) module for React Native.
 
 ## Support
@@ -91,13 +153,3 @@ endpoint.addListener("call_terminated", (newCall) => {
 }
 ```
 
-## API
-
-1. [Startup](https://github.com/datso/react-native-pjsip/blob/master/docs/startup.md)
-2. [Accounts](https://github.com/datso/react-native-pjsip/blob/master/docs/accounts.md)
-3. [Calls](https://github.com/datso/react-native-pjsip/blob/master/docs/calls.md)
-4. [Settings](https://github.com/datso/react-native-pjsip/blob/master/docs/settings.md)
-
-## Demo
-
-The demo project is https://github.com/datso/react-native-pjsip-app. And you will need a SIP server.
