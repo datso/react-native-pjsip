@@ -1,6 +1,6 @@
 # react-native-pjsip
 
-##Updated by Aniruddh Kukadiya
+## Updated by Aniruddh Kukadiya
 
  - Registerd service to add below code in AndroidManifest.xml file 
 
@@ -11,7 +11,7 @@
         android:exported="true" />
 ```
 
-#Update audio changes after Android 10(Android Q) in PJSIP service file
+Update audio changes after Android 10(Android Q) in PJSIP service file
 
  - When call on make in speaker
 ```
@@ -22,7 +22,7 @@ mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
  mAudioManager.setSpeakerphoneOn(false);
  ```
  
- #Added local notification while call because of app wakeup while after Android 8 (Android Oreo) in PJSIP service file
+Added local notification while call because of app wakeup while after Android 8 (Android Oreo) in PJSIP service file
  
   - Notifiaction description need to pass in parameter
  
@@ -61,6 +61,8 @@ mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 ```
 createNotification("Message show in notification");
 ```
+
+
 
 A [PJSIP](http://www.pjsip.org/) module for React Native.
 
