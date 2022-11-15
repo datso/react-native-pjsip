@@ -56,7 +56,7 @@ Added local notification while call because of app wakeup while after Android 8 
     }
  ```
  
-  - Call above funtintion when call start and update with you app name
+  - Call above funtintion when call start and update with your app name
 
 ```
 createNotification("Message show in notification");
