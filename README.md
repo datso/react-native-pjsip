@@ -2,7 +2,7 @@
 
 ## Updated by Aniruddh Kukadiya
 
- - Registerd service to add below code in AndroidManifest.xml file 
+ - Registered service to add below code in AndroidManifest.xml file 
 
 ```
     <service
@@ -11,20 +11,20 @@
         android:exported="true" />
 ```
 
-Update audio changes after Android 10(Android Q) in PJSIP service file
+Update audio changes for Android 10+ (Android Q) in PJSIP service file
 
- - When call on make in speaker
+ - Starting a call with speakerphone
 ```
 mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 ```
- - When call on make in earpiece
+ - Starting a call with the earpiece
  ```
  mAudioManager.setSpeakerphoneOn(false);
  ```
  
-Added local notification while call because of app wakeup while after Android 8 (Android Oreo) in PJSIP service file
+Added a local notification when placing a call in order to wakeup the service for Android 8+ (Android Oreo) in PJSIP service file
  
-  - Notifiaction description need to pass in parameter
+  -  Need to pass notification destination in parameter
  
  ```
   public void createNotification(String destination) {
@@ -56,10 +56,10 @@ Added local notification while call because of app wakeup while after Android 8 
     }
  ```
  
-  - Call above funtintion when call start and update with your app name
+  - Call above function when call starts and update with your app name
 
 ```
-createNotification("Message show in notification");
+createNotification("Message shown in notification");
 ```
 
 
@@ -68,9 +68,9 @@ A [PJSIP](http://www.pjsip.org/) module for React Native.
 
 ## Support
 
-- Currently support for iOS and Android.
+- Currently supports both iOS and Android.
 - Support video and audio communication.
-- Ability to use Callkit and PushNotifications.
+- Ability to use CallKit and push notifications.
 - You can use it to build an iOS/Android app that can communicate with SIP server.
 - Android version is based on [react-native-pjsip-builder](https://github.com/datso/react-native-pjsip-builder)
 - iOS version is based on [Vialer-pjsip-iOS](https://github.com/VoIPGRID/Vialer-pjsip-iOS)
@@ -82,13 +82,12 @@ A [PJSIP](http://www.pjsip.org/) module for React Native.
 
 ## Usage
 
-First of all you have to initialize module to be able to work with it.
+First of all you have to initialize the module to be able to work with it.
 
-There are some interesting moment in initialization.
-When application goes to background, PJSIP module is still working and able to receive calls, but your javascipt is totally suspended.
-When User open your application, javascript start to work and now your js application need to know what status have your account or may be you have pending incoming call.
+There are some interesting moments during initialization. 
+When the application goes to the background the PJSIP module is still working and able to receive calls, but your JavaScript is totally suspended. When a user opens your application, JavaScript starts to work and now your JS application needs to know what status your account has or whether you have a pending incoming call
 
-So thats why first step should call start method for pjsip module.
+So that’s why the first step should call start method for PJSIP module.
 
 ```javascript
 import {Endpoint} from 'react-native-pjsip';
@@ -106,7 +105,7 @@ endpoint.on('call_terminated', call => {});
 endpoint.on('call_screen_locked', call => {}); // Android only
 ```
 
-Account creating is pretty strainghforward.
+Account creating is pretty straightforward.
 
 ```javascript
 let configuration = {
@@ -129,8 +128,7 @@ endpoint.createAccount().then((account) => {
 
 ```
 
-To be able to make a call first of all you should createAccount, and pass account instance into Endpoint.makeCall function.
-This function will return a promise that will be resolved when PjSIP initializes the call.
+To be able to make a call first of all you should createAccount, and pass account instance into Endpoint.makeCall function. This function will return a promise that will be resolved when PJSIP initializes the call.
 
 ```javascript
 let options = {
