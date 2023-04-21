@@ -19,16 +19,14 @@
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/react-native-pjsip/-/react-native-pjsip-2.7.4.tgz",
   "_shasum": "f60664a274285458f127935ada8c0d6fc2f24e18",
   "_spec": "react-native-pjsip",
-  "_where": "/Users/apple/Project/Ghost Caller",
+  "_where": "/Users/ani/Project/SourceTree/React Native/Prank Caller",
   "author": {
-    "name": "Vadim Ruban",
-    "email": "vadim.ruban@carusto.com"
+    "name": "Aniruddh Kukadiya"
   },
   "bugs": {
-    "url": "https://github.com/datso/react-native-pjsip/issues"
+    "url": "https://github.com/kukadiyaAni/react-native-pjsip/issues"
   },
   "bundleDependencies": false,
   "dependencies": {
@@ -38,7 +36,7 @@
   "description": "PJSIP module for React Native",
   "devDependencies": {},
   "gitHead": "754bd49447e2611afc76fac0928408701fb8a2f0",
-  "homepage": "https://github.com/datso/react-native-pjsip",
+  "homepage": "https://github.com/kukadiyaAni/react-native-pjsip",
   "keywords": [
     "react-component",
     "react-native",
@@ -55,7 +53,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/datso/react-native-pjsip.git"
+    "url": "git+https://github.com/kukadiyaAni/react-native-pjsip.git"
   },
   "scripts": {
     "postinstall": "bash libs.sh"
