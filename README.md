@@ -20,7 +20,7 @@ A [PJSIP](http://www.pjsip.org/) module for React Native.
 First of all you have to initialize module to be able to work with it.
 
 There are some interesting moment in initialization.
-When application goes to background, PJSIP module is still working and able to receive calls, but your javascipt is totally suspended.
+When application goes to background, PJSIP module is still working and able to receive calls, but your javascript is totally suspended.
 When User open your application, javascript start to work and now your js application need to know what status have your account or may be you have pending incoming call.
 
 So thats why first step should call start method for pjsip module.
